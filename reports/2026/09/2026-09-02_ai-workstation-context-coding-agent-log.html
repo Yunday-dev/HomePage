@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-09-02" />
+  <meta name="worklog-title" content="RTX 5090 AI Workstation — 128K Context와 실제 코드 수정 검증" />
+  <meta name="worklog-project" content="AI Workstation" />
+  <meta name="worklog-tags" content="RTX 5090,Local LLM,llama.cpp,llama-server,OpenCode,Unity,Qwen,Context Benchmark,Coding Agent" />
+  <meta name="worklog-summary" content="RTX 5090 로컬 AI Workstation에서 OpenCode와 Qwen3.8-27B를 이용해 실제 Unity 코드 수정과 EditMode 테스트까지 수행했다. 64K와 128K Context를 비교해 긴 Agent 작업에서 Context 크기가 Compaction과 작업 흐름에 미치는 영향을 확인하고, 다음 단계로 이동·공격처럼 여러 시스템이 연결되는 기능 구현을 준비했다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>RTX 5090 AI Workstation — 128K Context & Coding Agent Validation</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #111821;
+      --panel2: #151e29;
+      --text: #e8edf2;
+      --muted: #95a3b3;
+      --line: #263243;
+      --accent: #57a7ff;
+      --accent2: #7ce3b1;
+      --warn: #f7c66a;
+      --danger: #ff7b89;
+      --code: #0a0e13;
+      --max: 1180px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      line-height: 1.68;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    .wrap { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; }
+    header {
+      padding: 76px 0 54px;
+      border-bottom: 1px solid var(--line);
+      background: radial-gradient(circle at 80% 0%, rgba(87,167,255,.12), transparent 34%), var(--bg);
+    }
+    .eyebrow { color: var(--accent2); font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 16px; font-size: clamp(36px, 6vw, 72px); line-height: 1.06; letter-spacing: -.04em; }
+    .lead { max-width: 920px; color: #c0cad5; font-size: 18px; }
+    .hero-meta { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill { border: 1px solid var(--line); background: rgba(255,255,255,.025); padding: 8px 12px; border-radius: 999px; color: #cdd6df; font-size: 13px; }
+    nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(14px); background: rgba(11,15,20,.86); border-bottom: 1px solid var(--line); }
+    nav .wrap { display: flex; gap: 22px; overflow-x: auto; padding: 13px 0; }
+    nav a { color: #c7d0da; font-size: 14px; white-space: nowrap; }
+    nav a:hover { color: white; }
+    main { padding: 44px 0 90px; }
+    section { scroll-margin-top: 66px; margin: 58px 0 82px; }
+    h2 { font-size: 30px; margin: 0 0 16px; letter-spacing: -.025em; }
+    h3 { font-size: 20px; margin: 0 0 10px; }
+    p { margin: 10px 0; }
+    .muted { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(12,1fr); gap: 16px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+    .card.soft { background: var(--panel2); }
+    .span-4 { grid-column: span 4; } .span-6 { grid-column: span 6; } .span-8 { grid-column: span 8; } .span-12 { grid-column: span 12; }
+    .metric { font-size: 30px; font-weight: 800; letter-spacing: -.03em; }
+    .label { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .ok { color: var(--accent2); } .warn { color: var(--warn); }
+    pre { margin: 14px 0 0; padding: 16px 18px; overflow-x: auto; border: 1px solid #202b38; border-radius: 12px; background: var(--code); color: #dce5ee; font-size: 13px; line-height: 1.55; }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    .timeline { position: relative; margin-top: 28px; }
+    .timeline:before { content:""; position:absolute; left:18px; top:4px; bottom:4px; width:1px; background: var(--line); }
+    .step { position: relative; padding-left: 56px; margin: 0 0 22px; }
+    .dot { position:absolute; left: 7px; top: 3px; width: 23px; height: 23px; border-radius: 50%; background: var(--bg); border: 1px solid var(--accent); color: var(--accent); display:grid; place-items:center; font-size:11px; font-weight:800; }
+    .step .card { padding: 20px 22px; }
+    .step-head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:8px; }
+    .tag { font-size:12px; color:var(--accent2); border:1px solid rgba(124,227,177,.26); padding:3px 8px; border-radius:999px; white-space:nowrap; }
+    ul { margin: 8px 0 0 20px; padding: 0; }
+    li { margin: 4px 0; }
+    table { width:100%; border-collapse: collapse; overflow:hidden; border-radius:12px; }
+    th, td { text-align:left; padding: 12px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { color:#aab6c3; font-size:12px; text-transform:uppercase; letter-spacing:.05em; background:#0f151d; }
+    td { background:var(--panel); }
+    .arch { white-space: pre; font-family: "SFMono-Regular", Consolas, monospace; font-size:13px; line-height:1.5; overflow-x:auto; color:#d6e3ef; }
+    .roadmap .card { height:100%; }
+    .num { width:30px; height:30px; border-radius:9px; display:grid; place-items:center; background:rgba(87,167,255,.10); color:var(--accent); font-weight:800; margin-bottom:12px; }
+    .callout { border-left:3px solid var(--accent); padding:16px 18px; background:rgba(87,167,255,.055); border-radius:0 12px 12px 0; }
+    footer { border-top:1px solid var(--line); color:var(--muted); padding:26px 0 44px; font-size:13px; }
+    @media(max-width: 850px){ .span-4,.span-6,.span-8{grid-column:span 12;} .wrap{width:min(100% - 26px,var(--max));} h1{font-size:40px;} }
+    @media print { nav{display:none;} body{background:#fff;color:#111;} .card,td{background:#fff;} pre{background:#f5f5f5;color:#111;} header{background:#fff;} .muted,.label{color:#555;} section{break-inside:avoid;} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="eyebrow">AI Workstation</div>
+    <h1>128K Context와 실제 코드 수정 검증</h1>
+    <p class="lead">전날 구축한 RTX 5090 로컬 AI 추론 서버를 실제 개발 워크플로에 투입했다. 오늘의 목표는 “저장소를 읽을 수 있다”에서 한 단계 더 나아가, 로컬 코딩 에이전트가 작은 Unity 기능을 직접 수정하고 테스트까지 마칠 수 있는지 확인하고, 동시에 64K와 128K Context가 긴 Agent 작업에 어떤 차이를 만드는지 측정하는 것이었다.</p>
+    <div class="hero-meta">
+      <span class="pill">Server: Windows + RTX 5090 32GB</span>
+      <span class="pill">Client: MacBook Pro</span>
+      <span class="pill">Runtime: llama.cpp / llama-server</span>
+      <span class="pill">Model: Qwen3.8-27B Q4_K_M</span>
+      <span class="pill">Context: 64K → 128K</span>
+      <span class="pill">Agent: OpenCode</span>
+      <span class="pill">Target: Unity Edit / Test Loop</span>
+    </div>
+  </div>
+</header>
+<nav>
+  <div class="wrap">
+    <a href="#context">작업 배경</a><a href="#overview">현재 상태</a><a href="#timeline">구축 타임라인</a><a href="#architecture">아키텍처</a><a href="#roadmap">다음 작업</a><a href="#target">운영 방향</a>
+  </div>
+</nav>
+<main class="wrap">
+  <section id="context">
+    <h2>작업 배경</h2>
+    <p class="muted">전날에는 MacBook의 OpenCode가 LAN을 통해 Windows RTX 5090의 로컬 모델을 호출하고 실제 Unity 저장소를 읽는 단계까지 확인했다. 오늘은 로컬 Agent를 “분석 도구”에서 “실제 개발 도구”로 한 단계 확장하는 작업에 집중했다.</p>
+    <div class="grid" style="margin-top:20px">
+      <div class="card span-6">
+        <h3>오늘 확인하려는 것</h3>
+        <ul>
+          <li><b>코드 수정:</b> Agent가 기존 아키텍처를 읽고 최소 범위의 C# 변경을 직접 만들 수 있는가?</li>
+          <li><b>자동 검증:</b> 수정 후 Unity EditMode 테스트와 Git diff 검증까지 이어갈 수 있는가?</li>
+          <li><b>Context 규모:</b> 실제 repository 작업에서 64K가 충분한지, 128K가 실질적인 이점을 주는지 확인한다.</li>
+          <li><b>개발 환경 안정성:</b> Agent, Unity, Git이 모두 일반 사용자 권한에서 안전하게 동작하도록 권한 상태를 정리한다.</li>
+        </ul>
+      </div>
+      <div class="card span-6 soft">
+        <h3>작업 원칙</h3>
+        <p>Windows는 계속 추론 전용 서버 역할만 맡고, 프로젝트 파일·Unity·Git·Agent는 MacBook에 둔다. 로컬 모델은 HTTP API를 통해 필요한 코드와 도구 출력만 전달받는다.</p>
+        <div class="callout" style="margin-top:16px"><b>공개 기록 원칙:</b> 사설 네트워크 주소, 인증 키, 내부 프로젝트 식별 정보는 Work Log에서 제외하고 구조와 검증 결과만 기록한다.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="overview">
+    <h2>현재 상태</h2>
+    <p class="muted">Qwen3.8-27B Q4_K_M을 RTX 5090에 full GPU offload한 상태에서 64K와 128K Context를 실제 Unity 코드 작업으로 비교했다. 작은 기능 수준에서는 코드 수정 → 테스트 → diff 확인까지 로컬 Agent만으로 수행 가능함을 확인했다.</p>
+    <div class="grid" style="margin-top:20px">
+      <div class="card span-4"><div class="metric ok">128K</div><div class="label">현재 FAST Context</div></div>
+      <div class="card span-4"><div class="metric">약 28.6 GB</div><div class="label">128K 서버 VRAM 사용량</div></div>
+      <div class="card span-4"><div class="metric ok">Full GPU</div><div class="label">Qwen3.8-27B Q4_K_M</div></div>
+      <div class="card span-4"><div class="metric ok">Edit</div><div class="label">실제 C# 코드 수정 확인</div></div>
+      <div class="card span-4"><div class="metric ok">Test</div><div class="label">Unity EditMode 자동 검증 확인</div></div>
+      <div class="card span-4"><div class="metric ok">Clean</div><div class="label">Agent 권한 / Git 작업 환경</div></div>
+    </div>
+
+    <div class="card span-12" style="margin-top:16px; overflow-x:auto">
+      <table>
+        <thead><tr><th>항목</th><th>상태</th><th>오늘 확인한 내용</th></tr></thead>
+        <tbody>
+          <tr><td>OpenCode 실행 권한</td><td class="ok">정상화</td><td>일반 사용자 권한으로 Agent / Git / Unity 작업 수행</td></tr>
+          <tr><td>프로젝트 파일 소유권</td><td class="ok">정상화</td><td>비정상 소유 파일 제거 후 clean 상태 확인</td></tr>
+          <tr><td>64K Context</td><td class="ok">검증</td><td>작은 실제 코드 작업 완료. 긴 작업 중 Compaction 1회 관측</td></tr>
+          <tr><td>128K Context</td><td class="ok">검증</td><td>동일 수준 작업에서 Compaction 없이 완료, Context 여유 확보</td></tr>
+          <tr><td>실제 코드 수정</td><td class="ok">완료</td><td>게임 상태를 변경하지 않는 생산 가능 여부 조회 API 추가</td></tr>
+          <tr><td>Focused / Full EditMode Test</td><td class="ok">통과</td><td>새 동작과 기존 기능 회귀 여부 모두 자동 검증</td></tr>
+          <tr><td>복잡한 플레이어 명령 기능</td><td class="warn">다음 단계</td><td>입력·카메라·이동·타깃·공격이 함께 연결되는 기능으로 확장 예정</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="timeline">
+    <h2>구축 타임라인</h2>
+    <p class="muted">오늘은 인프라를 새로 만드는 것보다, 전날 만든 환경을 안전하게 정리하고 실제 개발 작업으로 검증하는 데 시간을 사용했다.</p>
+    <div class="timeline">
+      <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>Agent 실행 권한 정상화</h3><span class="tag">Stability</span></div><p><b>문제:</b> 초기 권한 오류를 우회하기 위해 관리자 권한으로 실행했던 Agent가 프로젝트와 사용자 설정 영역에 비정상 소유 파일을 남길 수 있다는 점을 확인했다.</p><p><b>조치:</b> Agent 설정 디렉터리와 프로젝트 파일의 소유권을 정상 사용자로 복구하고, 이후 Agent를 일반 권한으로만 실행하도록 고정했다.</p><p class="ok"><b>결과:</b> Unity, Git, OpenCode가 동일한 사용자 권한으로 동작하는 안전한 개발 기준점을 확보했다.</p></div></div>
+
+      <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>64K 실제 Coding Agent baseline</h3><span class="tag">Benchmark</span></div><p>동일한 기준 커밋에서 작은 Unity 기능 추가 작업을 수행했다. Agent는 문서와 관련 코드를 읽고, 기능을 추가하고, 테스트를 작성한 뒤 Unity EditMode suite와 <code>git diff --check</code>까지 실행했다.</p><p><b>관측:</b> 작업 자체는 성공했지만 긴 tool loop 안에서 Context Compaction이 한 번 발생했다.</p></div></div>
+
+      <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>작은 비파괴 Query API 추가</h3><span class="tag">Code</span></div><p>실제 프로젝트에 “현재 특정 항목을 생성할 수 있는가?”를 확인하는 읽기 전용 API를 추가했다. 기존 생성 규칙을 재사용하면서 자원 소비, 개체 생성, HUD 피드백 등 게임 상태 변경은 발생하지 않도록 구성했다.</p><p><b>의미:</b> 로컬 Agent가 단순 예제 파일이 아니라 기존 시스템의 규칙을 보존한 채 실제 C# 변경을 만들 수 있음을 확인했다.</p></div></div>
+
+      <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>Unity 테스트와 Git 정리까지 자동화</h3><span class="tag">Validation</span></div><p>새 기능에 대한 focused EditMode 테스트와 기존 전체 EditMode suite를 실행하고, Unity가 자동 생성한 부수 파일 변경을 식별해 최종 diff에서 제거했다.</p><p class="ok"><b>결론:</b> Read → Edit → Shell → Test → Diff Review로 이어지는 최소한의 Coding Agent loop가 실제 프로젝트에서 동작했다.</p></div></div>
+
+      <div class="step"><div class="dot">5</div><div class="card"><div class="step-head"><h3>128K Context로 확장</h3><span class="tag">Context</span></div><p><code>llama-server</code>와 Agent의 Context limit을 함께 128K로 올리고 동일 계열의 작업을 다시 수행했다.</p><div class="grid" style="margin-top:12px"><div class="span-4"><b>Context</b><br>131,072</div><div class="span-4"><b>VRAM</b><br>약 28.6GB</div><div class="span-4"><b>Shared GPU Memory</b><br>의미 있는 spill 없음</div></div></div></div>
+
+      <div class="step"><div class="dot">6</div><div class="card"><div class="step-head"><h3>64K vs 128K 결과 정리</h3><span class="tag">Result</span></div><p>작은 실제 기능 구현에서는 64K도 완료 가능했지만 Compaction이 발생했고, 128K에서는 같은 종류의 Agent loop를 더 넉넉한 Context로 유지할 수 있었다.</p><div class="callout" style="margin-top:14px"><b>현재 판단:</b> 짧은 수정은 64K로도 충분하지만, 여러 파일을 읽고 테스트·복구까지 이어지는 자율 작업에서는 128K가 더 안정적인 FAST profile 후보가 된다.</div></div></div>
+    </div>
+  </section>
+
+  <section id="architecture">
+    <h2>현재 아키텍처</h2>
+    <div class="grid">
+      <div class="card span-8"><div class="arch">┌────────────────────────────────────────┐
+│ MacBook Pro                            │
+│                                        │
+│ Unity / Rider / Git                    │
+│ OpenCode                               │
+│ Project Files                          │
+│                                        │
+│ Read / Edit / Shell / Test / Diff      │
+└────────────────────┬───────────────────┘
+                     │
+                     │ HTTP / Trusted LAN
+                     │ OpenAI-compatible API
+                     ▼
+┌────────────────────────────────────────┐
+│ RTX 5090 AI Workstation                │
+│                                        │
+│ llama-server                           │
+│ Qwen3.8-27B Q4_K_M                    │
+│ CUDA / Full GPU Offload                │
+│                                        │
+│ FAST Context: 128K                     │
+└────────────────────────────────────────┘</div></div>
+      <div class="card span-4 soft"><h3>오늘 확정한 원칙</h3><ul><li><b>Agent는 일반 사용자 권한</b>으로 실행</li><li><b>프로젝트는 Mac</b>에 유지</li><li><b>5090은 추론 전용</b>으로 사용</li><li>Context 설정은 서버와 Agent 양쪽을 동일하게 맞춤</li><li>실제 작업 평가는 답변 품질이 아니라 <b>수정·테스트·복구 완료 여부</b>로 판단</li></ul></div>
+    </div>
+  </section>
+
+  <section id="roadmap" class="roadmap">
+    <h2>다음 작업</h2>
+    <p class="muted">작은 비파괴 API 추가를 통과했으므로, 다음에는 여러 게임 시스템이 동시에 연결되는 조금 더 복잡한 작업으로 Agent의 실전 능력을 확인한다.</p>
+    <div class="grid" style="margin-top:22px">
+      <div class="card span-6"><div class="num">1</div><h3>플레이어 이동·공격 명령 구현</h3><p>화면에서 클릭한 위치로 플레이어 캐릭터를 이동시키고, 적을 클릭했을 때는 해당 대상을 공격하도록 만드는 기능을 구현한다.</p><p class="muted">입력 처리, UI 클릭 구분, 화면 좌표→월드 좌표 변환, 이동 상태, 공격 타깃 지정, 기존 자동 전투와의 분리까지 여러 시스템이 연결되는 작업이므로 오늘의 Query API보다 한 단계 복잡한 실전 테스트가 된다.</p></div>
+      <div class="card span-6"><div class="num">2</div><h3>64K / 128K 동일 작업 A/B</h3><p>동일 baseline과 동일 prompt에서 이동·공격 기능을 각각 실행해 Context 사용량, Compaction 횟수, 전체 작업 시간, tool call, 테스트 성공률과 과잉 탐색 여부를 비교한다.</p></div>
+      <div class="card span-6"><div class="num">3</div><h3>실제 Play Mode 검증 강화</h3><p>EditMode 테스트뿐 아니라 마우스 입력처럼 런타임에서만 드러나는 문제도 확인할 수 있도록 Play Mode 또는 실행 중 Editor 검증 흐름을 추가한다.</p></div>
+      <div class="card span-6"><div class="num">4</div><h3>80B DEEP profile 준비</h3><p>27B / 128K의 기준 데이터를 확보한 뒤 Qwen3-Coder-Next 80B 계열을 GPU + RAM offload로 실행해, 더 큰 모델이 복잡한 Unity 작업에서 탐색 효율과 설계 품질을 실제로 개선하는지 비교한다.</p></div>
+    </div>
+  </section>
+
+  <section id="target">
+    <h2>운영 방향</h2>
+    <div class="card"><div class="arch">                    MacBook Pro
+┌──────────────────────────────────────────┐
+│ Unity / Rider / Git / OpenCode           │
+│                                          │
+│ 작은 수정 / 반복 작업                    │
+│   → Local Qwen FAST                      │
+│                                          │
+│ 복잡한 기능 / 긴 Agent loop              │
+│   → 128K Context / DEEP model 비교       │
+└────────────────────┬─────────────────────┘
+                     │ LAN
+                     ▼
+┌──────────────────────────────────────────┐
+│ RTX 5090 AI Workstation                  │
+│                                          │
+│ FAST                                     │
+│   Qwen3.8-27B / 128K                    │
+│                                          │
+│ DEEP                                     │
+│   Larger coding model                    │
+│                                          │
+│ Benchmark-driven profile selection       │
+└──────────────────────────────────────────┘</div></div>
+    <div class="callout" style="margin-top:18px"><b>오늘의 결론:</b> 로컬 27B 모델은 실제 Unity 저장소에서 작은 코드 변경과 자동 테스트까지 수행할 수 있었다. 다음 단계는 플레이어 이동·공격처럼 여러 시스템을 동시에 이해해야 하는 작업을 통해 Context 크기와 모델 규모가 실제 개발 생산성에 미치는 차이를 측정하는 것이다.</div>
+  </section>
+</main>
+<footer><div class="wrap">RTX 5090 AI Workstation · Public Work Log · 2026-09-02</div></footer>
+</body>
+</html>
