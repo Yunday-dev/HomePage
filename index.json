@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-09-02T02:22:40+00:00",
+  "reports": [
+    {
+      "date": "2026-09-01",
+      "title": "RTX 5090 AI Workstation 구축 기록과 다음 로드맵",
+      "project": "AI Workstation",
+      "tags": [
+        "RTX 5090",
+        "Local LLM",
+        "llama.cpp",
+        "llama-server",
+        "OpenCode",
+        "Unity",
+        "Qwen"
+      ],
+      "summary": "Windows RTX 5090을 전용 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결해, 실제 코딩 에이전트가 저장소를 읽고 추론하는 단계까지 검증한 구축 기록이다.",
+      "file": "reports/2026/09/2026-09-01_ai-workstation-build-log.html",
+      "visibility": "public"
+    }
+  ]
+}
