@@ -7,7 +7,7 @@
   <meta name="worklog-title" content="RTX 5090으로 개인용 로컬 AI Workstation 구축 시작" />
   <meta name="worklog-project" content="AI Workstation" />
   <meta name="worklog-tags" content="RTX 5090,Local LLM,llama.cpp,llama-server,OpenCode,Unity,Qwen" />
-  <meta name="worklog-summary" content="Windows RTX 5090을 전용 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결해, 실제 코딩 에이전트가 저장소를 읽고 추론하는 단계까지 검증한 구축 기록이다." />
+  <meta name="worklog-summary" content="Windows RTX 5090을 전용 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결했다. llama.cpp CUDA 전환, Qwen3.8-27B 서빙, OpenCode custom provider 및 파일 기반 API Key 인증을 구성하고 실제 Unity 저장소 Read/Glob/Reasoning까지 검증한 구축 기록이다." />
   <meta name="worklog-visibility" content="public" />
   <title>RTX 5090 AI Workstation — 구축 기록 & 로드맵</title>
   <style>
@@ -140,7 +140,7 @@
 
   <section id="overview">
     <h2>현재 상태</h2>
-    <p class="muted">첫 번째 목표였던 “MacBook의 코딩 에이전트가 LAN을 통해 Windows 5090의 로컬 모델을 사용한다”는 구조는 동작 확인까지 완료됐다.</p>
+    <p class="muted">첫 번째 목표였던 “MacBook의 코딩 에이전트가 LAN을 통해 Windows 5090의 로컬 모델을 사용한다”는 구조는 동작 확인까지 완료됐다. OpenCode 인증도 shell 환경변수에 의존하지 않는 파일 기반 Secret으로 고정했다.</p>
     <div class="grid" style="margin-top:20px">
       <div class="card span-4"><div class="metric ok">68.9 tok/s</div><div class="label">Generation</div></div>
       <div class="card span-4"><div class="metric">189.6 tok/s</div><div class="label">Prompt processing</div></div>
@@ -159,6 +159,7 @@
           <tr><td>llama-server API</td><td class="ok">완료</td><td>/health, /v1/models 확인</td></tr>
           <tr><td>Mac → Windows LAN 연결</td><td class="ok">완료</td><td>고정 LAN IP + API Port</td></tr>
           <tr><td>OpenCode custom provider</td><td class="ok">완료</td><td>Qwen3.8 27B @ RTX 5090</td></tr>
+          <tr><td>OpenCode API Key 인증</td><td class="ok">완료</td><td><code>~/.secrets/llama-api-key</code> + <code>{file:...}</code> 방식으로 고정</td></tr>
           <tr><td>Unity repo Read / Glob</td><td class="ok">완료</td><td>실제 프로젝트 구조 분석 성공</td></tr>
           <tr><td>파일 생성/수정 Agent loop</td><td class="warn">미검증</td><td>Edit / Shell / Test 필요</td></tr>
           <tr><td>64K context</td><td class="warn">미검증</td><td>Compaction 감소 여부 확인 필요</td></tr>
@@ -211,7 +212,21 @@ CUDA0: NVIDIA GeForce RTX 5090</code></pre><p class="ok"><b>결과:</b> CUDA bac
     }
   }
 }</code></pre><p class="ok">OpenCode 하단에 <b>Qwen3.8 27B @ RTX 5090</b> 표시 확인.</p></div></div>
-      <div class="step"><div class="dot">16</div><div class="card"><h3>API Key 전달 문제 해결</h3><p>OpenCode에서 일시적으로 <code>Invalid API Key</code> 발생. Mac curl은 정상이라 서버/키/네트워크가 아니라 OpenCode credential 전달 범위 문제로 좁힘. 이후 정상 연결 완료.</p></div></div>
+      <div class="step"><div class="dot">16</div><div class="card"><h3>Invalid API Key 문제 해결 — 파일 기반 Secret으로 고정</h3><p><b>증상:</b> OpenCode에는 <code>Qwen3.8 27B @ RTX 5090</code>이 정상 표시됐지만 요청 시 <code>Invalid API Key</code>가 발생했다.</p><p><b>진단:</b> 같은 Mac 터미널에서 환경변수 <code>LOCAL_QWEN_API_KEY</code>를 사용해 <code>/v1/models</code>를 직접 호출하면 정상 응답을 받았다. 따라서 Windows 서버, LAN, llama-server의 API Key 자체는 정상이고, 문제는 OpenCode 프로세스가 credential을 전달받는 방식에 있다고 판단했다.</p><pre><code>curl http://&lt;AI-SERVER-LAN-IP&gt;:&lt;PORT&gt;/v1/models \
+  -H "Authorization: Bearer $LOCAL_QWEN_API_KEY"</code></pre><p><b>해결:</b> shell session의 환경변수에 의존하지 않도록 API Key를 Mac 사용자 전용 Secret 파일에 저장하고 권한을 제한했다.</p><pre><code>mkdir -p ~/.secrets
+printf %s "$LOCAL_QWEN_API_KEY" &gt; ~/.secrets/llama-api-key
+chmod 600 ~/.secrets/llama-api-key</code></pre><p>그 다음 <code>opencode.json</code>에서 OpenAI-compatible provider의 <code>apiKey</code>를 파일 참조 방식으로 변경했다.</p><pre><code>{
+  "model": "local5090/qwen3.8-27b",
+  "provider": {
+    "local5090": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "http://&lt;AI-SERVER-LAN-IP&gt;:&lt;PORT&gt;/v1",
+        "apiKey": "{file:~/.secrets/llama-api-key}"
+      }
+    }
+  }
+}</code></pre><p><b>왜 이 방식으로 바꿨나:</b> 새 터미널을 열 때마다 <code>export</code>할 필요가 없고, API Key를 프로젝트의 <code>opencode.json</code>이나 Git 저장소에 직접 기록하지 않으면서도 OpenCode가 동일한 credential을 안정적으로 읽을 수 있기 때문이다.</p><p class="ok"><b>결과:</b> 인증 오류가 사라졌고 OpenCode → llama-server → Qwen3.8-27B → RTX 5090 요청이 정상 처리됐다.</p></div></div>
       <div class="step"><div class="dot">17</div><div class="card"><h3>첫 실제 Coding Agent 테스트</h3><p>읽기 전용으로 Unity 프로젝트 구조 분석을 요청.</p><pre><code>Examine this Unity project. Do not modify any files.
 Identify the main gameplay architecture and list the five most important C# scripts...</code></pre><p>OpenCode/Qwen이 실제로 <code>Glob</code>, <code>Read</code>를 수행하고 GameManager, CombatDirector, Combatant, UnitProductionController, ResourceController 등을 분석.</p><p class="ok"><b>의미:</b> 단순 채팅이 아니라 실제 repository tool loop 동작 확인.</p></div></div>
       <div class="step"><div class="dot">18</div><div class="card"><h3>현재 병목 발견 — Context / Compaction</h3><p>여러 C# 파일을 읽는 과정에서 OpenCode <b>Compaction</b>이 발생. 32K context는 작은 분석에는 충분하지만 장기 코딩 Agent 작업에는 빠듯할 가능성이 있음.</p><p><b>다음 검증:</b> 32K baseline을 남긴 뒤 64K context에서 동일 작업을 비교.</p></div></div>
@@ -254,16 +269,15 @@ Identify the main gameplay architecture and list the five most important C# scri
 After implementation, inspect the diff and verify Unity compilation issues.</code></pre></div>
       <div class="card span-6"><div class="num">2</div><h3>32K baseline 기록</h3><p>총 작업 시간, tool call 수, compaction 횟수, prompt/generation tok/s, VRAM/RAM, 전력, 온도를 기록한다.</p></div>
       <div class="card span-6"><div class="num">3</div><h3>64K Context 테스트</h3><p><code>-c 65536</code>으로 변경하고 OpenCode context limit도 65536으로 맞춰 같은 작업을 반복한다. Compaction 감소와 VRAM 증가를 비교한다.</p></div>
-      <div class="card span-6"><div class="num">4</div><h3>OpenCode 인증 영구화</h3><p>새 shell마다 export하지 않아도 <code>opencode</code> 실행 즉시 local5090이 연결되도록 credential 저장 방식을 고정한다.</p></div>
-      <div class="card span-6"><div class="num">5</div><h3>llama-server 자동 실행</h3><p>Windows 부팅 → 모델 로딩 → API 준비까지 자동화. 초기에는 Task Scheduler가 가장 단순하다.</p></div>
-      <div class="card span-6"><div class="num">6</div><h3>서버 profile 스크립트</h3><p><code>start-fast.ps1</code>, <code>start-deep.ps1</code>, <code>start-lab.ps1</code> 형태로 모델·context·로그 설정을 분리.</p></div>
-      <div class="card span-6"><div class="num">7</div><h3>Qwen3-Coder-Next 80B 테스트</h3><p>RTX 5090 32GB + System RAM 64GB를 사용한 GPU/RAM offload. 27B보다 실제 개발 생산성이 좋아지는지 측정한다.</p></div>
-      <div class="card span-6"><div class="num">8</div><h3>27B vs 80B vs Codex A/B 테스트</h3><p>동일 Unity task로 속도, tool 정확도, compile/test 성공률, 과잉 수정 여부를 비교한다.</p></div>
-      <div class="card span-6"><div class="num">9</div><h3>Unity Test Runner 연결</h3><p>Agent가 수정 → EditMode test → 로그 분석 → 재수정 → 재테스트까지 수행하게 만든다.</p></div>
-      <div class="card span-6"><div class="num">10</div><h3>Repo 규칙 문서 정비</h3><p><code>AGENTS.md</code>, <code>ARCHITECTURE.md</code>, <code>PROGRESS.md</code>, <code>TESTING.md</code>로 긴 context보다 정확한 프로젝트 지침을 제공한다.</p></div>
-      <div class="card span-6"><div class="num">11</div><h3>5090 VRAM 추가 확보</h3><p>80B/긴 context 단계에서 Windows 화면 출력을 iGPU로 넘겨 RTX 5090을 compute 전용으로 만드는 것을 검토.</p></div>
-      <div class="card span-6"><div class="num">12</div><h3>RAM 128GB 업그레이드 판단</h3><p>80B 테스트 결과를 보고 결정. 27B GPU resident에는 불필요하지만 80B/125B/MoE offload에서는 가치가 커진다.</p></div>
-      <div class="card span-12"><div class="num">13</div><h3>AI 모델 전용 NVMe SSD 검토</h3><p>현재 C: SSD로 충분. 여러 quant/model을 장기 보유하기 시작하면 2TB NVMe를 AI 모델 전용으로 분리한다.</p></div>
+      <div class="card span-6"><div class="num">4</div><h3>llama-server 자동 실행</h3><p>Windows 부팅 → 모델 로딩 → API 준비까지 자동화. 초기에는 Task Scheduler가 가장 단순하다.</p></div>
+      <div class="card span-6"><div class="num">5</div><h3>서버 profile 스크립트</h3><p><code>start-fast.ps1</code>, <code>start-deep.ps1</code>, <code>start-lab.ps1</code> 형태로 모델·context·로그 설정을 분리.</p></div>
+      <div class="card span-6"><div class="num">6</div><h3>Qwen3-Coder-Next 80B 테스트</h3><p>RTX 5090 32GB + System RAM 64GB를 사용한 GPU/RAM offload. 27B보다 실제 개발 생산성이 좋아지는지 측정한다.</p></div>
+      <div class="card span-6"><div class="num">7</div><h3>27B vs 80B vs Codex A/B 테스트</h3><p>동일 Unity task로 속도, tool 정확도, compile/test 성공률, 과잉 수정 여부를 비교한다.</p></div>
+      <div class="card span-6"><div class="num">8</div><h3>Unity Test Runner 연결</h3><p>Agent가 수정 → EditMode test → 로그 분석 → 재수정 → 재테스트까지 수행하게 만든다.</p></div>
+      <div class="card span-6"><div class="num">9</div><h3>Repo 규칙 문서 정비</h3><p><code>AGENTS.md</code>, <code>ARCHITECTURE.md</code>, <code>PROGRESS.md</code>, <code>TESTING.md</code>로 긴 context보다 정확한 프로젝트 지침을 제공한다.</p></div>
+      <div class="card span-6"><div class="num">10</div><h3>5090 VRAM 추가 확보</h3><p>80B/긴 context 단계에서 Windows 화면 출력을 iGPU로 넘겨 RTX 5090을 compute 전용으로 만드는 것을 검토.</p></div>
+      <div class="card span-6"><div class="num">11</div><h3>RAM 128GB 업그레이드 판단</h3><p>80B 테스트 결과를 보고 결정. 27B GPU resident에는 불필요하지만 80B/125B/MoE offload에서는 가치가 커진다.</p></div>
+      <div class="card span-12"><div class="num">12</div><h3>AI 모델 전용 NVMe SSD 검토</h3><p>현재 C: SSD로 충분. 여러 quant/model을 장기 보유하기 시작하면 2TB NVMe를 AI 모델 전용으로 분리한다.</p></div>
     </div>
   </section>
 
