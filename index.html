@@ -765,7 +765,7 @@
         groups.forEach((group) => {
           const section = makeElement("section", "month-group");
           const headingText = group.date
-            ? `${enMonth.format(group.date)} · ${koMonth.format(group.date)}`
+            ? `${enMonth.format(group.date)}`
             : "Date Unknown";
           section.append(makeElement("h2", "month-heading", headingText));
           group.reports.forEach((report) => section.append(createCard(report)));
