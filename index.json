@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-03T14:41:58+00:00",
+  "generated_at": "2026-09-03T14:47:41+00:00",
   "reports": [
     {
       "date": "2026-09-03",
-      "title": "RTX 5090 로컬 LLM — 로컬 코딩 AI 에이전트로 Unity 게임 Hero 이동, 공격 기능 구현",
+      "title": "RTX 5090 로컬 LLM — 로컬 코딩 AI 에이전트로 Unity 게임 Hero의 이동과 공격 기능 구현",
       "project": "로컬 LLM",
       "tags": [
         "RTX 5090",
