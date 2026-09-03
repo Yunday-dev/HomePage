@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-09-01" />
+  <meta name="worklog-title" content="RTX 5090 AI Workstation — 로컬 코딩 AI 에이전트 개발 환경 구축" />
+  <meta name="worklog-project" content="AI Workstation" />
+  <meta name="worklog-tags" content="RTX 5090,Local LLM,llama.cpp,llama-server,OpenCode,Unity,Qwen,Qwen3.8-27B,Local Coding AI Agent,CUDA" />
+  <meta name="worklog-summary" content="Windows RTX 5090을 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결해 로컬 코딩 AI 에이전트 개발 환경을 구축했다. llama.cpp CUDA 환경, Qwen3.8-27B 서빙, OpenCode 연결과 인증을 구성하고 실제 Unity 저장소를 읽고 분석하는 단계까지 검증했다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>RTX 5090 AI Workstation — 로컬 코딩 AI 에이전트 개발 환경 구축</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #111821;
+      --panel2: #151e29;
+      --text: #e8edf2;
+      --muted: #95a3b3;
+      --line: #263243;
+      --accent: #57a7ff;
+      --accent2: #7ce3b1;
+      --warn: #f7c66a;
+      --code: #0a0e13;
+      --max: 1180px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      line-height: 1.68;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    .wrap { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; }
+    header {
+      padding: 76px 0 54px;
+      border-bottom: 1px solid var(--line);
+      background:
+        radial-gradient(circle at 82% 0%, rgba(87,167,255,.13), transparent 34%),
+        radial-gradient(circle at 8% 20%, rgba(124,227,177,.055), transparent 28%),
+        var(--bg);
+    }
+    header .wrap { position: relative; }
+
+    .brand-home {
+      position: absolute;
+      top: -48px;
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      line-height: 0;
+      border-radius: 8px;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 2;
+    }
+    .brand-home:hover { opacity: .78; transform: translateY(-1px); }
+    .brand-home:focus-visible {
+      outline: 2px solid var(--accent2);
+      outline-offset: 5px;
+    }
+    .brand-home img {
+      display: block;
+      width: 236px;
+      height: auto;
+    }
+
+    .eyebrow {
+      color: var(--accent2);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 10px 0 16px;
+      font-size: clamp(36px, 6vw, 72px);
+      line-height: 1.06;
+      letter-spacing: -.04em;
+    }
+    .lead { max-width: 930px; color: #c0cad5; font-size: 18px; }
+    .hero-meta { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.025);
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: #cdd6df;
+      font-size: 13px;
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(14px);
+      background: rgba(11,15,20,.86);
+      border-bottom: 1px solid var(--line);
+    }
+    nav .wrap { display: flex; gap: 22px; overflow-x: auto; padding: 13px 0; }
+    nav a { color: #c7d0da; font-size: 14px; white-space: nowrap; }
+    nav a:hover { color: white; }
+
+    main { padding: 44px 0 90px; }
+    section { scroll-margin-top: 66px; margin: 58px 0 82px; }
+    h2 { font-size: 30px; margin: 0 0 16px; letter-spacing: -.025em; }
+    h3 { font-size: 20px; margin: 0 0 10px; }
+    p { margin: 10px 0; }
+    .muted { color: var(--muted); }
+
+    .grid { display: grid; grid-template-columns: repeat(12,1fr); gap: 16px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px;
+    }
+    .card.soft { background: var(--panel2); }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .metric { font-size: 30px; font-weight: 800; letter-spacing: -.03em; }
+    .label { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .ok { color: var(--accent2); }
+    .warn { color: var(--warn); }
+
+    pre {
+      margin: 14px 0 0;
+      padding: 16px 18px;
+      overflow-x: auto;
+      border: 1px solid #202b38;
+      border-radius: 12px;
+      background: var(--code);
+      color: #dce5ee;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+
+    .timeline { position: relative; margin-top: 28px; }
+    .timeline:before {
+      content:"";
+      position:absolute;
+      left:18px;
+      top:4px;
+      bottom:4px;
+      width:1px;
+      background: var(--line);
+    }
+    .step { position: relative; padding-left: 56px; margin: 0 0 22px; }
+    .dot {
+      position:absolute;
+      left: 7px;
+      top: 3px;
+      width: 23px;
+      height: 23px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      display:grid;
+      place-items:center;
+      font-size:11px;
+      font-weight:800;
+    }
+    .step .card { padding: 20px 22px; }
+    .step-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom:8px;
+    }
+    .tag {
+      font-size:12px;
+      color:var(--accent2);
+      border:1px solid rgba(124,227,177,.26);
+      padding:3px 8px;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+
+    ul { margin: 8px 0 0 20px; padding: 0; }
+    li { margin: 4px 0; }
+
+    table { width:100%; border-collapse: collapse; overflow:hidden; border-radius:12px; }
+    th, td {
+      text-align:left;
+      padding: 12px 14px;
+      border-bottom:1px solid var(--line);
+      vertical-align:top;
+    }
+    th {
+      color:#aab6c3;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      background:#0f151d;
+    }
+    td { background:var(--panel); }
+
+    .arch {
+      white-space: pre;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size:13px;
+      line-height:1.5;
+      overflow-x:auto;
+      color:#d6e3ef;
+    }
+    .num {
+      width:30px;
+      height:30px;
+      border-radius:9px;
+      display:grid;
+      place-items:center;
+      background:rgba(87,167,255,.10);
+      color:var(--accent);
+      font-weight:800;
+      margin-bottom:12px;
+    }
+    .callout {
+      border-left:3px solid var(--accent);
+      padding:16px 18px;
+      background:rgba(87,167,255,.055);
+      border-radius:0 12px 12px 0;
+    }
+    footer {
+      border-top:1px solid var(--line);
+      color:var(--muted);
+      padding:26px 0 44px;
+      font-size:13px;
+    }
+
+    @media(max-width: 850px) { .brand-home img { width: 190px; }
+      .span-4,.span-6,.span-8 { grid-column:span 12; }
+      .wrap { width:min(100% - 26px,var(--max)); }
+      h1 { font-size:40px; }
+    }
+    @media print {
+      nav { display:none; }
+      body { background:#fff; color:#111; }
+      .card,td { background:#fff; }
+      pre { background:#f5f5f5; color:#111; }
+      header { background:#fff; }
+      .muted,.label { color:#555; }
+      section { break-inside:avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="https://yesitworks.co.kr/" aria-label="YES IT WORKS 홈페이지로 이동">
+      <img src="data:image/png;base64,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" alt="YES IT WORKS" />
+    </a>
+    <div class="eyebrow">AI Workstation · Work Log</div>
+    <h1>RTX 5090으로<br>로컬 코딩 AI 에이전트 개발 환경 구축</h1>
+    <p class="lead">
+      Windows 데스크탑의 RTX 5090을 로컬 LLM 추론 서버로 사용하고,
+      실제 Unity 개발은 MacBook Pro에서 계속 진행하는 개인용 AI Workstation을 구축했다.
+      목표는 단순히 로컬 모델을 실행하는 것이 아니라,
+      <b>Mac의 개발 도구와 프로젝트를 유지한 채 OpenCode가 Windows의 GPU 추론을 사용할 수 있는 구조</b>를 만드는 것이었다.
+      이날은 Qwen3.8-27B를 CUDA로 서빙하고 OpenCode를 연결한 뒤,
+      실제 Unity 저장소를 읽고 분석하는 단계까지 확인했다.
+    </p>
+
+    <div class="hero-meta">
+      <span class="pill">Server · Windows + RTX 5090 32GB</span>
+      <span class="pill">Client · MacBook Pro</span>
+      <span class="pill">Runtime · llama.cpp / llama-server</span>
+      <span class="pill">Model · Qwen3.8-27B Q4_K_M</span>
+      <span class="pill">Agent · OpenCode</span>
+      <span class="pill">Target · Unity Development</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <a href="#goal">작업 목표</a>
+    <a href="#result">작업 결과</a>
+    <a href="#process">작업 과정</a>
+    <a href="#next">다음 과정</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section id="goal">
+    <h2>작업 목표</h2>
+    <p class="muted">
+      이번 작업은 RTX 5090을 단순한 로컬 LLM 실행 장치가 아니라
+      Unity 개발을 보조하는 <b>로컬 코딩 AI 에이전트용 추론 서버</b>로 구성하는 것이 핵심이다.
+    </p>
+
+    <div class="grid" style="margin-top:20px">
+      <div class="card span-8">
+        <h3>개발 환경과 추론 환경을 분리한다</h3>
+        <p>
+          Unity 프로젝트, Rider, Git, OpenCode는 기존처럼 MacBook Pro에서 사용한다.
+          Windows PC는 RTX 5090에 모델을 적재하고 <code>llama-server</code>를 통해 추론 API만 제공한다.
+        </p>
+        <div class="callout" style="margin-top:16px">
+          <b>핵심 구조:</b>
+          MacBook은 코드와 개발 도구를 담당하고,
+          Windows RTX 5090은 모델 추론을 담당한다.
+          프로젝트 파일을 서버로 옮기지 않고 LAN API로 두 환경을 연결한다.
+        </div>
+      </div>
+
+      <div class="card span-4 soft">
+        <h3>확인하고 싶은 것</h3>
+        <p><b>01 · 성능</b><br><span class="muted">RTX 5090 한 장으로 실사용 가능한 코딩 모델을 충분히 빠르게 구동할 수 있는가?</span></p>
+        <p><b>02 · 연결</b><br><span class="muted">Mac의 OpenCode가 Windows의 로컬 모델을 자연스럽게 호출할 수 있는가?</span></p>
+        <p><b>03 · 에이전트</b><br><span class="muted">로컬 모델이 실제 Unity 저장소를 읽고 프로젝트 구조를 이해할 수 있는가?</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="result">
+    <h2>작업 결과</h2>
+    <p class="muted">
+      RTX 5090에서 Qwen3.8-27B를 CUDA로 구동하고,
+      MacBook Pro의 OpenCode에서 LAN을 통해 호출하는 구조까지 완성했다.
+      실제 Unity 프로젝트를 대상으로 파일 탐색과 코드 분석도 정상적으로 수행했다.
+    </p>
+
+    <div class="grid" style="margin-top:20px">
+      <div class="card span-4">
+        <div class="metric ok">68.9 tok/s</div>
+        <div class="label">Generation</div>
+      </div>
+      <div class="card span-4">
+        <div class="metric">189.6 tok/s</div>
+        <div class="label">Prompt processing</div>
+      </div>
+      <div class="card span-4">
+        <div class="metric">약 22.2GB</div>
+        <div class="label">Qwen3.8-27B 실행 시 VRAM</div>
+      </div>
+    </div>
+
+    <div class="card span-12" style="margin-top:16px; overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>검증 항목</th>
+            <th>결과</th>
+            <th>의미</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>RTX 5090 CUDA backend</td>
+            <td class="ok">완료</td>
+            <td>llama.cpp에서 RTX 5090을 CUDA 장치로 정상 인식</td>
+          </tr>
+          <tr>
+            <td>Qwen3.8-27B GPU 적재</td>
+            <td class="ok">완료</td>
+            <td>Q4_K_M 모델을 GPU에 적재해 정상 추론</td>
+          </tr>
+          <tr>
+            <td>llama-server API</td>
+            <td class="ok">완료</td>
+            <td>Windows에서 OpenAI-compatible API 제공</td>
+          </tr>
+          <tr>
+            <td>MacBook → Windows 연결</td>
+            <td class="ok">완료</td>
+            <td>LAN을 통해 서버 health와 모델 호출 확인</td>
+          </tr>
+          <tr>
+            <td>OpenCode 연결</td>
+            <td class="ok">완료</td>
+            <td>Custom provider로 Qwen3.8-27B 호출</td>
+          </tr>
+          <tr>
+            <td>Unity 저장소 Read / Glob</td>
+            <td class="ok">완료</td>
+            <td>실제 프로젝트 파일 탐색과 주요 C# 코드 분석 성공</td>
+          </tr>
+          <tr>
+            <td>코드 수정 / 테스트 실행</td>
+            <td class="warn">다음 단계</td>
+            <td>이날은 저장소 분석까지 확인하고 실제 수정 작업은 다음 검증으로 남김</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:34px">
+      <h3 style="font-size:24px; margin-bottom:14px;">현재 아키텍처</h3>
+      <div class="grid">
+        <div class="card span-8">
+          <div class="arch">┌─────────────────────────────────────────┐
+│ MacBook Pro                             │
+│                                         │
+│ Unity / Rider / Git                     │
+│ OpenCode                                │
+│ Unity Project                           │
+│                                         │
+│ Repository Read / Edit / Test           │
+└────────────────────┬────────────────────┘
+                     │
+                     │ HTTP / LAN
+                     │ OpenAI-compatible API
+                     ▼
+┌─────────────────────────────────────────┐
+│ Windows RTX 5090 AI Workstation         │
+│                                         │
+│ llama-server                            │
+│ Qwen3.8-27B Q4_K_M                      │
+│ CUDA                                    │
+│ RTX 5090 32GB                           │
+└─────────────────────────────────────────┘</div>
+        </div>
+
+        <div class="card span-4 soft">
+          <h3>역할 분리</h3>
+          <ul>
+            <li><b>MacBook:</b> Unity 프로젝트와 개발 도구</li>
+            <li><b>Windows:</b> 로컬 LLM 추론</li>
+            <li><b>연결:</b> LAN 기반 API 호출</li>
+            <li><b>모델:</b> Windows SSD와 RTX 5090 VRAM에 유지</li>
+            <li><b>코드:</b> OpenCode가 필요한 내용을 요청 Context로 전달</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:18px">
+      <b>이날의 결론:</b>
+      로컬 모델 자체의 실행뿐 아니라
+      <b>MacBook의 실제 개발 환경과 Windows RTX 5090의 추론 환경을 하나의 코딩 에이전트 워크플로로 연결하는 데 성공했다.</b>
+      다음 검증부터는 “읽고 이해할 수 있는가”에서 “실제로 수정하고 테스트까지 끝낼 수 있는가”로 넘어간다.
+    </div>
+  </section>
+
+  <section id="process">
+    <h2>작업 과정</h2>
+    <p class="muted">
+      최종 구조를 바로 만든 것이 아니라,
+      런타임 선택부터 CUDA 전환, 모델 서빙, 네트워크 연결, OpenCode 인증까지 단계적으로 문제를 분리하며 구성했다.
+    </p>
+
+    <div class="timeline">
+
+      <div class="step">
+        <div class="dot">1</div>
+        <div class="card">
+          <div class="step-head">
+            <h3>로컬 LLM 런타임 선택</h3>
+            <span class="tag">Runtime</span>
+          </div>
+          <p>
+            LM Studio, Ollama, llama.cpp를 비교한 뒤
+            RTX 5090의 GPU layer, Context, KV cache와 향후 offload 설정을 직접 제어하기 쉬운
+            <b>llama.cpp</b>를 메인 런타임으로 선택했다.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="dot">2</div>
+        <div class="card">
+          <div class="step-head">
+            <h3>Vulkan 설치본에서 CUDA 빌드로 전환</h3>
+            <span class="tag">CUDA</span>
+          </div>
+          <p>
+            처음 설치한 llama.cpp가 Vulkan backend로 동작하는 것을 확인했다.
+            NVIDIA GPU 전용 추론 서버라는 목적에 맞춰 Vulkan 설치본을 제거하고
+            Windows x64 CUDA 빌드를 직접 설치했다.
+          </p>
+          <pre><code>.\llama-cli.exe --list-devices
+CUDA0: NVIDIA GeForce RTX 5090</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="dot">3</div>
+        <div class="card">
+          <div class="step-head">
+            <h3>드라이버와 CUDA 실행 환경 정리</h3>
+            <span class="tag">Driver</span>
+          </div>
+          <p>
+            NVIDIA 드라이버를 업데이트한 뒤
+            <code>NVIDIA-SMI 616.56</code>, <code>CUDA UMD 13.4</code> 환경에서
+            RTX 5090 CUDA backend가 정상 동작하는 것을 확인했다.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="dot">4</div>
+        <div class="card">
+          <div class="step-head">
+            <h3>Qwen3.8-27B Q4_K_M 적재와 성능 확인</h3>
+            <span class="tag">Model</span>
+          </div>
+          <p>
+            첫 로컬 코딩 모델은 약 19GB 규모의 <b>Qwen3.8-27B Q4_K_M</b>으로 선택했다.
+            RTX 5090 32GB 안에 모델을 적재하면서 Context와 런타임 버퍼를 위한 여유를 남길 수 있는 크기였다.
+          </p>
+          <div class="grid" style="margin-top:14px">
+            <div class="span-4"><b>Prompt</b><br>189.6 tok/s</div>
+            <div class="span-4"><b>Generation</b><br>68.9 tok/s</div>
+            <div class="span-4"><b>VRAM</b><br>약 22.2GB</div>
+          </div>
+          <p class="muted">측정 당시 GPU 온도는 약 55°C, 전력은 약 268W였다.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="dot">5</div>
+        <div class="card">
+          <div class="step-head">
+            <h3>llama-server로 API 제공</h3>
+            <span class="tag">Server</span>
+          </div>
+          <p>
+            CLI에서 모델 성능을 확인한 뒤,
+            MacBook의 OpenCode가 호출할 수 있도록 <code>llama-server</code>로 전환했다.
+            API Key를 사용하고 외부에는 필요한 포트만 열어 OpenAI-compatible API를 제공했다.
+          </p>
+          <pre><code>.\llama-server.exe `
+  -hf ggml-org/Qwen3.8-27B-GGUF:Q4_K_M `
+  --no-mmproj `
+  -ngl all `
+  -c 32768 `
+  -np 1 `
+  -fa on `
+  --alias qwen3.8-27b `
+  --host 0.0.0.0 `
+  --port &lt;PORT&gt; `
+  --api-key &lt;API_KEY&gt;</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="dot">6</div>
+        <div class="card">
+          <div class="step-head">
+            <h3>MacBook과 Windows 서버 연결</h3>
+            <span class="tag">Network</span>
+          </div>
+          <p>
+            Windows의 네트워크를 신뢰 LAN 환경에 맞게 구성하고 서버 주소를 고정했다.
+            이후 MacBook에서 <code>/health</code>와 모델 API를 호출해
+            두 장비 사이의 LAN 연결이 정상인지 확인했다.
+          </p>
+          <pre><code>curl http://&lt;AI-SERVER-LAN-IP&gt;:&lt;PORT&gt;/health
+# {"status":"ok"}</code></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="dot">7</div>
+        <div class="card">
+          <div class="step-head">
+            <h3>OpenCode Custom Provider 연결</h3>
+            <span class="tag">Agent</span>
+          </div>
+          <p>
+            MacBook에 OpenCode를 설치하고
+            OpenAI-compatible provider를 통해 Windows의 Qwen3.8-27B를 기본 모델로 연결했다.
+            초기 설정 스키마 차이와 권한 문제를 정리한 뒤 모델 인식까지 완료했다.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="dot">8</div>
+        <div class="card">
+          <div class="step-head">
+            <h3>API Key 전달 방식 안정화</h3>
+            <span class="tag">Auth</span>
+          </div>
+          <p>
+            OpenCode에서 API Key가 안정적으로 전달되지 않는 문제가 있었고,
+            서버·네트워크 문제가 아니라 클라이언트의 credential 전달 방식으로 범위를 좁혔다.
+            최종적으로 API Key를 Mac 사용자 전용 Secret 파일에 보관하고 OpenCode가 파일을 참조하도록 구성했다.
+          </p>
+          <pre><code>~/.secrets/llama-api-key
+chmod 600 ~/.secrets/llama-api-key</code></pre>
+          <p class="muted">실제 키 값과 내부 서버 주소는 공개 Work Log에 기록하지 않는다.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="dot">9</div>
+        <div class="card">
+          <div class="step-head">
+            <h3>실제 Unity 저장소 분석</h3>
+            <span class="tag">Repository</span>
+          </div>
+          <p>
+            마지막으로 샘플 코드가 아니라 실제 Unity 프로젝트를 대상으로
+            파일을 수정하지 않고 구조를 분석하도록 요청했다.
+            OpenCode/Qwen은 <code>Glob</code>과 <code>Read</code>를 사용해
+            주요 C# 파일을 찾아 읽고 게임플레이 구조를 설명했다.
+          </p>
+          <pre><code>Examine this Unity project. Do not modify any files.
+Identify the main gameplay architecture and the most important C# scripts.</code></pre>
+          <p class="ok"><b>결과:</b> 로컬 코딩 AI 에이전트가 실제 Repository를 탐색하고 관련 코드를 선택해 읽는 단계까지 정상 동작했다.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="dot">10</div>
+        <div class="card">
+          <div class="step-head">
+            <h3>32K Context에서 Compaction 확인</h3>
+            <span class="tag">Observation</span>
+          </div>
+          <p>
+            여러 코드 파일을 연속해서 읽는 과정에서 OpenCode의 Compaction이 발생했다.
+            따라서 32K Context는 기본적인 저장소 분석에는 사용할 수 있지만,
+            장시간 코딩 에이전트 작업에서는 Context 여유를 더 확보할 필요가 있다는 다음 검증 과제를 얻었다.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="next">
+    <h2>다음 과정</h2>
+    <p class="muted">
+      인프라 구축과 Repository 분석은 완료했다.
+      다음부터는 로컬 코딩 AI 에이전트가 실제 개발 작업을 어디까지 끝낼 수 있는지 검증한다.
+    </p>
+
+    <div class="grid" style="margin-top:22px">
+      <div class="card span-4">
+        <div class="num">1</div>
+        <h3>기존 프로젝트에 실제 기능 추가</h3>
+        <p>
+          샘플 파일 생성이 아니라 기존 Unity 코드베이스를 읽고,
+          현재 규칙을 재사용하는 작은 기능을 직접 구현하게 한다.
+        </p>
+      </div>
+
+      <div class="card span-4">
+        <div class="num">2</div>
+        <h3>수정 → 테스트 → Diff 검증</h3>
+        <p>
+          파일 수정에서 끝내지 않고 Unity 테스트 실행,
+          오류 분석과 재수정, <code>git diff</code> 검토까지 하나의 작업 루프로 수행할 수 있는지 확인한다.
+        </p>
+      </div>
+
+      <div class="card span-4">
+        <div class="num">3</div>
+        <h3>Context 확장 효과 측정</h3>
+        <p>
+          32K에서 확인된 Compaction을 기준점으로 삼아 더 큰 Context에서
+          작업 지속성, VRAM 사용량, Agent 작업 여유가 어떻게 달라지는지 별도 벤치마크한다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">RTX 5090 AI Workstation · Public Work Log · 2026-09-01</div>
+</footer>
+
+</body>
+</html>

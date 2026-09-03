@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-09-03" />
+  <meta name="worklog-title" content="로컬 코딩 AI 에이전트로 Hero 수동 이동·공격 기능 구현" />
+  <meta name="worklog-project" content="AI Workstation" />
+  <meta name="worklog-tags" content="RTX 5090,Local LLM,OpenCode,Unity,Qwen3.8-27B,Local Coding AI Agent,128K Context,Hero Command,Input System,Play Mode,Compaction,Task Timing" />
+  <meta name="worklog-summary" content="Qwen3.8-27B 기반 로컬 코딩 AI 에이전트를 실제 Unity 프로젝트에 투입해 Hero의 수동 이동·공격 기능을 구현했다. 조사와 구현 과정에서 두 차례 사용자 개입이 필요했고, 자동 테스트 272/272 통과 후 실제 Play Mode에서 입력 시스템 오류를 발견해 수정했다. 최종적으로 빈 공간 클릭 이동과 적 클릭 공격이 정상 동작했으며, 전체 작업시간은 43분 20초, Compaction은 2회 총 3분 33초였다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>로컬 코딩 AI 에이전트로 Hero 수동 이동·공격 기능 구현</title>
+  <style>
+    :root{
+      --bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;
+      --muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;
+      --warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.68}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{
+      padding:76px 0 54px;border-bottom:1px solid var(--line);
+      background:
+        radial-gradient(circle at 82% 0%,rgba(87,167,255,.13),transparent 34%),
+        radial-gradient(circle at 10% 20%,rgba(124,227,177,.055),transparent 28%),
+        var(--bg)
+    }
+
+    header .wrap{position:relative}
+    .brand-home{
+      position:absolute;
+      top:-48px;
+      left:0;
+      display:inline-flex;
+      align-items:center;
+      line-height:0;
+      border-radius:8px;
+      transition:opacity .18s ease,transform .18s ease;
+      z-index:2
+    }
+    .brand-home:hover{opacity:.78;transform:translateY(-1px)}
+    .brand-home:focus-visible{outline:2px solid var(--accent2);outline-offset:5px}
+    .brand-home img{display:block;width:236px;height:auto}
+
+    .eyebrow{color:var(--accent2);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,6vw,72px);line-height:1.06;letter-spacing:-.04em}
+    .lead{max-width:960px;color:#c0cad5;font-size:18px}
+    .hero-meta{margin-top:30px;display:flex;flex-wrap:wrap;gap:10px}
+    .pill{border:1px solid var(--line);background:rgba(255,255,255,.025);padding:8px 12px;border-radius:999px;color:#cdd6df;font-size:13px}
+    nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(14px);background:rgba(11,15,20,.86);border-bottom:1px solid var(--line)}
+    nav .wrap{display:flex;gap:22px;overflow-x:auto;padding:13px 0}
+    nav a{color:#c7d0da;font-size:14px;white-space:nowrap;text-decoration:none}
+    nav a:hover{color:white}
+    main{padding:44px 0 90px}
+    section{scroll-margin-top:66px;margin:58px 0 82px}
+    h2{font-size:30px;margin:0 0 16px;letter-spacing:-.025em}
+    h3{font-size:20px;margin:0 0 10px}
+    p{margin:10px 0}
+    .muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
+    .card.soft{background:var(--panel2)}
+    .span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .metric{font-size:30px;font-weight:800;letter-spacing:-.03em}
+    .label{color:var(--muted);font-size:13px;margin-top:2px}
+    .ok{color:var(--accent2)}.warn{color:var(--warn)}.bad{color:var(--danger)}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+    table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px}
+    th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+    th{color:#aab6c3;font-size:12px;text-transform:uppercase;letter-spacing:.05em;background:#0f151d}
+    td{background:var(--panel)}
+    ul{margin:8px 0 0 20px;padding:0}
+    li{margin:4px 0}
+    .timeline{position:relative;margin-top:28px}
+    .timeline:before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:var(--line)}
+    .step{position:relative;padding-left:56px;margin:0 0 22px}
+    .dot{position:absolute;left:7px;top:3px;width:23px;height:23px;border-radius:50%;background:var(--bg);border:1px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-size:11px;font-weight:800}
+    .step .card{padding:20px 22px}
+    .step-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:8px}
+    .tag{font-size:12px;color:var(--accent2);border:1px solid rgba(124,227,177,.26);padding:3px 8px;border-radius:999px;white-space:nowrap}
+    .callout{border-left:3px solid var(--accent);padding:16px 18px;background:rgba(87,167,255,.055);border-radius:0 12px 12px 0}
+    .callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.055)}
+    .num{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(87,167,255,.10);color:var(--accent);font-weight:800;margin-bottom:12px}
+    footer{border-top:1px solid var(--line);color:var(--muted);padding:26px 0 44px;font-size:13px}
+    @media(max-width:850px){
+      .brand-home img{width:190px}
+      .span-3,.span-4,.span-6,.span-8{grid-column:span 12}
+      .wrap{width:min(100% - 26px,var(--max))}
+      h1{font-size:40px}
+    }
+    @media print{
+      nav{display:none}
+      body{background:#fff;color:#111}
+      .card,td{background:#fff}
+      pre{background:#f5f5f5;color:#111}
+      header{background:#fff}
+      .muted,.label{color:#555}
+      section{break-inside:avoid}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="https://yesitworks.co.kr/" aria-label="YES IT WORKS 홈페이지로 이동">
+      <img src="data:image/png;base64,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" alt="YES IT WORKS" />
+    </a>
+    <div class="eyebrow">AI Workstation</div>
+    <h1>로컬 코딩 AI 에이전트로<br>Hero 수동 이동·공격 기능 구현</h1>
+    <p class="lead">RTX 5090에서 구동하는 Qwen3.8-27B 기반 로컬 코딩 AI 에이전트를 실제 Unity 프로젝트에 투입해, 플레이어가 Hero를 직접 이동시키고 공격 대상을 지정할 수 있는 기능을 구현했다. 단순 코드 작성에 그치지 않고 기존 전투 흐름 분석, 기능 구현, 자동 테스트, 실제 Play Mode 확인, 런타임 오류 수정까지 하나의 작업 흐름으로 진행했다.</p>
+    <div class="hero-meta">
+      <span class="pill">RTX 5090 Local AI</span>
+      <span class="pill">Qwen3.8-27B Q4_K_M</span>
+      <span class="pill">Context: 128K</span>
+      <span class="pill">Agent: OpenCode</span>
+      <span class="pill">Unity</span>
+      <span class="pill">Total Elapsed: 43m 20s</span>
+      <span class="pill">Compaction: 2x</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <a href="#goal">작업 목표</a>
+    <a href="#progress">작업 과정</a>
+    <a href="#timing">작업 시간</a>
+    <a href="#runtime">실제 Play Mode 검증</a>
+    <a href="#observations">Agent 관찰</a>
+    <a href="#result">최종 결과</a>
+    <a href="#next">다음 작업</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">기존에는 Hero도 일반 전투 유닛처럼 자동으로 적을 찾고 전투했다. 이번 작업에서는 Hero만 플레이어의 직접 명령을 받도록 변경하는 것을 목표로 했다.</p>
+
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>플레이어가 직접 Hero를 지휘하도록 변경</h3>
+      <ul>
+        <li>전장의 빈 공간을 클릭하면 Hero가 해당 위치로 이동한다.</li>
+        <li>적을 클릭하면 해당 적을 공격 대상으로 지정한다.</li>
+        <li>지정한 적이 사라져도 Hero가 임의로 다른 적을 찾아 공격하지 않는다.</li>
+        <li>일반 아군 유닛은 기존 자동 전투 방식을 그대로 유지한다.</li>
+        <li>UI를 클릭했을 때는 전장 명령이 발생하지 않는다.</li>
+      </ul>
+    </div>
+
+    <div class="card span-4 soft">
+      <h3>작업 범위</h3>
+      <p>입력 처리부터 이동, 타깃 지정, 기존 전투 로직 연결, UI 클릭 구분까지 여러 시스템이 함께 연결되는 실제 게임 기능을 대상으로 했다.</p>
+      <p class="muted">기존 전투 시스템을 최대한 유지하면서 Hero 제어 방식만 분리하는 것이 중요했다.</p>
+    </div>
+  </div>
+</section>
+
+<section id="progress">
+  <h2>작업 과정</h2>
+  <p class="muted">로컬 코딩 AI 에이전트가 프로젝트 문서와 관련 코드를 분석한 뒤 구현과 테스트를 진행했다. 전체 과정에서 두 차례 사용자 판단이 필요했다.</p>
+
+  <div class="timeline">
+
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="card">
+        <div class="step-head">
+          <h3>기존 전투 구조와 테스트 영향 범위 분석</h3>
+          <span class="tag">Analysis</span>
+        </div>
+        <p>Hero의 자동 전투를 제거할 경우 기존 전투 테스트 다수가 영향을 받을 가능성이 확인됐다. 로컬 코딩 AI 에이전트는 기존 테스트를 대규모로 수정할지, 실제 Hero만 수동 제어 대상으로 분리할지 판단을 요청했다.</p>
+        <p><b>사용자 개입 #1:</b> 기존 자동 전투 동작은 유지하고, 실제 Hero만 수동 명령을 받도록 하는 방향을 선택했다.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="card">
+        <div class="step-head">
+          <h3>조사 단계가 길어져 구현 진행 지시</h3>
+          <span class="tag">User Intervention</span>
+        </div>
+        <p>선택된 방향을 기준으로 관련 호출 흐름과 전투 로직을 계속 조사했지만, 첫 작업 구간에서는 실제 코드 수정까지 이어지지 않고 종료됐다.</p>
+        <p><b>사용자 개입 #2:</b> 충분한 정보가 확보됐다고 판단해 추가 조사를 멈추고 구현과 테스트를 진행하도록 요청했다.</p>
+        <div class="callout warnbox" style="margin-top:14px"><b>첫 구간:</b> 16분 32초 · Compaction 1회 / 1분 21초</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="card">
+        <div class="step-head">
+          <h3>Hero 이동·공격 기능 구현</h3>
+          <span class="tag">Implementation</span>
+        </div>
+        <p>이후 로컬 코딩 AI 에이전트는 Hero의 자동 타깃 획득을 분리하고, 플레이어의 클릭에 따라 이동 또는 특정 적 공격 명령이 전달되도록 구현했다.</p>
+        <p>일반 아군 유닛의 자동 전투는 그대로 유지했고, Battle Camera 기준 좌표 변환과 UI 클릭 제외 처리까지 함께 연결했다.</p>
+        <p class="ok"><b>자동 검증:</b> Hero 관련 신규 테스트 12개 통과 · 전체 EditMode 테스트 272 / 272 통과 · git diff 검사 통과</p>
+        <div class="callout" style="margin-top:14px"><b>구현 구간:</b> 23분 10초 · Compaction 1회 / 2분 12초</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="card">
+        <div class="step-head">
+          <h3>자동 테스트 통과 후 실제 Play Mode 확인</h3>
+          <span class="tag">Manual Verification</span>
+        </div>
+        <p>자동 테스트 결과만으로 작업을 종료하지 않고 Unity에서 실제 게임을 실행해 Hero를 직접 조작했다.</p>
+        <p>이 단계에서 프로젝트가 새로운 Input System을 사용 중인데 입력 코드 일부가 구형 입력 방식을 사용하고 있어, Play Mode 진입 직후 런타임 오류가 발생하는 것을 확인했다.</p>
+        <pre><code>InvalidOperationException:
+You are trying to read Input using the UnityEngine.Input class,
+but you have switched active Input handling to Input System package.</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="dot">5</div>
+      <div class="card">
+        <div class="step-head">
+          <h3>실제 런타임 입력 환경에 맞게 수정</h3>
+          <span class="tag">Runtime Fix</span>
+        </div>
+        <p>발견된 오류를 로컬 코딩 AI 에이전트에게 전달했고, 프로젝트 설정을 변경하는 대신 기존 Input System에 맞게 입력 처리 코드를 수정했다.</p>
+        <p>수정 범위는 입력 처리 코드로 제한했고, 전투 명령이나 UI 판정 등 이미 구현된 나머지 로직은 그대로 유지했다.</p>
+        <p class="ok"><b>수정 후:</b> Hero 관련 테스트 12 / 12 통과 · 전체 EditMode 272 / 272 통과 · 실제 Play Mode 정상 동작</p>
+        <div class="callout" style="margin-top:14px"><b>런타임 수정 구간:</b> 3분 38초 · Compaction 없음</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="timing">
+  <h2>작업 시간과 Compaction</h2>
+  <p class="muted">OpenCode의 Task Timing을 통해 각 작업 구간의 실제 경과시간과 Context Compaction 시간을 기록했다.</p>
+
+  <div class="card span-12" style="overflow-x:auto;margin-top:20px">
+    <table>
+      <thead>
+        <tr>
+          <th>구간</th>
+          <th>Elapsed</th>
+          <th>Compaction</th>
+          <th>Compaction 제외</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>조사 및 설계</td>
+          <td>16m 32s</td>
+          <td>1회 / 1m 21s</td>
+          <td>15m 10s</td>
+        </tr>
+        <tr>
+          <td>기능 구현 및 자동 테스트</td>
+          <td>23m 10s</td>
+          <td>1회 / 2m 12s</td>
+          <td>20m 58s</td>
+        </tr>
+        <tr>
+          <td>Play Mode 입력 오류 수정</td>
+          <td>3m 38s</td>
+          <td>0회</td>
+          <td>3m 38s</td>
+        </tr>
+        <tr>
+          <td><b>총계</b></td>
+          <td><b>43m 20s</b></td>
+          <td><b>2회 / 3m 33s</b></td>
+          <td><b>39m 46s</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid" style="margin-top:16px">
+    <div class="card span-3"><div class="metric">43m 20s</div><div class="label">전체 작업시간</div></div>
+    <div class="card span-3"><div class="metric warn">2회</div><div class="label">Compaction 횟수</div></div>
+    <div class="card span-3"><div class="metric">3m 33s</div><div class="label">Compaction 누적시간</div></div>
+    <div class="card span-3"><div class="metric">2회</div><div class="label">사용자 개입</div></div>
+  </div>
+</section>
+
+<section id="runtime">
+  <h2>실제 Play Mode 검증의 중요성</h2>
+  <p class="muted">이번 작업에서 가장 의미 있었던 부분은 자동 테스트와 실제 실행 환경 사이의 차이를 직접 확인했다는 점이다.</p>
+
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <h3>자동 테스트</h3>
+      <p class="ok"><b>Hero 관련 테스트 12 / 12 PASS</b></p>
+      <p class="ok"><b>전체 EditMode 272 / 272 PASS</b></p>
+      <p>이동 명령, 공격 대상 지정, 기존 자동 전투 유지 등 게임 로직 수준에서는 정상 동작했다.</p>
+    </div>
+
+    <div class="card span-6 soft">
+      <h3>실제 게임 실행</h3>
+      <p class="bad"><b>첫 Play Mode: 런타임 입력 오류</b></p>
+      <p>자동 테스트에서 실행되지 않았던 실제 입력 경로에서 프로젝트의 Input System 설정과 맞지 않는 코드가 발견됐다.</p>
+      <p class="ok"><b>수정 후 Play Mode: 정상 동작</b></p>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:18px">
+    <b>개발 기준:</b> 입력·카메라·UI처럼 실제 Unity 실행 환경과 밀접한 기능은 자동 테스트 통과만으로 완료하지 않고, Play Mode에서 실제 조작까지 확인해야 한다.
+  </div>
+</section>
+
+<section id="observations">
+  <h2>로컬 코딩 AI 에이전트 작업에서 관찰한 점</h2>
+  <p class="muted">이번 작업에서는 최종 코드뿐 아니라 기능을 완성하는 과정에서 어떤 부분에 사용자 판단이 필요했는지도 확인할 수 있었다.</p>
+
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <h3>기존 시스템을 유지하며 기능을 확장</h3>
+      <p>Hero만 수동 제어 대상으로 분리하면서 일반 아군 유닛의 기존 자동 전투는 그대로 유지했다. 큰 구조를 새로 만들기보다 현재 시스템을 읽고 필요한 부분만 확장하는 방식으로 작업했다.</p>
+    </div>
+
+    <div class="card span-6">
+      <h3>큰 변경 전에 사용자 판단 요청</h3>
+      <p>기존 테스트 다수가 영향을 받을 가능성을 발견했을 때 임의로 대규모 수정을 진행하지 않고 방향을 질문했다. 작업 안정성 측면에서는 유용한 행동이었다.</p>
+    </div>
+
+    <div class="card span-6">
+      <h3>조사 단계의 종료 판단은 보완 필요</h3>
+      <p>첫 작업 구간에서는 충분한 구조를 파악한 뒤에도 구현으로 넘어가지 않고 조사를 이어가다가 종료됐다. 사용자가 구현 진행을 명시한 뒤에는 실제 수정과 테스트가 빠르게 진행됐다.</p>
+    </div>
+
+    <div class="card span-6">
+      <h3>명확한 런타임 오류에는 빠르게 대응</h3>
+      <p>실제 Play Mode에서 발생한 입력 오류를 전달한 뒤에는 3분 38초 만에 원인을 좁혀 입력 처리만 최소한으로 수정하고 전체 테스트까지 다시 마쳤다.</p>
+    </div>
+  </div>
+</section>
+
+<section id="result">
+  <h2>최종 결과</h2>
+
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><div class="metric ok">MOVE</div><div class="label">빈 공간 클릭 → Hero 이동</div></div>
+    <div class="card span-4"><div class="metric ok">ATTACK</div><div class="label">적 클릭 → 대상 지정 및 공격</div></div>
+    <div class="card span-4"><div class="metric ok">272 / 272</div><div class="label">전체 EditMode 테스트 PASS</div></div>
+  </div>
+
+  <div class="card span-12" style="margin-top:16px">
+    <h3>완료된 작업</h3>
+    <ul>
+      <li>Hero 자동 전투를 플레이어 직접 명령 방식으로 변경</li>
+      <li>빈 전장 클릭 이동</li>
+      <li>적 클릭 공격 대상 지정</li>
+      <li>일반 아군 유닛 자동 전투 유지</li>
+      <li>UI 클릭과 전장 명령 분리</li>
+      <li>자동 테스트 추가 및 전체 회귀 테스트 수행</li>
+      <li>실제 Play Mode 입력 오류 발견 및 수정</li>
+      <li>실제 게임에서 이동·공격 정상 동작 확인</li>
+    </ul>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <p class="muted">Hero의 기본 명령 동작이 완성됐기 때문에 다음에는 플레이어가 자신의 입력 결과를 더 명확하게 인식할 수 있는 시각적 피드백을 추가할 수 있다.</p>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-6">
+      <div class="num">1</div>
+      <h3>Hero 명령 위치 표시</h3>
+      <p>플레이어가 빈 전장이나 적을 클릭했을 때 실제로 어느 위치를 선택했는지 BattleHUD에 짧은 시각 효과로 표시한다.</p>
+    </div>
+
+    <div class="card span-6">
+      <div class="num">2</div>
+      <h3>이동 / 공격 명령 피드백 개선</h3>
+      <p>필요하다면 이후 이동 명령과 공격 명령을 서로 다른 마커나 효과로 구분해 조작 피드백을 발전시킨다.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">RTX 5090 AI Workstation · Public Work Log · 2026-09-03</div>
+</footer>
+
+</body>
+</html>
