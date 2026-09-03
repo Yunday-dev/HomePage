@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="worklog-date" content="2026-09-01" />
-  <meta name="worklog-title" content="RTX 5090으로 개인용 로컬 AI Workstation 구축 시작" />
+  <meta name="worklog-title" content="RTX 5090 AI Workstation — 개인용 로컬 AI Workstation 인프라 구축" />
   <meta name="worklog-project" content="AI Workstation" />
   <meta name="worklog-tags" content="RTX 5090,Local LLM,llama.cpp,llama-server,OpenCode,Unity,Qwen" />
-  <meta name="worklog-summary" content="Windows RTX 5090을 전용 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결했다. llama.cpp CUDA 전환, Qwen3.8-27B 서빙, OpenCode custom provider 및 파일 기반 API Key 인증을 구성하고 실제 Unity 저장소 Read/Glob/Reasoning까지 검증한 구축 기록이다." />
+  <meta name="worklog-summary" content="코딩용 로컬 AI 에이전트의 가능성과 한계를 판단하기 위해 Windows 데스크탑의 RTX 5090을 전용 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결했다. llama.cpp CUDA 전환, Qwen3.8-27B 서빙, OpenCode custom provider 및 파일 기반 API Key 인증을 구성하고 실제 Unity 저장소 Read/Glob/Reasoning까지 검증한 구축 기록이다." />
   <meta name="worklog-visibility" content="public" />
-  <title>RTX 5090 AI Workstation — 구축 기록 & 로드맵</title>
+  <title>RTX 5090 AI Workstation — 개인용 로컬 AI Workstation 인프라 구축</title>
   <style>
     :root {
       --bg: #0b0f14;
@@ -91,8 +91,8 @@
 <header>
   <div class="wrap">
     <div class="eyebrow">AI Workstation</div>
-    <h1>RTX 5090으로 개인용 로컬 AI Workstation 구축 시작</h1>
-    <p class="lead">RTX 5090의 GPU 자원을 AI 추론에 집중시키고 실제 Unity 개발은 맥북에서 수행하는 개인용 로컬 AI 개발 인프라를 만든다. 이 문서는 왜 이 구조를 만들기 시작했는지부터, 무엇을 어떻게 구축했고 어떤 결과를 얻었는지, 다음에 무엇을 검증할지까지 하나의 Work Log로 정리한다.</p>
+    <h1>RTX 5090 AI Workstation — 개인용 로컬 AI Workstation 인프라 구축</h1>
+    <p class="lead">코딩용 로컬 AI 에이전트의 가능성과 한계를 판단하기 위해 Windows 데스크탑의 RTX 5090을 활용해 AI Workstation을 구성하였다. RTX 5090의 GPU 자원을 AI 추론에 집중시키고 실제 Unity 개발은 맥북에서 수행하는 개인용 로컬 AI 개발 인프라를 만든다. 이 문서는 왜 이 구조를 만들기 시작했는지부터, 무엇을 어떻게 구축했고 어떤 결과를 얻었는지, 다음에 무엇을 검증할지까지 하나의 Work Log로 정리한다.</p>
     <div class="hero-meta">
       <span class="pill">Server: Windows + RTX 5090 32GB</span>
       <span class="pill">Client: MacBook Pro</span>
