@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-09-03T13:29:39+00:00",
+  "generated_at": "2026-09-03T14:14:21+00:00",
   "reports": [
     {
       "date": "2026-09-03",
-      "title": "로컬 코딩 AI 에이전트로 Hero 수동 이동·공격 기능 구현",
-      "project": "AI Workstation",
+      "title": "RTX 5090 로컬 LLM — 로컬 코딩 AI 에이전트로 Hero 수동 이동·공격 기능 구현",
+      "project": "로컬 LLM",
       "tags": [
         "RTX 5090",
         "Local LLM",
@@ -20,13 +20,13 @@
         "Task Timing"
       ],
       "summary": "Qwen3.8-27B 기반 로컬 코딩 AI 에이전트를 실제 Unity 프로젝트에 투입해 Hero의 수동 이동·공격 기능을 구현했다. 조사와 구현 과정에서 두 차례 사용자 개입이 필요했고, 자동 테스트 272/272 통과 후 실제 Play Mode에서 입력 시스템 오류를 발견해 수정했다. 최종적으로 빈 공간 클릭 이동과 적 클릭 공격이 정상 동작했으며, 전체 작업시간은 43분 20초, Compaction은 2회 총 3분 33초였다.",
-      "file": "reports/2026/09/2026-09-03_local-coding-ai-agent-hero-manual-command-worklog.html",
+      "file": "reports/2026/09/2026-09-03_local-coding-ai-agent-hero-manual-command.html",
       "visibility": "public"
     },
     {
       "date": "2026-09-02",
-      "title": "RTX 5090 AI Workstation — Qwen3.8-27B 기반 로컬 코딩 AI 에이전트의 실제 Unity 코드베이스 수정 검증",
-      "project": "AI Workstation",
+      "title": "RTX 5090 로컬 LLM — Qwen3.8-27B 기반 로컬 코딩 AI 에이전트의 실제 Unity 코드베이스 수정 검증",
+      "project": "로컬 LLM",
       "tags": [
         "RTX 5090",
         "Local LLM",
@@ -44,13 +44,13 @@
         "PowerShell"
       ],
       "summary": "RTX 5090 로컬 AI Workstation에서 Qwen3.8-27B 기반 로컬 코딩 AI 에이전트가 기존 Unity 프로젝트의 코드베이스와 생산 규칙을 이해한 뒤 실제 기능을 추가할 수 있는지 검증했다. 첫 테스트는 구현 복잡도와 변경 위험을 낮추면서도 기존 비즈니스 규칙 이해가 필요한 유닛 생산 가능 여부 조회 기능으로 제한했다. 64K와 128K Context 비교 결과는 별도의 벤치마크 섹션으로 분리하고, 모델 로딩 직후의 GPU VRAM과 시스템 메모리 사용량도 함께 비교했다. 128K 설정도 RTX 5090 32GB 전용 VRAM 안에 적재되며 약 4GB의 여유 공간을 남기는 것을 확인했다.",
-      "file": "reports/2026/09/2026-09-02_ai-workstation-local-coding-ai-agent-log.html",
+      "file": "reports/2026/09/2026-09-02_ai-workstation-local-coding-ai-agent.html",
       "visibility": "public"
     },
     {
       "date": "2026-09-01",
-      "title": "RTX 5090 AI Workstation — 로컬 코딩 AI 에이전트 개발 환경 구축",
-      "project": "AI Workstation",
+      "title": "RTX 5090 로컬 LLM — 로컬 코딩 AI 에이전트 개발 환경 구축",
+      "project": "로컬 LLM",
       "tags": [
         "RTX 5090",
         "Local LLM",
@@ -64,7 +64,7 @@
         "CUDA"
       ],
       "summary": "Windows RTX 5090을 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결해 로컬 코딩 AI 에이전트 개발 환경을 구축했다. llama.cpp CUDA 환경, Qwen3.8-27B 서빙, OpenCode 연결과 인증을 구성하고 실제 Unity 저장소를 읽고 분석하는 단계까지 검증했다.",
-      "file": "reports/2026/09/2026-09-01_ai-workstation-local-coding-ai-agent-setup-log.html",
+      "file": "reports/2026/09/2026-09-01_ai-workstation-local-coding-ai-agent-setup.html",
       "visibility": "public"
     }
   ]
