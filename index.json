@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-03T02:00:01+00:00",
+  "generated_at": "2026-09-03T02:08:08+00:00",
   "reports": [
     {
       "date": "2026-09-02",
-      "title": "RTX 5090 AI Workstation — 128K Context와 실제 코드 수정 검증",
+      "title": "RTX 5090 AI Workstation — 코딩 에이전트로 실제 코드 수정 및 64K와 128K Context 비교 벤치마킹",
       "project": "AI Workstation",
       "tags": [
         "RTX 5090",
@@ -13,10 +13,13 @@
         "OpenCode",
         "Unity",
         "Qwen",
-        "Context Benchmark",
-        "Coding Agent"
+        "Coding Agent",
+        "64K Context",
+        "128K Context",
+        "Benchmark",
+        "PowerShell"
       ],
-      "summary": "RTX 5090 로컬 AI Workstation에서 OpenCode와 Qwen3.8-27B를 이용해 실제 Unity 코드 수정과 EditMode 테스트까지 수행했다. 64K와 128K Context를 비교해 긴 Agent 작업에서 Context 크기가 Compaction과 작업 흐름에 미치는 영향을 확인하고, 다음 단계로 이동·공격처럼 여러 시스템이 연결되는 기능 구현을 준비했다.",
+      "summary": "RTX 5090 로컬 AI Workstation에서 OpenCode와 Qwen3.8-27B를 이용해 실제 Unity 프로젝트의 유닛 생산 가능 여부 조회용 API를 수정하고 자동 테스트까지 수행했다. 동일 계열 작업을 64K와 128K Context에서 비교해 Compaction과 작업 여유의 차이를 확인했으며, OpenCode 권한·파일 소유권 문제를 정리하고 FAST/DEEP 모델 운영과 PowerShell 프로필 함수 기반 실행 방식을 마련했다.",
       "file": "reports/2026/09/2026-09-02_ai-workstation-context-coding-agent-log.html",
       "visibility": "public"
     },
