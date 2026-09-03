@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-02T14:02:04+00:00",
+  "generated_at": "2026-09-03T02:00:01+00:00",
   "reports": [
     {
       "date": "2026-09-02",
@@ -22,7 +22,7 @@
     },
     {
       "date": "2026-09-01",
-      "title": "RTX 5090으로 개인용 로컬 AI Workstation 구축 시작",
+      "title": "RTX 5090 AI Workstation — 개인용 로컬 AI Workstation 인프라 구축",
       "project": "AI Workstation",
       "tags": [
         "RTX 5090",
@@ -33,7 +33,7 @@
         "Unity",
         "Qwen"
       ],
-      "summary": "Windows RTX 5090을 전용 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결했다. llama.cpp CUDA 전환, Qwen3.8-27B 서빙, OpenCode custom provider 및 파일 기반 API Key 인증을 구성하고 실제 Unity 저장소 Read/Glob/Reasoning까지 검증한 구축 기록이다.",
+      "summary": "코딩용 로컬 AI 에이전트의 가능성과 한계를 판단하기 위해 Windows 데스크탑의 RTX 5090을 전용 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결했다. llama.cpp CUDA 전환, Qwen3.8-27B 서빙, OpenCode custom provider 및 파일 기반 API Key 인증을 구성하고 실제 Unity 저장소 Read/Glob/Reasoning까지 검증한 구축 기록이다.",
       "file": "reports/2026/09/2026-09-01_ai-workstation-build-log.html",
       "visibility": "public"
     }
