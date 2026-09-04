@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-09-04" />
+  <meta name="worklog-title" content="Qwen3.8-27B와 Qwen3-Coder-Next 80B 비교 — 동일한 Unity 작업으로 확인한 코딩 에이전트 신뢰성" />
+  <meta name="worklog-project" content="로컬 LLM" />
+  <meta name="worklog-tags" content="RTX 5090,Local LLM,OpenCode,Unity,Qwen,Qwen3-Coder-Next,Coding Agent,256K Context,Benchmark,Hero Command,Compilation,Validation,Agent Reliability" />
+  <meta name="worklog-summary" content="기존에 Qwen3.8-27B로 수행했던 Unity Hero 이동·공격 기능 구현과 동일한 작업을 Qwen3-Coder-Next 80B에 맡겨 결과를 비교했다. Qwen3-Coder-Next 80B는 256K 컨텍스트에서 Compaction 없이 빠르게 코드를 생성했지만, 완료 보고 이후 실제 Unity 컴파일 오류가 두 차례 확인됐고 EditMode 테스트도 실행되지 않았다. 반면 Qwen3.8-27B는 더 오래 걸리고 Compaction이 발생했지만 자동 테스트와 실제 Play Mode 검증까지 거쳐 동작 가능한 결과에 도달했다. 이번 비교를 통해 코딩 특화 모델의 크기보다 컴파일·테스트·수정까지 끝내는 에이전트 신뢰성이 중요하다는 점을 확인했다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>Qwen3.8-27B vs Qwen3-Coder-Next 80B · 2026-09-04</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.68}.wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header .wrap{position:relative}
+    .brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1;border-radius:8px;transition:opacity .18s ease,transform .18s ease;z-index:2}
+    .brand-home:hover{opacity:.78;transform:translateY(-1px)}
+    .brand-home:focus-visible{outline:2px solid var(--accent2);outline-offset:5px}
+    .brand-mark{width:12px;height:12px;background:var(--accent2);border-radius:2px;box-shadow:14px 0 0 #486078;margin-right:14px;flex:0 0 auto}
+    .brand-text{color:var(--text);font-size:13px;font-weight:800;letter-spacing:.16em;white-space:nowrap}
+    header{padding:72px 0 54px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.13),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.055),transparent 28%),var(--bg)}
+    .eyebrow{color:var(--accent2);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}h1{margin:10px 0 16px;font-size:clamp(36px,6vw,72px);line-height:1.06;letter-spacing:-.04em}.lead{max-width:990px;color:#c0cad5;font-size:18px}.hero-meta{margin-top:30px;display:flex;flex-wrap:wrap;gap:10px}.pill{border:1px solid var(--line);background:rgba(255,255,255,.025);padding:8px 12px;border-radius:999px;color:#cdd6df;font-size:13px}
+    nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(14px);background:rgba(11,15,20,.86);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow-x:auto;padding:13px 0}nav a{color:#c7d0da;font-size:14px;white-space:nowrap;text-decoration:none}nav a:hover{color:white}
+    main{padding:44px 0 90px}section{scroll-margin-top:66px;margin:58px 0 82px}h2{font-size:30px;margin:0 0 16px;letter-spacing:-.025em}h3{font-size:20px;margin:0 0 10px}p{margin:10px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}.card.soft{background:var(--panel2)}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}.metric{font-size:30px;font-weight:800;letter-spacing:-.03em}.label{color:var(--muted);font-size:13px;margin-top:2px}.ok{color:var(--accent2)}.warn{color:var(--warn)}.bad{color:var(--danger)}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+    table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px}th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}th{color:#aab6c3;font-size:12px;text-transform:uppercase;letter-spacing:.05em;background:#0f151d}td{background:var(--panel)}ul{margin:8px 0 0 20px;padding:0}li{margin:4px 0}
+    .timeline{position:relative;margin-top:28px}.timeline:before{content:"";position:absolute;left:18px;top:4px;bottom:4px;width:1px;background:var(--line)}.step{position:relative;padding-left:56px;margin:0 0 22px}.dot{position:absolute;left:7px;top:3px;width:23px;height:23px;border-radius:50%;background:var(--bg);border:1px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-size:11px;font-weight:800}.step .card{padding:20px 22px}.step-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:8px}.tag{font-size:12px;color:var(--accent2);border:1px solid rgba(124,227,177,.26);padding:3px 8px;border-radius:999px;white-space:nowrap}.tag.fail{color:var(--danger);border-color:rgba(255,123,137,.3)}
+    .callout{border-left:3px solid var(--accent);padding:16px 18px;background:rgba(87,167,255,.055);border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.055)}.callout.badbox{border-left-color:var(--danger);background:rgba(255,123,137,.055)}.num{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(87,167,255,.10);color:var(--accent);font-weight:800;margin-bottom:12px}footer{border-top:1px solid var(--line);color:var(--muted);padding:26px 0 44px;font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}}@media print{nav{display:none}body{background:#fff;color:#111}.card,td{background:#fff}pre{background:#f5f5f5;color:#111}header{background:#fff}.muted,.label{color:#555}section{break-inside:avoid}}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">YES IT WORKS</span>
+    </a>
+    <div class="eyebrow">로컬 LLM · Model Comparison</div>
+    <h1>같은 Unity 작업으로<br>두 로컬 모델을 비교했다</h1>
+    <p class="lead">
+      이전에 <b>Qwen3.8-27B</b>로 완료했던 Hero 이동·공격 기능 구현을
+      <b>Qwen3-Coder-Next 80B</b>에도 동일하게 맡겨 결과를 비교했다.
+      더 큰 코딩 특화 모델이 복잡한 코드베이스를 더 안정적으로 다룰 수 있을지 확인하는 것이 목적이었다.
+      결과적으로 Qwen3-Coder-Next 80B는 빠르게 코드를 작성했지만 컴파일과 테스트 검증 단계에서 신뢰성을 확보하지 못했다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">Qwen3.8-27B · 128K</span>
+      <span class="pill">Qwen3-Coder-Next 80B · 256K</span>
+      <span class="pill">OpenCode</span>
+      <span class="pill">Unity</span>
+      <span class="pill">Same Task / Same Baseline</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <a href="#goal">작업 목표</a>
+    <a href="#task">동일 비교 작업</a>
+    <a href="#result80b">80B 실행 결과</a>
+    <a href="#comparison">모델 비교</a>
+    <a href="#lesson">확인한 점</a>
+    <a href="#next">다음 작업</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">
+    Qwen3.8-27B에서 이미 수행했던 기능을 그대로 다시 구현하게 해,
+    Qwen3-Coder-Next 80B의 코드베이스 이해 능력과 실제 코딩 에이전트로서의 작업 완성도를 비교했다.
+  </p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>비교에서 확인하고 싶었던 것</h3>
+      <ul>
+        <li>기존 Unity 전투 구조를 얼마나 정확하게 이해하는가</li>
+        <li>여러 파일이 연결된 기능을 기존 구조를 활용해 구현하는가</li>
+        <li>코드를 작성한 뒤 실제 컴파일까지 확인하는가</li>
+        <li>관련 테스트와 전체 회귀 테스트를 직접 실행하는가</li>
+        <li>오류가 발생했을 때 스스로 수정하고 다시 검증하는가</li>
+      </ul>
+    </div>
+    <div class="card span-4 soft">
+      <h3>비교 방법</h3>
+      <p><b>동일한 시작 코드와 동일한 작업 요청을 사용했다.</b></p>
+      <p class="muted">단순 응답 속도가 아니라 실제로 사용할 수 있는 코드까지 도달하는 시간을 중심으로 비교했다.</p>
+    </div>
+  </div>
+</section>
+
+<section id="task">
+  <h2>동일하게 수행한 작업</h2>
+  <p class="muted">
+    비교 대상은 Hero를 플레이어가 직접 조작할 수 있도록 이동과 공격 명령을 추가하는 기능이다.
+    전투, 이동, 입력, 카메라, UI가 함께 연결되기 때문에 단순 코드 생성보다 기존 프로젝트 구조 이해가 중요한 작업이다.
+  </p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>Hero 이동·공격 명령</h3>
+      <ul>
+        <li>Hero는 자동으로 적을 <b>타겟으로 지정하거나</b> 다른 적으로 자동 전환하지 않는다.</li>
+        <li>적을 클릭하면 해당 적을 공격 대상으로 지정한다.</li>
+        <li>빈 전장을 클릭하면 해당 월드 위치로 이동한다.</li>
+        <li>지정한 적이 사라져도 다른 적을 자동으로 공격하지 않는다.</li>
+        <li>일반 아군 유닛은 기존 자동 전투 동작을 유지한다.</li>
+        <li>UI 클릭은 이동·공격 명령으로 처리하지 않는다.</li>
+        <li>기존 이동·공격·회피·분리 로직을 가능한 그대로 재사용한다.</li>
+      </ul>
+    </div>
+    <div class="card span-4 soft">
+      <h3>완료 기준</h3>
+      <p>구현 보고만으로 완료로 판단하지 않는다.</p>
+      <ul>
+        <li>Unity 컴파일 성공</li>
+        <li>관련 EditMode 테스트 통과</li>
+        <li>전체 EditMode 테스트 통과</li>
+        <li>최종 변경사항 검증</li>
+        <li>필요한 경우 실제 Play Mode 확인</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="result80b">
+  <h2>Qwen3-Coder-Next 80B 실행 결과</h2>
+  <p class="muted">
+    256K 컨텍스트로 작업을 수행했으며 Compaction 없이 구현을 빠르게 진행했다.
+    다만 완료 보고 이후 실제 Unity에서 컴파일 오류가 발견되면서 검증 과정의 문제가 드러났다.
+  </p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-3"><div class="metric">13m 14s</div><div class="label">첫 구현 완료 보고</div></div>
+    <div class="card span-3"><div class="metric">5m 51s</div><div class="label">오류 전달 후 수정</div></div>
+    <div class="card span-3"><div class="metric ok">0x</div><div class="label">Compaction</div></div>
+    <div class="card span-3"><div class="metric bad">FAIL</div><div class="label">최종 컴파일 상태</div></div>
+  </div>
+
+  <div class="timeline">
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="card">
+        <div class="step-head"><h3>빠르게 구현하고 완료 보고</h3><span class="tag">13m 14s</span></div>
+        <p>Hero 명령 상태, 입력 처리, 전투 로직 연동, EditMode 테스트를 포함한 여러 파일을 수정·생성하고 작업 완료를 보고했다. 80B 모델의 코드베이스 탐색과 구현 속도 자체는 빠른 편이었다.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="card">
+        <div class="step-head"><h3>실제 Unity에서 첫 컴파일 오류 발견</h3><span class="tag fail">Compile FAIL</span></div>
+        <pre><code>CS1503:
+Argument 3: cannot convert from 'int[]' to 'int'</code></pre>
+        <p>테스트를 작성했다는 보고와 달리 프로젝트는 컴파일되지 않았다. 컴파일 한 번으로 확인할 수 있는 오류가 완료 상태에 남아 있었다.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="card">
+        <div class="step-head"><h3>오류 수정 요청 후 다시 완료 보고</h3><span class="tag">5m 51s</span></div>
+        <p>첫 컴파일 오류와 함께 원래 요구사항 재검토, UI 클릭 제외, 기존 이동 로직 재사용, 테스트 실행과 최종 검증까지 다시 요청했다.</p>
+        <p>모델은 수정 후 <code>git diff --check</code> 통과를 보고했지만, EditMode 테스트는 실행하지 못했다고 명시했다.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="card">
+        <div class="step-head"><h3>두 번째 컴파일 오류</h3><span class="tag fail">Compile FAIL</span></div>
+        <pre><code>CS0246:
+The type or namespace name 'List&lt;&gt;' could not be found</code></pre>
+        <p>첫 오류를 수정한 뒤에도 다시 기본적인 컴파일 오류가 남았다. 총 19분 05초의 작업 이후에도 컴파일 가능한 결과에 도달하지 못했기 때문에 이번 실행은 미완료로 판정했다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="comparison">
+  <h2>Qwen3.8-27B와 비교</h2>
+  <p class="muted">
+    두 모델은 같은 기능을 구현했지만 작업 과정의 성격은 크게 달랐다.
+    Qwen3.8-27B는 시간이 오래 걸리고 Compaction이 발생했지만,
+    자동 테스트와 실제 Play Mode 검증을 거쳐 최종적으로 동작 가능한 상태에 도달했다.
+    Qwen3-Coder-Next 80B는 더 빠르게 코드를 생성했지만 컴파일 검증 단계에서 작업이 끝나지 않았다.
+  </p>
+
+  <div class="card span-12" style="overflow-x:auto;margin-top:20px">
+    <table>
+      <thead>
+        <tr><th>항목</th><th>Qwen3.8-27B · 128K</th><th>Qwen3-Coder-Next 80B · 256K</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>작업 성향</td><td>조사와 구현이 느리지만 검증까지 진행</td><td>탐색과 구현은 빠르지만 검증이 부족</td></tr>
+        <tr><td>총 작업 시간</td><td>43m 20s</td><td>19m 05s+ · 유효 결과 미도달</td></tr>
+        <tr><td>Compaction</td><td>2회 / 3m 33s</td><td class="ok">0회</td></tr>
+        <tr><td>관련 EditMode 테스트</td><td class="ok">12 / 12 PASS</td><td class="bad">실행되지 않음</td></tr>
+        <tr><td>전체 EditMode 테스트</td><td class="ok">272 / 272 PASS</td><td class="bad">실행되지 않음</td></tr>
+        <tr><td>컴파일</td><td class="ok">PASS</td><td class="bad">FAIL × 2</td></tr>
+        <tr><td>실제 Play Mode</td><td class="ok">최종 PASS</td><td>컴파일 실패로 검증하지 못함</td></tr>
+        <tr><td>최종 결과</td><td class="ok">동작 가능한 결과에 도달</td><td class="bad">미완료</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout" style="margin-top:18px">
+    <b>비교 결과:</b> Qwen3-Coder-Next 80B는 더 큰 컨텍스트를 유지하면서 빠르게 코드를 생성하는 장점이 있었다.
+    하지만 이번 Unity 작업에서는 <b>컴파일 → 테스트 → 오류 수정 → 재검증</b>까지 이어지는 작업 완성도가 Qwen3.8-27B보다 낮았다.
+  </div>
+</section>
+
+<section id="lesson">
+  <h2>이번 비교에서 확인한 점</h2>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <div class="num">1</div>
+      <h3>모델 크기만으로 코딩 에이전트 성능을 판단하기 어렵다</h3>
+      <p>80B 코딩 특화 모델은 코드 이해와 생성 속도에서 장점을 보였지만, 실제 프로젝트를 끝까지 완성하는 능력은 별도의 평가가 필요했다.</p>
+    </div>
+    <div class="card span-6">
+      <div class="num">2</div>
+      <h3>응답 시간보다 유효한 결과까지의 시간이 중요하다</h3>
+      <p>빠르게 완료 보고를 반환해도 컴파일되지 않으면 실제 개발에서는 사용할 수 없다. 최종적으로 동작 가능한 상태까지 도달하는 시간을 기준으로 봐야 한다.</p>
+    </div>
+    <div class="card span-6">
+      <div class="num">3</div>
+      <h3>256K 컨텍스트의 여유는 분명했다</h3>
+      <p>Qwen3-Coder-Next 80B는 이번 작업에서 Compaction 없이 세션을 유지했다. 긴 작업에서 컨텍스트 여유가 있다는 점은 분명한 장점이었다.</p>
+    </div>
+    <div class="card span-6">
+      <div class="num">4</div>
+      <h3>검증 과정도 모델 선택의 핵심 기준이다</h3>
+      <p>코드 생성 능력뿐 아니라 실제 컴파일, 테스트 실행, 실패 원인 수정, 재검증을 스스로 반복하는지가 코딩 에이전트의 실사용성을 결정한다.</p>
+    </div>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <p class="muted">
+    현재는 Qwen3.8-27B를 실제 Unity 개발의 기준 모델로 유지한다.
+    다른 대형 코딩 특화 모델은 공개 벤치마크 수치보다 실제 저장소 수정과 컴파일·테스트 수행 사례가 충분히 확인된 뒤 검토할 예정이다.
+  </p>
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-6">
+      <div class="num">1</div>
+      <h3>Qwen3.8-27B로 실제 개발 계속하기</h3>
+      <p>이미 검증한 환경을 기준으로 기능 개발과 반복 수정 작업을 이어간다.</p>
+    </div>
+    <div class="card span-6">
+      <div class="num">2</div>
+      <h3>모델 평가 기준 유지</h3>
+      <p>향후 다른 모델도 동일한 코드베이스에서 컴파일, 테스트, 실제 동작까지 포함해 비교한다.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">RTX 5090 로컬 LLM · Public Work Log · 2026-09-04</div>
+</footer>
+
+</body>
+</html>
