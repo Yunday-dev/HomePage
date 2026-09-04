@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-04T13:18:38+00:00",
+  "generated_at": "2026-09-04T13:55:07+00:00",
   "reports": [
     {
       "date": "2026-09-04",
-      "title": "로컬 LLM과 Codex 비교 — 동일한 Unity 작업으로 확인한 코딩 에이전트 완성도",
+      "title": "로컬 LLM과 Codex 비교 — 동일한 Unity 작업으로 본 모델별 완성도와 작업 시간",
       "project": "로컬 LLM",
       "tags": [
         "RTX 5090",
@@ -20,7 +20,7 @@
         "Validation",
         "Agent Reliability"
       ],
-      "summary": "Qwen3.8-27B, Qwen3-Coder-Next 80B, Codex GPT-5.6 Sol에 동일한 Unity Hero 이동·공격 기능 구현을 맡겨 실제 작업 완성도를 비교했다. Qwen3.8-27B는 43분 20초에 자동 테스트와 Play Mode 검증까지 완료했고, Qwen3-Coder-Next 80B는 19분 05초 이상 작업한 뒤에도 컴파일 오류가 반복되어 미완료로 끝났다. Codex GPT-5.6 Sol은 사용자 개입 없이 14분 41초 만에 구현, Unity 컴파일, 관련 테스트 12/12, 전체 EditMode 272/272, 실패 복구, git diff 검증을 완료했고 실제 Play Mode에서도 한 번에 정상 동작했다.",
+      "summary": "Qwen3.8-27B, Qwen3-Coder-Next 80B, Codex GPT-5.6 Sol xhigh, Codex GPT-5.6 Terra high에 동일한 Unity Hero 이동·공격 기능 구현을 맡겨 결과를 비교했다. Qwen3.8-27B는 최종 동작까지 완료했지만 시간이 오래 걸렸고, Qwen3-Coder-Next 80B는 컴파일 오류가 반복돼 미완료로 끝났다. Codex Sol xhigh은 사용자 개입 없이 14분 41초에 완료했고, Terra high는 10분 46초의 Worked for 표시와 함께 자동 테스트 및 실제 Play Mode에서 정상 동작했다.",
       "file": "reports/2026/09/2026-09-04_local-llm-coding-agent-comparison-02.html",
       "visibility": "public"
     },
