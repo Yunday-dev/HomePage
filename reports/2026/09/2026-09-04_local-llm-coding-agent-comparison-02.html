@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="worklog-date" content="2026-09-04" />
-  <meta name="worklog-title" content="로컬 LLM과 Codex 비교 — 동일한 Unity 작업으로 확인한 코딩 에이전트 완성도" />
+  <meta name="worklog-title" content="로컬 LLM과 Codex 비교 — 동일한 Unity 작업으로 본 모델별 완성도와 작업 시간" />
   <meta name="worklog-project" content="로컬 LLM" />
   <meta name="worklog-tags" content="RTX 5090,Local LLM,OpenCode,Unity,Qwen,Qwen3-Coder-Next,Coding Agent,256K Context,Benchmark,Hero Command,Compilation,Validation,Agent Reliability" />
-  <meta name="worklog-summary" content="Qwen3.8-27B, Qwen3-Coder-Next 80B, Codex GPT-5.6 Sol에 동일한 Unity Hero 이동·공격 기능 구현을 맡겨 실제 작업 완성도를 비교했다. Qwen3.8-27B는 43분 20초에 자동 테스트와 Play Mode 검증까지 완료했고, Qwen3-Coder-Next 80B는 19분 05초 이상 작업한 뒤에도 컴파일 오류가 반복되어 미완료로 끝났다. Codex GPT-5.6 Sol은 사용자 개입 없이 14분 41초 만에 구현, Unity 컴파일, 관련 테스트 12/12, 전체 EditMode 272/272, 실패 복구, git diff 검증을 완료했고 실제 Play Mode에서도 한 번에 정상 동작했다." />
+  <meta name="worklog-summary" content="Qwen3.8-27B, Qwen3-Coder-Next 80B, Codex GPT-5.6 Sol xhigh, Codex GPT-5.6 Terra high에 동일한 Unity Hero 이동·공격 기능 구현을 맡겨 결과를 비교했다. Qwen3.8-27B는 최종 동작까지 완료했지만 시간이 오래 걸렸고, Qwen3-Coder-Next 80B는 컴파일 오류가 반복돼 미완료로 끝났다. Codex Sol xhigh은 사용자 개입 없이 14분 41초에 완료했고, Terra high는 10분 46초의 Worked for 표시와 함께 자동 테스트 및 실제 Play Mode에서 정상 동작했다." />
   <meta name="worklog-visibility" content="public" />
-  <title>로컬 LLM과 Codex 비교 · 2026-09-04</title>
+  <title>로컬 LLM과 Codex 비교 · 작업 시간까지 다시 보기 · 2026-09-04</title>
   <style>
     :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.68}.wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
@@ -40,18 +40,18 @@
       <span class="brand-text">YES IT WORKS</span>
     </a>
     <div class="eyebrow">로컬 LLM · Coding Agent Comparison</div>
-    <h1>같은 Unity 작업으로<br>세 가지 코딩 에이전트를 비교했다</h1>
+    <h1>같은 Unity 작업으로<br>네 가지 실행 조건을 비교했다</h1>
     <p class="lead">
-      Qwen3.8-27B, Qwen3-Coder-Next 80B, Codex GPT-5.6 Sol에
-      <b>동일한 Unity Hero 이동·공격 기능 구현</b>을 맡겨 실제 작업 완성도를 비교했다.
-      단순 코드 생성 속도보다 컴파일, 테스트, 오류 복구, 실제 Play Mode까지
-      <b>얼마나 스스로 끝까지 완성하는가</b>를 기준으로 결과를 정리했다.
+      Qwen3.8-27B, Qwen3-Coder-Next 80B, Codex GPT-5.6 Sol xhigh,
+      Codex GPT-5.6 Terra high에 <b>동일한 Unity Hero 이동·공격 기능 구현</b>을 맡겼다.
+      이번 비교에서는 코드 생성 속도보다 컴파일, 테스트, 오류 복구, 실제 Play Mode까지
+      <b>얼마나 스스로 완성된 상태에 도달하는가</b>를 중심으로 기록했다.
     </p>
     <div class="hero-meta">
       <span class="pill">Qwen3.8-27B · 128K</span>
       <span class="pill">Qwen3-Coder-Next 80B · 256K</span>
       <span class="pill">Codex · GPT-5.6 Sol · xhigh</span>
-      <span class="pill">OpenCode / Codex</span>
+      <span class="pill">Codex · GPT-5.6 Terra · high</span>
       <span class="pill">Unity 6000.4.11f1</span>
       <span class="pill">Same Task / Same Baseline</span>
     </div>
@@ -63,57 +63,70 @@
     <a href="#goal">작업 목표</a>
     <a href="#task">동일 비교 작업</a>
     <a href="#results">실행 결과</a>
-    <a href="#comparison">3자 비교</a>
-    <a href="#codex">Codex 관찰</a>
+    <a href="#comparison">4자 비교</a>
+    <a href="#terra">Terra 결과</a>
+    <a href="#timing">Worked for</a>
     <a href="#lesson">확인한 점</a>
     <a href="#next">다음 방향</a>
   </div>
 </nav>
 
 <main class="wrap">
+
 <section id="goal">
   <h2>작업 목표</h2>
-  <p class="muted">로컬에서 사용하는 Qwen 계열 모델과 상용 프론티어 코딩 에이전트가 실제 Unity 프로젝트에서 어느 정도 차이를 보이는지 같은 조건에서 확인하는 것이 목적이다.</p>
+  <p class="muted">
+    로컬 LLM과 Codex의 서로 다른 모델·추론 설정이 실제 Unity 기능 구현에서
+    어느 정도의 작업 완성도 차이를 보이는지 같은 조건으로 비교했다.
+  </p>
   <div class="grid" style="margin-top:20px">
     <div class="card span-8">
-      <h3>비교에서 확인한 항목</h3>
+      <h3>비교 기준</h3>
       <ul>
-        <li>기존 코드베이스와 전투 구조를 얼마나 정확하게 이해하는가</li>
-        <li>여러 파일이 연결된 기능을 기존 구조를 활용해 구현하는가</li>
-        <li>코드를 작성한 뒤 실제 Unity 컴파일까지 확인하는가</li>
-        <li>관련 테스트와 전체 회귀 테스트를 직접 실행하는가</li>
-        <li>테스트가 실패했을 때 원인을 찾아 스스로 수정하고 다시 검증하는가</li>
-        <li>최종적으로 실제 Play Mode에서 정상 동작하는가</li>
-        <li>작업 완료까지 사용자 개입이 얼마나 필요한가</li>
+        <li>기존 코드베이스와 전투 구조를 정확하게 이해하는가</li>
+        <li>기존 이동·공격 로직을 재사용해 기능을 연결하는가</li>
+        <li>Unity 컴파일을 실제로 통과하는가</li>
+        <li>관련 테스트와 전체 EditMode 테스트를 실행하는가</li>
+        <li>테스트 실패를 발견했을 때 스스로 수정하고 다시 검증하는가</li>
+        <li>실제 Play Mode에서 정상 동작하는가</li>
+        <li>사용자 개입 없이 완료 상태까지 도달하는가</li>
       </ul>
     </div>
     <div class="card span-4 soft">
-      <h3>완료 기준</h3>
-      <p><b>응답을 반환한 시점이 아니라 실제로 사용할 수 있는 상태까지 도달한 시점을 완료로 본다.</b></p>
-      <p class="muted">컴파일, 자동 테스트, 최종 diff 검증, 실제 동작 확인을 포함한다.</p>
+      <h3>핵심 지표</h3>
+      <p><b>Time-to-valid-solution</b></p>
+      <p class="muted">
+        모델이 답변을 끝낸 시점이 아니라 실제 프로젝트에서 사용할 수 있는 상태에 도달했는지를 우선한다.
+      </p>
     </div>
   </div>
 </section>
 
 <section id="task">
   <h2>동일하게 수행한 작업</h2>
-  <p class="muted">세 모델 모두 같은 시작 코드와 같은 요구사항을 사용했다. 비교 대상은 Hero를 플레이어가 직접 조작할 수 있도록 이동과 공격 명령을 추가하는 기능이다.</p>
+  <p class="muted">
+    네 번의 실행 모두 같은 시작 코드와 같은 요구사항을 사용했다.
+    비교 대상은 Hero에 플레이어 직접 이동·공격 명령을 추가하는 기능이다.
+  </p>
   <div class="grid" style="margin-top:20px">
     <div class="card span-8">
       <h3>Hero 이동·공격 명령</h3>
       <ul>
         <li>Hero는 자동으로 적을 <b>타겟으로 지정하거나</b> 다른 적으로 자동 전환하지 않는다.</li>
-        <li>적을 클릭하면 해당 적을 공격 대상으로 지정한다.</li>
-        <li>빈 전장을 클릭하면 해당 월드 위치로 이동한다.</li>
-        <li>지정한 적이 사라져도 다른 적을 자동으로 공격하지 않는다.</li>
-        <li>일반 아군 유닛은 기존 자동 전투 동작을 유지한다.</li>
-        <li>UI 클릭은 이동·공격 명령으로 처리하지 않는다.</li>
-        <li>기존 이동·공격·회피·분리·쿨다운·피해·사망 로직을 가능한 그대로 재사용한다.</li>
+        <li>적 또는 Boss를 클릭하면 해당 대상을 공격 대상으로 지정한다.</li>
+        <li>빈 전장을 클릭하면 현재 공격 대상을 해제하고 해당 위치로 이동한다.</li>
+        <li>지정한 적이 사라지거나 죽어도 다른 적을 자동으로 공격하지 않는다.</li>
+        <li>일반 아군 유닛은 기존 자동 타겟팅과 전투 동작을 유지한다.</li>
+        <li>UI 클릭과 Playing 상태가 아닌 입력은 명령으로 처리하지 않는다.</li>
+        <li>기존 이동·접근·회피·분리·쿨다운·피해·사망 경로를 가능한 그대로 재사용한다.</li>
       </ul>
     </div>
     <div class="card span-4 soft">
       <h3>왜 이 작업을 사용했나</h3>
-      <p>입력, 카메라, UI, 전투, 이동, 타겟팅, 테스트가 동시에 연결돼 있어 단순한 코드 생성보다 <b>기존 프로젝트 이해와 회귀 영향 관리</b>를 함께 평가할 수 있기 때문이다.</p>
+      <p>
+        입력, 카메라, UI, 전투, 이동, 타겟팅, 테스트가 동시에 연결되어 있어
+        모델의 단순 코드 생성 능력보다 <b>저장소 이해와 회귀 영향 관리</b>를 함께 볼 수 있기 때문이다.
+      </p>
     </div>
   </div>
 </section>
@@ -121,110 +134,332 @@
 <section id="results">
   <h2>실행 결과</h2>
   <div class="timeline">
+
     <div class="step">
       <div class="dot">1</div>
       <div class="card">
-        <div class="step-head"><h3>Qwen3.8-27B · 128K</h3><span class="tag">VALID</span></div>
-        <p>코드베이스 조사와 구현 전환은 느렸고 작업 중 Compaction이 발생했다. 하지만 기능 구현 후 관련 EditMode 테스트와 전체 회귀 테스트를 통과했고, 실제 Play Mode에서 발견된 입력 시스템 문제까지 수정해 최종 동작을 확인했다.</p>
-        <div class="callout" style="margin-top:14px"><b>결과:</b> 43m 20s · Compaction 2회 / 3m 33s · Hero 테스트 12/12 PASS · 전체 EditMode 272/272 PASS · Play Mode PASS</div>
+        <div class="step-head">
+          <h3>Qwen3.8-27B · 128K</h3>
+          <span class="tag">VALID</span>
+        </div>
+        <p>
+          코드베이스 조사와 구현 전환은 느렸고 작업 중 Compaction이 발생했다.
+          그러나 관련 테스트와 전체 회귀 테스트를 통과했고,
+          실제 Play Mode에서 발견한 입력 시스템 문제까지 수정해 최종 동작 상태에 도달했다.
+        </p>
+        <div class="callout" style="margin-top:14px">
+          <b>결과:</b> 43m 20s · Compaction 2회 / 3m 33s · Hero 테스트 12/12 PASS · 전체 EditMode 272/272 PASS · Play Mode PASS
+        </div>
       </div>
     </div>
 
     <div class="step">
       <div class="dot">2</div>
       <div class="card">
-        <div class="step-head"><h3>Qwen3-Coder-Next 80B · 256K</h3><span class="tag fail">INCOMPLETE</span></div>
-        <p>더 큰 컨텍스트를 사용해 Compaction 없이 빠르게 구현을 진행했지만, 완료 보고 이후 Unity 컴파일 오류가 발생했다. 첫 오류를 전달해 다시 수정하게 했지만 두 번째 완료 보고 뒤에도 다른 컴파일 오류가 남았다.</p>
+        <div class="step-head">
+          <h3>Qwen3-Coder-Next 80B · 256K</h3>
+          <span class="tag fail">INCOMPLETE</span>
+        </div>
+        <p>
+          256K 컨텍스트에서 Compaction 없이 빠르게 구현했지만 완료 보고 이후 Unity 컴파일 오류가 확인됐다.
+          오류를 전달해 수정하게 한 뒤에도 다른 컴파일 오류가 남아 실제 테스트 단계까지 도달하지 못했다.
+        </p>
         <pre><code>1차: CS1503 — Argument 3 type mismatch
 2차: CS0246 — List&lt;&gt; type could not be found</code></pre>
-        <div class="callout badbox" style="margin-top:14px"><b>결과:</b> 19m 05s+ · Compaction 0회 · Compile FAIL × 2 · EditMode 테스트 미실행 · 유효 결과 미도달</div>
+        <div class="callout badbox" style="margin-top:14px">
+          <b>결과:</b> 19m 05s+ · Compaction 0회 · Compile FAIL × 2 · EditMode 테스트 미실행 · 유효 결과 미도달
+        </div>
       </div>
     </div>
 
     <div class="step">
       <div class="dot">3</div>
       <div class="card">
-        <div class="step-head"><h3>Codex · GPT-5.6 Sol · xhigh</h3><span class="tag">VALID · NO INTERVENTION</span></div>
-        <p>별도의 추가 지시 없이 한 번의 요청으로 구현부터 검증까지 진행했다. 첫 전체 EditMode 실행에서 40개 실패를 발견했고, 기존 테스트 fixture가 Hero를 일반 자동 전투 유닛처럼 사용하고 있던 원인을 찾아 테스트 의도를 유지하는 방식으로 수정한 뒤 전체 테스트를 다시 통과시켰다.</p>
-        <div class="callout" style="margin-top:14px"><b>결과:</b> 14m 41s · 사용자 개입 0회 · Hero 테스트 12/12 PASS · 전체 EditMode 272/272 PASS · Unity Compile PASS · git diff --check PASS</div>
-        <p class="ok"><b>추가 확인:</b> 실제 Unity Play Mode에서도 Hero 이동과 적 공격이 첫 실행부터 정상 동작했다.</p>
+        <div class="step-head">
+          <h3>Codex · GPT-5.6 Sol · xhigh</h3>
+          <span class="tag">VALID · NO INTERVENTION</span>
+        </div>
+        <p>
+          한 번의 요청으로 구현부터 검증까지 진행했다.
+          첫 전체 EditMode 실행에서 40개 실패를 직접 발견하고,
+          기존 테스트 fixture가 Hero를 일반 자동 전투 actor로 사용하던 원인을 찾아 수정한 뒤 전체 테스트를 다시 통과시켰다.
+        </p>
+        <div class="callout" style="margin-top:14px">
+          <b>Codex 표시:</b> Worked for 14m 41s · 사용자 개입 0회 · Hero 테스트 12/12 PASS · 전체 EditMode 272/272 PASS · Unity Compile PASS · git diff --check PASS
+        </div>
+        <p class="ok"><b>Play Mode:</b> 첫 실행부터 Hero 이동과 적 공격이 정상 동작했다.</p>
       </div>
     </div>
+
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="card">
+        <div class="step-head">
+          <h3>Codex · GPT-5.6 Terra · high</h3>
+          <span class="tag">VALID · NO INTERVENTION</span>
+        </div>
+        <p>
+          같은 작업을 더 가벼운 Codex 설정으로 다시 수행했다.
+          구현 과정에서 기존 테스트 20개가 실패했지만,
+          Hero를 identity로 제외하던 조건이 원인임을 찾아
+          자동 타겟팅이 비활성화된 Combatant만 필터링하도록 수정했다.
+        </p>
+        <div class="callout" style="margin-top:14px">
+          <b>Codex 표시:</b> Worked for 10m 46s · 사용자 개입 0회 · CombatDirectorTests 117/117 PASS · broader EditMode 269/269 PASS · git diff --check PASS
+        </div>
+        <p>
+          마지막으로 입력/query 관련 assertion 두 개를 추가한 뒤의 최종 batch rerun은
+          코드나 테스트 실패가 아니라 로컬 Unity licensing-client 문제로 실행되지 못했다.
+        </p>
+        <p class="ok"><b>Play Mode:</b> 실제 Unity에서 Hero 이동과 적 공격이 정상 동작했다.</p>
+      </div>
+    </div>
+
   </div>
 </section>
 
 <section id="comparison">
-  <h2>세 모델 비교</h2>
-  <p class="muted">이번 비교에서는 토큰 생성 속도보다 실제 개발 작업을 끝까지 완성하는 능력에서 차이가 크게 나타났다.</p>
+  <h2>네 가지 실행 조건 비교</h2>
+  <p class="muted">
+    이번 비교에서는 모델 크기나 단순 응답 속도보다 실제 개발 작업을 끝까지 완성하는 행동에서 차이가 더 크게 나타났다.
+  </p>
+
   <div class="card span-12" style="overflow-x:auto;margin-top:20px">
     <table>
-      <thead><tr><th>항목</th><th>Qwen3.8-27B · 128K</th><th>Qwen3-Coder-Next 80B · 256K</th><th>Codex · GPT-5.6 Sol · xhigh</th></tr></thead>
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th>Qwen3.8-27B</th>
+          <th>Qwen3-Coder-Next 80B</th>
+          <th>Codex Sol / xhigh</th>
+          <th>Codex Terra / high</th>
+        </tr>
+      </thead>
       <tbody>
-        <tr><td>총 작업 시간</td><td>43m 20s</td><td>19m 05s+ · 미완료</td><td class="ok"><b>14m 41s</b></td></tr>
-        <tr><td>사용자 개입</td><td>필요</td><td>컴파일 오류 전달 필요</td><td class="ok"><b>0회</b></td></tr>
-        <tr><td>Compaction</td><td>2회 / 3m 33s</td><td class="ok">0회</td><td>환경에서 노출되지 않음</td></tr>
-        <tr><td>Unity 컴파일</td><td class="ok">PASS</td><td class="bad">FAIL × 2</td><td class="ok">PASS</td></tr>
-        <tr><td>관련 EditMode 테스트</td><td class="ok">12 / 12 PASS</td><td class="bad">미실행</td><td class="ok">12 / 12 PASS</td></tr>
-        <tr><td>전체 EditMode 테스트</td><td class="ok">272 / 272 PASS</td><td class="bad">미실행</td><td class="ok">272 / 272 PASS</td></tr>
-        <tr><td>실패 후 자가 복구</td><td class="ok">런타임 입력 오류 수정</td><td class="bad">완료 실패</td><td class="ok">40개 테스트 실패 원인 분석 후 복구</td></tr>
-        <tr><td>Play Mode</td><td class="ok">PASS</td><td>컴파일 실패로 검증 불가</td><td class="ok">PASS</td></tr>
-        <tr><td>최종 결과</td><td class="ok">동작 가능한 결과</td><td class="bad">미완료</td><td class="ok"><b>동작 가능한 결과</b></td></tr>
+        <tr>
+          <td>표시/기록 시간</td>
+          <td>43m 20s</td>
+          <td>19m 05s+ · 미완료</td>
+          <td>Worked for 14m 41s</td>
+          <td class="ok"><b>Worked for 10m 46s</b></td>
+        </tr>
+        <tr>
+          <td>사용자 개입</td>
+          <td>필요</td>
+          <td>컴파일 오류 전달 필요</td>
+          <td class="ok">0회</td>
+          <td class="ok">0회</td>
+        </tr>
+        <tr>
+          <td>Unity 컴파일</td>
+          <td class="ok">PASS</td>
+          <td class="bad">FAIL × 2</td>
+          <td class="ok">PASS</td>
+          <td class="ok">자동 테스트 단계까지 정상 진행</td>
+        </tr>
+        <tr>
+          <td>관련 테스트</td>
+          <td class="ok">12 / 12 PASS</td>
+          <td class="bad">미실행</td>
+          <td class="ok">12 / 12 PASS</td>
+          <td class="ok">117 / 117 PASS</td>
+        </tr>
+        <tr>
+          <td>전체/광범위 EditMode</td>
+          <td class="ok">272 / 272 PASS</td>
+          <td class="bad">미실행</td>
+          <td class="ok">272 / 272 PASS</td>
+          <td class="ok">269 / 269 PASS</td>
+        </tr>
+        <tr>
+          <td>자가 복구</td>
+          <td class="ok">런타임 입력 오류 수정</td>
+          <td class="bad">완료 실패</td>
+          <td class="ok">40개 테스트 실패 복구</td>
+          <td class="ok">20개 테스트 실패 복구</td>
+        </tr>
+        <tr>
+          <td>최종 자동 재실행</td>
+          <td class="ok">PASS</td>
+          <td class="bad">도달 못함</td>
+          <td class="ok">PASS</td>
+          <td>Unity licensing-client 문제로 차단</td>
+        </tr>
+        <tr>
+          <td>Play Mode</td>
+          <td class="ok">PASS</td>
+          <td>검증 불가</td>
+          <td class="ok">PASS</td>
+          <td class="ok">PASS</td>
+        </tr>
+        <tr>
+          <td>최종 판정</td>
+          <td class="ok">Valid</td>
+          <td class="bad">Incomplete</td>
+          <td class="ok">Valid</td>
+          <td class="ok">Valid · final rerun externally blocked</td>
+        </tr>
       </tbody>
     </table>
   </div>
-  <div class="grid" style="margin-top:16px">
-    <div class="card span-4"><div class="metric">43m 20s</div><div class="label">Qwen3.8-27B · 최종 완료</div></div>
-    <div class="card span-4"><div class="metric bad">FAIL</div><div class="label">Qwen3-Coder-Next 80B · 유효 결과 미도달</div></div>
-    <div class="card span-4"><div class="metric ok">14m 41s</div><div class="label">Codex · 무개입 최종 완료</div></div>
+</section>
+
+<section id="terra">
+  <h2>Terra High 결과가 의미 있었던 이유</h2>
+  <p class="muted">
+    Sol xhigh보다 가벼운 설정에서도 동일한 Unity 기능을 사용자 개입 없이 완성했고,
+    중간 테스트 실패까지 스스로 복구했다.
+  </p>
+
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <div class="num">1</div>
+      <h3>20개 실패를 그냥 넘기지 않았다</h3>
+      <p>
+        기존 테스트가 Hero를 객체 identity 기준으로 제외하던 부분을 찾아
+        실제 의미인 자동 타겟팅 활성 여부를 기준으로 수정했다.
+      </p>
+    </div>
+    <div class="card span-6">
+      <div class="num">2</div>
+      <h3>광범위 테스트까지 직접 실행했다</h3>
+      <p>
+        Focused 수준에 머물지 않고 CombatDirectorTests 117/117과 broader EditMode 269/269를 통과했다.
+      </p>
+    </div>
+    <div class="card span-6">
+      <div class="num">3</div>
+      <h3>실제 Play Mode도 정상</h3>
+      <p>
+        자동 검증 결과와 별개로 실제 Unity에서 Hero 이동·공격을 확인했고 첫 실행부터 정상 동작했다.
+      </p>
+    </div>
+    <div class="card span-6 soft">
+      <div class="num">4</div>
+      <h3>Sol xhigh가 항상 필요한 것은 아니다</h3>
+      <p>
+        요구사항이 명확하고 테스트 가능한 중대형 기능이라면
+        Terra high도 충분한 작업 완성도를 보여줄 수 있다는 실사용 데이터를 얻었다.
+      </p>
+    </div>
   </div>
 </section>
 
-<section id="codex">
-  <h2>Codex에서 가장 인상적이었던 부분</h2>
-  <p class="muted">14분 41초라는 속도보다 더 중요한 차이는 작업 중 문제가 발생했을 때의 행동이었다.</p>
+<section id="timing">
+  <h2><code>Worked for</code> 시간은 어떻게 기록할까</h2>
+  <p class="muted">
+    Codex 최종 응답에 표시되는 <code>Worked for 10m 46s</code> 같은 값은
+    이번 비교에서 유용한 참고 지표지만, 정확한 end-to-end wall-clock과 동일하다고 단정하지 않기로 했다.
+  </p>
+
   <div class="grid" style="margin-top:20px">
     <div class="card span-6">
-      <h3>40개 테스트 실패를 작업 중 직접 발견</h3>
-      <p>첫 전체 테스트 실행에서 40개가 실패했지만 이를 완료로 처리하지 않았다. 실패 원인이 기존 테스트 fixture에서 Hero를 일반 자동 전투 actor로 사용하던 구조에 있다는 점을 찾아냈다.</p>
+      <h3>이번 기록 방식</h3>
+      <p>
+        Sol과 Terra의 시간은 각각 Codex가 최종 응답에 표시한
+        <b>Worked for</b> 값을 그대로 기록한다.
+      </p>
+      <ul>
+        <li>Sol xhigh: Worked for 14m 41s</li>
+        <li>Terra high: Worked for 10m 46s</li>
+      </ul>
     </div>
-    <div class="card span-6">
-      <h3>기존 테스트 의도를 유지하면서 복구</h3>
-      <p>공유 전투 로직을 검증하는 기존 fixture는 명시적으로 자동 모드를 유지하도록 조정하고, 실제 runtime Hero 동작은 별도 Hero 테스트에서 검증하도록 분리했다.</p>
-    </div>
-    <div class="card span-6">
-      <h3>완료 조건을 실제로 실행</h3>
-      <p>Unity 6000.4.11f1을 이용해 runtime과 test assembly를 컴파일하고, 관련 테스트 12개와 전체 272개 테스트를 모두 실행한 뒤 <code>git diff --check</code>까지 확인했다.</p>
-    </div>
+
     <div class="card span-6 soft">
-      <h3>추가 지시 없이 실제 동작까지 일치</h3>
-      <p>자동 검증이 끝난 뒤 Unity Game View에서 Hero 이동과 적 공격을 직접 확인했으며, 별도의 수정 요청 없이 첫 실행에서 정상 동작했다.</p>
+      <h3>해석 시 주의점</h3>
+      <p>
+        이 값은 “Codex가 보고한 작업 시간”으로 취급한다.
+        사용자가 프롬프트를 보낸 순간부터 최종 응답이 도착할 때까지의
+        실제 wall-clock을 별도로 측정하지 않았기 때문에 두 값을 완전히 같은 것으로 간주하지 않는다.
+      </p>
     </div>
   </div>
-  <div class="callout" style="margin-top:18px"><b>관찰:</b> 이번 작업에서 프론티어 코딩 에이전트의 차이는 “더 좋은 코드를 처음부터 생성한다”는 것보다 <b>실패를 발견하고, 원인을 좁히고, 수정하고, 다시 검증해 스스로 완료 상태까지 도달하는 능력</b>에서 더 크게 나타났다.</div>
+
+  <div class="callout" style="margin-top:18px">
+    <b>다음 벤치마크부터:</b>
+    프롬프트 submit 시각과 최종 응답 시각을 별도로 기록해
+    <code>Codex reported time</code>과 <code>wall-clock elapsed</code>를 함께 남긴다.
+  </div>
 </section>
 
 <section id="lesson">
   <h2>이번 비교에서 확인한 점</h2>
+
   <div class="grid" style="margin-top:20px">
-    <div class="card span-6"><div class="num">1</div><h3>로컬 LLM도 실제 개발에 사용할 수 있다</h3><p>Qwen3.8-27B는 속도와 작업 효율에서는 Codex보다 뒤졌지만, 실제 Unity 기능을 구현하고 자동 테스트와 Play Mode까지 통과할 수 있다는 점을 확인했다.</p></div>
-    <div class="card span-6"><div class="num">2</div><h3>큰 코딩 특화 모델이 항상 더 안정적인 것은 아니다</h3><p>Qwen3-Coder-Next 80B는 256K 컨텍스트와 빠른 구현이라는 장점이 있었지만, 이번 작업에서는 컴파일과 테스트 검증의 신뢰성이 부족했다.</p></div>
-    <div class="card span-6"><div class="num">3</div><h3>프론티어 모델의 강점은 작업 완결성에 있었다</h3><p>Codex는 구현 도중 발생한 대규모 테스트 실패까지 스스로 복구한 뒤 사용자 개입 없이 최종 정상 상태에 도달했다.</p></div>
-    <div class="card span-6"><div class="num">4</div><h3>가장 중요한 지표는 Time-to-valid-solution</h3><p>빠른 응답이나 높은 토큰 속도보다 실제로 컴파일되고 테스트를 통과하며 동작 가능한 결과까지 도달하는 시간이 개발 생산성에 더 직접적이었다.</p></div>
+    <div class="card span-6">
+      <div class="num">1</div>
+      <h3>로컬 LLM도 실제 개발에 사용할 수 있다</h3>
+      <p>
+        Qwen3.8-27B는 느렸지만 실제 기능 구현, 자동 테스트, Play Mode까지 도달해
+        반복적으로 사용할 수 있는 실용적인 로컬 코딩 모델임을 확인했다.
+      </p>
+    </div>
+
+    <div class="card span-6">
+      <div class="num">2</div>
+      <h3>큰 모델이 항상 더 안정적인 것은 아니다</h3>
+      <p>
+        Qwen3-Coder-Next 80B는 큰 컨텍스트와 빠른 구현 장점이 있었지만
+        이번 작업에서는 컴파일·테스트 검증 신뢰성이 부족했다.
+      </p>
+    </div>
+
+    <div class="card span-6">
+      <div class="num">3</div>
+      <h3>Codex의 강점은 자가 검증과 복구였다</h3>
+      <p>
+        Sol과 Terra 모두 중간에 발생한 다수의 테스트 실패를 스스로 발견하고
+        원인을 수정한 뒤 정상 상태까지 진행했다.
+      </p>
+    </div>
+
+    <div class="card span-6">
+      <div class="num">4</div>
+      <h3>일반적인 중대형 작업에는 Terra high가 유력하다</h3>
+      <p>
+        이번 Hero 기능 정도의 난이도에서는 Terra high도 사용자 개입 없이 정상 동작 결과에 도달했다.
+        Sol xhigh는 더 어려운 문제를 위한 상위 단계로 남겨두는 편이 효율적일 가능성이 높다.
+      </p>
+    </div>
   </div>
 </section>
 
 <section id="next">
   <h2>다음 방향</h2>
-  <p class="muted">이번 비교를 통해 로컬 모델과 프론티어 모델을 서로 대체 관계로 보기보다, 비용과 작업 난이도에 따라 역할을 나누는 편이 현실적이라는 판단을 얻었다.</p>
+  <p class="muted">
+    앞으로는 모델을 한 가지로 고정하기보다 작업 난이도와 사용량을 기준으로 단계적으로 선택한다.
+  </p>
+
   <div class="grid" style="margin-top:22px">
-    <div class="card span-6"><div class="num">1</div><h3>일상적인 반복 작업은 로컬 LLM</h3><p>코드 탐색, 작은 기능 추가, 명확한 수정, 반복 작업처럼 충분히 검증된 범위는 Qwen3.8-27B를 활용해 로컬에서 처리한다.</p></div>
-    <div class="card span-6"><div class="num">2</div><h3>복잡하고 회귀 위험이 큰 작업은 Codex</h3><p>여러 시스템이 연결되거나 실패 복구가 중요한 작업, 짧은 시간 안에 높은 완성도가 필요한 작업은 프론티어 코딩 에이전트를 활용한다.</p></div>
-    <div class="card span-12 soft"><h3>운영 방향</h3><p>로컬 LLM은 사용량 제약 없이 반복적으로 사용할 수 있다는 장점이 있고, Codex는 제한된 사용량을 소비하는 대신 복잡한 작업을 훨씬 빠르고 안정적으로 끝내는 장점이 있다. 앞으로는 한쪽을 완전히 대체하기보다 <b>작업 난이도에 따라 적절한 모델로 승격하는 방식</b>을 사용한다.</p></div>
+    <div class="card span-4">
+      <div class="num">1</div>
+      <h3>반복 작업</h3>
+      <p><b>Qwen3.8-27B</b><br>코드 탐색, 작은 기능, 명확한 수정, 반복적인 개발 작업.</p>
+    </div>
+    <div class="card span-4">
+      <div class="num">2</div>
+      <h3>일반적인 본격 기능 구현</h3>
+      <p><b>Codex Terra / high</b><br>여러 파일이 연결된 기능 구현과 회귀 테스트가 필요한 작업.</p>
+    </div>
+    <div class="card span-4">
+      <div class="num">3</div>
+      <h3>고난도 문제</h3>
+      <p><b>Codex Sol</b><br>Terra가 막히거나 설계·디버깅 난도가 높은 작업.</p>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top:18px">
+    <b>벤치마크 운영 개선:</b>
+    다음 비교부터는 모델, reasoning 설정, 테스트 결과뿐 아니라
+    submit 시각, final 시각, Codex Worked for 값을 모두 함께 기록한다.
   </div>
 </section>
+
 </main>
 
-<footer><div class="wrap">Local LLM · Public Work Log · 2026-09-04</div></footer>
+<footer>
+  <div class="wrap">Local LLM · Public Work Log · 2026-09-04</div>
+</footer>
 
 </body>
 </html>
