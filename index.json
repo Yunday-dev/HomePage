@@ -1,6 +1,29 @@
 {
-  "generated_at": "2026-09-04T10:44:34+00:00",
+  "generated_at": "2026-09-04T10:56:26+00:00",
   "reports": [
+    {
+      "date": "2026-09-04",
+      "title": "Qwen3.8-27B와 Qwen3-Coder-Next 80B 비교 — 동일한 Unity 작업으로 확인한 코딩 에이전트 신뢰성",
+      "project": "로컬 LLM",
+      "tags": [
+        "RTX 5090",
+        "Local LLM",
+        "OpenCode",
+        "Unity",
+        "Qwen",
+        "Qwen3-Coder-Next",
+        "Coding Agent",
+        "256K Context",
+        "Benchmark",
+        "Hero Command",
+        "Compilation",
+        "Validation",
+        "Agent Reliability"
+      ],
+      "summary": "기존에 Qwen3.8-27B로 수행했던 Unity Hero 이동·공격 기능 구현과 동일한 작업을 Qwen3-Coder-Next 80B에 맡겨 결과를 비교했다. Qwen3-Coder-Next 80B는 256K 컨텍스트에서 Compaction 없이 빠르게 코드를 생성했지만, 완료 보고 이후 실제 Unity 컴파일 오류가 두 차례 확인됐고 EditMode 테스트도 실행되지 않았다. 반면 Qwen3.8-27B는 더 오래 걸리고 Compaction이 발생했지만 자동 테스트와 실제 Play Mode 검증까지 거쳐 동작 가능한 결과에 도달했다. 이번 비교를 통해 코딩 특화 모델의 크기보다 컴파일·테스트·수정까지 끝내는 에이전트 신뢰성이 중요하다는 점을 확인했다.",
+      "file": "reports/2026/09/2026-09-04_qwen27b-vs-qwen-coder-next-80b.html",
+      "visibility": "public"
+    },
     {
       "date": "2026-09-03",
       "title": "RTX 5090 로컬 LLM — 로컬 코딩 AI 에이전트로 Unity 게임 Hero의 이동과 공격 기능 구현",
