@@ -211,7 +211,7 @@
           마지막으로 입력/query 관련 assertion 두 개를 추가한 뒤의 최종 batch rerun은
           코드나 테스트 실패가 아니라 로컬 Unity licensing-client 문제로 실행되지 못했다.
         </p>
-        <p class="ok"><b>Play Mode:</b> 실제 Unity에서 Hero 이동과 적 공격이 정상 동작했다.</p>
+        <p class="ok"><b>Play Mode:</b> Terra high 역시 첫 실행부터 Hero 이동과 적 공격이 정상 동작했다.</p>
       </div>
     </div>
 
@@ -342,43 +342,6 @@
         Terra high도 충분한 작업 완성도를 보여줄 수 있다는 실사용 데이터를 얻었다.
       </p>
     </div>
-  </div>
-</section>
-
-<section id="timing">
-  <h2><code>Worked for</code> 시간은 어떻게 기록할까</h2>
-  <p class="muted">
-    Codex 최종 응답에 표시되는 <code>Worked for 10m 46s</code> 같은 값은
-    이번 비교에서 유용한 참고 지표지만, 정확한 end-to-end wall-clock과 동일하다고 단정하지 않기로 했다.
-  </p>
-
-  <div class="grid" style="margin-top:20px">
-    <div class="card span-6">
-      <h3>이번 기록 방식</h3>
-      <p>
-        Sol과 Terra의 시간은 각각 Codex가 최종 응답에 표시한
-        <b>Worked for</b> 값을 그대로 기록한다.
-      </p>
-      <ul>
-        <li>Sol xhigh: Worked for 14m 41s</li>
-        <li>Terra high: Worked for 10m 46s</li>
-      </ul>
-    </div>
-
-    <div class="card span-6 soft">
-      <h3>해석 시 주의점</h3>
-      <p>
-        이 값은 “Codex가 보고한 작업 시간”으로 취급한다.
-        사용자가 프롬프트를 보낸 순간부터 최종 응답이 도착할 때까지의
-        실제 wall-clock을 별도로 측정하지 않았기 때문에 두 값을 완전히 같은 것으로 간주하지 않는다.
-      </p>
-    </div>
-  </div>
-
-  <div class="callout" style="margin-top:18px">
-    <b>다음 벤치마크부터:</b>
-    프롬프트 submit 시각과 최종 응답 시각을 별도로 기록해
-    <code>Codex reported time</code>과 <code>wall-clock elapsed</code>를 함께 남긴다.
   </div>
 </section>
 
