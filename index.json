@@ -1,6 +1,27 @@
 {
-  "generated_at": "2026-09-04T14:02:20+00:00",
+  "generated_at": "2026-09-05T13:08:26+00:00",
   "reports": [
+    {
+      "date": "2026-09-05",
+      "title": "같은 Unity 비주얼 작업을 세 모델에 맡겨봤다 — 우주 SF 테마 비교",
+      "project": "로컬 LLM",
+      "tags": [
+        "Local LLM",
+        "Unity",
+        "Codex",
+        "Qwen",
+        "GPT-5.6 Sol",
+        "GPT-5.6 Terra",
+        "Qwen3.8-27B",
+        "Visual Theme",
+        "Space SF",
+        "Coding Agent",
+        "Benchmark"
+      ],
+      "summary": "동일한 Unity 전투 화면 우주 SF 테마 변경 작업을 Codex GPT-5.6 Sol xhigh, Codex GPT-5.6 Terra high, Qwen3.8-27B에 각각 수행시켜 결과를 비교했다. Sol은 강한 자동 검증과 안정적인 완성도를 보였고, Terra는 가장 짧은 시간에 육각형 tactical marker를 포함한 선호도 높은 디자인을 만들었다. Qwen3.8-27B는 약 56분이 걸렸지만 메시 렌더링 오류를 스스로 발견·수정하고 277/277 EditMode 테스트와 실제 렌더 검증까지 완료했다.",
+      "file": "reports/2026/09/2026-09-05_space-sf-theme-model-comparison.html",
+      "visibility": "public"
+    },
     {
       "date": "2026-09-04",
       "title": "로컬 LLM과 Codex 비교 — 동일한 Unity 작업으로 본 모델별 완성도와 작업 시간",
