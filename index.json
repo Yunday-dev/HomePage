@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-08T09:30:54+00:00",
+  "generated_at": "2026-09-08T12:58:29+00:00",
   "reports": [
     {
       "date": "2026-09-08",
-      "title": "RTX 5090 로컬 LLM — Unity MCP를 실제 개발에 써보고 최소 구성으로 정리하다",
+      "title": "RTX 5090 로컬 LLM — Unity MCP를 실제 개발 흐름에 맞게 정리하다",
       "project": "로컬 LLM",
       "tags": [
         "RTX 5090",
@@ -16,17 +16,17 @@
         "MCP",
         "Coding Agent",
         "Editor Automation",
-        "160K Context",
-        "190K Context",
-        "AGENTS.md"
+        "196K Context",
+        "AGENTS.md",
+        "Focused Test"
       ],
-      "summary": "RTX 5090에서 구동하는 Qwen3.8-27B 기반 OpenCode 환경에 KitWright Unity MCP를 연결해 실제 Unity 작업에 사용해봤다. 기대했던 만큼 구현 시간이나 작업 왕복이 크게 줄어드는 차이는 체감하기 어려웠고, 처음에는 너무 많은 MCP 도구가 열려 있어 에이전트가 필요 이상의 검사와 테스트를 수행하면서 오히려 작업 시간이 길어졌다. 이후 get_editor_state, get_console_errors, find_gameobject, inspect_component, inspect_serialized_references, edit_serialized_reference, enter_playmode, exit_playmode, run_tests, capture_gameview 중심의 최소 구성으로 줄였다. MCP 연결 전 반복되던 실행 중 Unity Editor 종료 확인이 사라진 점은 분명히 편해져, 평소에는 최소 MCP만 켜두고 추가 기능은 필요할 때만 활성화하는 방식으로 운용하기로 했다.",
-      "file": "reports/2026/09/2026-09-08_unity-mcp-kitwright-worklog.html",
+      "summary": "RTX 5090에서 구동하는 Qwen3.8-27B와 OpenCode에 KitWright Unity MCP를 연결해 실제 Unity 기능 구현에 사용했다. 처음에는 MCP 도구가 많아지면서 Play Mode, 스크린샷, 픽셀 검사, 런타임 상태 조사까지 검증 범위가 넓어져 오히려 작업 시간이 길어졌다. 이후 AGENTS.md에 기능 구현은 Compile과 Focused Test까지만 수행하고 Play Mode 확인과 전체 Regression은 별도 단계로 분리하도록 규칙을 추가했다. Tool Exposure는 다시 Full로 열어두되 에이전트가 Profile을 임의 변경하거나 검증 범위를 확장하지 못하도록 제한했고, 196K Context에서 실제 이동·공격 마커 작업을 수행해 이 흐름을 확인했다.",
+      "file": "reports/2026/09/2026-09-08_unity-mcp-kitwright-worklog_v2.html",
       "visibility": "public"
     },
     {
       "date": "2026-09-05",
-      "title": "같은 Unity 비주얼 작업을 세 모델에 맡겨봤다 — 우주 SF 테마 비교",
+      "title": "RTX 5090 로컬 LLM — 우주 SF 테마 Unity 비주얼 작업을 세 모델에 각각 맡겨봤다",
       "project": "로컬 LLM",
       "tags": [
         "Local LLM",
@@ -88,7 +88,7 @@
         "Agent Reliability"
       ],
       "summary": "Qwen3.8-27B, Qwen3-Coder-Next 80B, Codex GPT-5.6 Sol xhigh, Codex GPT-5.6 Terra high에 동일한 Unity Hero 이동·공격 기능 구현을 맡겨 결과를 비교했다. Qwen3.8-27B는 최종 동작까지 완료했지만 시간이 오래 걸렸고, Qwen3-Coder-Next 80B는 컴파일 오류가 반복돼 미완료로 끝났다. Codex Sol xhigh은 사용자 개입 없이 14분 41초에 완료했고, Terra high는 10분 46초의 Worked for 표시와 함께 자동 테스트 및 실제 Play Mode에서 정상 동작했다.",
-      "file": "reports/2026/09/2026-09-04_local-llm-coding-agent-comparison-02.html",
+      "file": "reports/2026/09/2026-09-04_local-llm-and_frontier_coding-agent-comparison-02.html",
       "visibility": "public"
     },
     {
