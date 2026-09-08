@@ -31,7 +31,7 @@
     @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}}@media print{nav{display:none}body{background:#fff;color:#111}.card,td{background:#fff}pre{background:#f5f5f5;color:#111}header{background:#fff}.muted,.label{color:#555}section{break-inside:avoid}}
 
     .result-choice{border-color:rgba(124,227,177,.42);box-shadow:0 0 0 1px rgba(124,227,177,.08) inset}
-    .shot-grid{display:grid;grid-template-columns:1fr;gap:20px;margin-top:24px;max-width:824px;margin-left:auto;margin-right:auto}
+    .shot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:24px;max-width:860px;margin-left:auto;margin-right:auto}
     .shot-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
     .shot-head{padding:18px 18px 14px;border-bottom:1px solid var(--line)}
     .shot-head h3{margin:0}.shot-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
@@ -82,13 +82,13 @@
   <div class="wrap">
     <a href="#goal">작업 목표</a>
     <a href="#direction">비주얼 방향</a>
+    <a href="#screenshots">작업 결과</a>
     <a href="#sol">Sol xhigh</a>
     <a href="#terra">Terra high</a>
     <a href="#qwen">Qwen3.8-27B</a>
     <a href="#comparison">비교 결과</a>
     <a href="#lesson">확인한 점</a>
     <a href="#next">다음 작업</a>
-    <a href="#screenshots">결과 이미지</a>
   </div>
 </nav>
 
@@ -144,6 +144,97 @@
     </div>
   </div>
 </section>
+
+<section id="screenshots">
+  <h2>작업 결과</h2>
+  <p class="muted">
+    변경 전 화면과 세 모델의 결과를 한눈에 비교할 수 있도록 2열 2행 그리드로 정리했다.
+    화면 폭이 좁아지면 자동으로 1열로 전환된다.
+  </p>
+
+  <div class="shot-grid">
+    <article class="shot-card">
+      <div class="shot-head">
+        <h3>변경 전</h3>
+        <p>우주 SF 테마 적용 전 기존 전투 화면</p>
+      </div>
+      <div class="shot-slot">
+        <img src="../../../assets/2026/09/05/before-space-sf-theme.png"
+             alt="우주 SF 테마 적용 전 전투 화면"
+             loading="lazy"
+             onload="this.parentElement.classList.add('has-image')"
+             onerror="this.remove()" />
+        <div class="slot-placeholder">
+          <strong>PNG 이미지 슬롯</strong>
+          변경 전 전투 화면 이미지를 추가하세요.
+          <span class="slot-path">assets/2026/09/05/before-space-sf-theme.png</span>
+        </div>
+      </div>
+      <div class="shot-caption">Before · Space SF Theme 적용 전</div>
+    </article>
+
+    <article class="shot-card">
+      <div class="shot-head">
+        <h3>Codex · Sol / xhigh</h3>
+        <p>Energy ring 중심의 SF 전장</p>
+      </div>
+      <div class="shot-slot">
+        <img src="../../../assets/2026/09/05/codex-sol-xhigh.png"
+             alt="Codex GPT-5.6 Sol xhigh 우주 SF 테마 결과"
+             loading="lazy"
+             onload="this.parentElement.classList.add('has-image')"
+             onerror="this.remove()" />
+        <div class="slot-placeholder">
+          <strong>PNG 이미지 슬롯</strong>
+          Codex Sol / xhigh 결과 이미지를 추가하세요.
+          <span class="slot-path">assets/2026/09/05/codex-sol-xhigh.png</span>
+        </div>
+      </div>
+      <div class="shot-caption">Sol xhigh · Worked for 18m 13s</div>
+    </article>
+
+    <article class="shot-card result-choice">
+      <div class="shot-head">
+        <h3>Codex · Terra / high</h3>
+        <p>Hex-core tactical marker · 최종 선호 방향</p>
+      </div>
+      <div class="shot-slot">
+        <img src="../../../assets/2026/09/05/codex-terra-high.png"
+             alt="Codex GPT-5.6 Terra high 우주 SF 테마 결과"
+             loading="lazy"
+             onload="this.parentElement.classList.add('has-image')"
+             onerror="this.remove()" />
+        <div class="slot-placeholder">
+          <strong>PNG 이미지 슬롯</strong>
+          Codex Terra / high 결과 이미지를 추가하세요.
+          <span class="slot-path">assets/2026/09/05/codex-terra-high.png</span>
+        </div>
+      </div>
+      <div class="shot-caption">Terra high · Worked for 10m 37s · Visual choice</div>
+    </article>
+
+    <article class="shot-card">
+      <div class="shot-head">
+        <h3>Qwen3.8-27B · 128K</h3>
+        <p>로컬 LLM · 강한 검증 루프</p>
+      </div>
+      <div class="shot-slot">
+        <img src="../../../assets/2026/09/05/qwen38-27b.png"
+             alt="Qwen3.8-27B 우주 SF 테마 결과"
+             loading="lazy"
+             onload="this.parentElement.classList.add('has-image')"
+             onerror="this.remove()" />
+        <div class="slot-placeholder">
+          <strong>PNG 이미지 슬롯</strong>
+          Qwen3.8-27B 결과 이미지를 추가하세요.
+          <span class="slot-path">assets/2026/09/05/qwen38-27b.png</span>
+        </div>
+      </div>
+      <div class="shot-caption">Qwen3.8-27B · Elapsed 55m 57s · 277/277 PASS</div>
+    </article>
+  </div>
+</section>
+
 
 <section id="sol">
   <h2>Codex · GPT-5.6 Sol · xhigh</h2>
@@ -425,96 +516,6 @@
   </div>
 </section>
 
-<section id="screenshots">
-  <h2>세 모델 결과 이미지</h2>
-  <p class="muted">
-    개인적으로 GPT-5.6 Terra high의 육각형 스타일이 가장 마음에 든다.
-  </p>
-
-  <div class="shot-grid" style="margin-bottom:18px">
-    <article class="shot-card">
-      <div class="shot-head">
-        <h3>변경 전</h3>
-        <p>우주 SF 테마 적용 전 기존 전투 화면</p>
-      </div>
-      <div class="shot-slot">
-        <img src="../../../assets/2026/09/05/before-space-sf-theme.png"
-             alt="우주 SF 테마 적용 전 전투 화면"
-             loading="lazy"
-             onload="this.parentElement.classList.add('has-image')"
-             onerror="this.remove()" />
-        <div class="slot-placeholder">
-          <strong>PNG 이미지 슬롯</strong>
-          변경 전 전투 화면 이미지를 추가하세요.
-          <span class="slot-path">assets/2026/09/05/before-space-sf-theme.png</span>
-        </div>
-      </div>
-      <div class="shot-caption">Before · Space SF Theme 적용 전</div>
-    </article>
-  </div>
-
-  <div class="shot-grid">
-    <article class="shot-card">
-      <div class="shot-head">
-        <h3>Codex · Sol / xhigh</h3>
-        <p>Energy ring 중심의 SF 전장</p>
-      </div>
-      <div class="shot-slot">
-        <img src="../../../assets/2026/09/05/codex-sol-xhigh.png"
-             alt="Codex GPT-5.6 Sol xhigh 우주 SF 테마 결과"
-             loading="lazy"
-             onload="this.parentElement.classList.add('has-image')"
-             onerror="this.remove()" />
-        <div class="slot-placeholder">
-          <strong>PNG 이미지 슬롯</strong>
-          Codex Sol / xhigh 결과 이미지를 추가하세요.
-          <span class="slot-path">assets/2026/09/05/codex-sol-xhigh.png</span>
-        </div>
-      </div>
-      <div class="shot-caption">Sol xhigh · Worked for 18m 13s</div>
-    </article>
-
-    <article class="shot-card result-choice">
-      <div class="shot-head">
-        <h3>Codex · Terra / high</h3>
-        <p>Hex-core tactical marker · 최종 선호 방향</p>
-      </div>
-      <div class="shot-slot">
-        <img src="../../../assets/2026/09/05/codex-terra-high.png"
-             alt="Codex GPT-5.6 Terra high 우주 SF 테마 결과"
-             loading="lazy"
-             onload="this.parentElement.classList.add('has-image')"
-             onerror="this.remove()" />
-        <div class="slot-placeholder">
-          <strong>PNG 이미지 슬롯</strong>
-          Codex Terra / high 결과 이미지를 추가하세요.
-          <span class="slot-path">assets/2026/09/05/codex-terra-high.png</span>
-        </div>
-      </div>
-      <div class="shot-caption">Terra high · Worked for 10m 37s · Visual choice</div>
-    </article>
-
-    <article class="shot-card">
-      <div class="shot-head">
-        <h3>Qwen3.8-27B · 128K</h3>
-        <p>로컬 LLM · 강한 검증 루프</p>
-      </div>
-      <div class="shot-slot">
-        <img src="../../../assets/2026/09/05/qwen38-27b.png"
-             alt="Qwen3.8-27B 우주 SF 테마 결과"
-             loading="lazy"
-             onload="this.parentElement.classList.add('has-image')"
-             onerror="this.remove()" />
-        <div class="slot-placeholder">
-          <strong>PNG 이미지 슬롯</strong>
-          Qwen3.8-27B 결과 이미지를 추가하세요.
-          <span class="slot-path">assets/2026/09/05/qwen38-27b.png</span>
-        </div>
-      </div>
-      <div class="shot-caption">Qwen3.8-27B · Elapsed 55m 57s · 277/277 PASS</div>
-    </article>
-  </div>
-</section>
 
 </main>
 

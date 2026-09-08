@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="worklog-date" content="2026-09-04" />
-  <meta name="worklog-title" content="로컬 LLM과 Codex 비교 — 동일한 Unity 작업으로 본 모델별 완성도와 작업 시간" />
+  <meta name="worklog-title" content=RTX 5090 로컬 LLM과 Codex 비교 — 동일한 Unity 작업으로 본 모델별 완성도와 작업 시간" />
   <meta name="worklog-project" content="로컬 LLM" />
   <meta name="worklog-tags" content="RTX 5090,Local LLM,OpenCode,Unity,Qwen,Qwen3-Coder-Next,Coding Agent,256K Context,Benchmark,Hero Command,Compilation,Validation,Agent Reliability" />
   <meta name="worklog-summary" content="Qwen3.8-27B, Qwen3-Coder-Next 80B, Codex GPT-5.6 Sol xhigh, Codex GPT-5.6 Terra high에 동일한 Unity Hero 이동·공격 기능 구현을 맡겨 결과를 비교했다. Qwen3.8-27B는 최종 동작까지 완료했지만 시간이 오래 걸렸고, Qwen3-Coder-Next 80B는 컴파일 오류가 반복돼 미완료로 끝났다. Codex Sol xhigh은 사용자 개입 없이 14분 41초에 완료했고, Terra high는 10분 46초의 Worked for 표시와 함께 자동 테스트 및 실제 Play Mode에서 정상 동작했다." />
@@ -61,9 +61,9 @@
 <nav>
   <div class="wrap">
     <a href="#goal">작업 목표</a>
+    <a href="#comparison">작업 결과</a>
     <a href="#task">동일 비교 작업</a>
     <a href="#results">실행 결과</a>
-    <a href="#comparison">4자 비교</a>
     <a href="#terra">Terra 결과</a>
     <a href="#timing">Worked for</a>
     <a href="#lesson">확인한 점</a>
@@ -99,6 +99,92 @@
         모델이 답변을 끝낸 시점이 아니라 실제 프로젝트에서 사용할 수 있는 상태에 도달했는지를 우선한다.
       </p>
     </div>
+  </div>
+</section>
+
+<section id="comparison">
+  <h2>작업 결과</h2>
+  <p class="muted">
+    이번 비교에서는 모델 크기나 단순 응답 속도보다 실제 개발 작업을 끝까지 완성하는 행동에서 차이가 더 크게 나타났다. 로컬 LLM QWEN3.8-27B 모델이 시간은 오래 걸렸지만 의외로 선방하는 모습을 보여줬다. 프론티어 모델로 작업하다가 토큰이 부족할 시 로컬 LLM으로 대체 가능하겠다라는 생각이 들었다. 프론티어 모델은 확실히 빠르다. Qwen3-Coder-Next는 2026년 2월 공개된 코딩 에이전트 특화 모델임에도 불구하고 개발 작업을 끝까지 완성하지 못했다.
+  </p>
+
+  <div class="card span-12" style="overflow-x:auto;margin-top:20px">
+    <table>
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th>Qwen3.8-27B</th>
+          <th>Qwen3-Coder-Next 80B</th>
+          <th>Codex Sol / xhigh</th>
+          <th>Codex Terra / high</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>표시/기록 시간</td>
+          <td>43m 20s</td>
+          <td>19m 05s+ · 미완료</td>
+          <td>Worked for 14m 41s</td>
+          <td class="ok"><b>Worked for 10m 46s</b></td>
+        </tr>
+        <tr>
+          <td>사용자 개입</td>
+          <td>필요</td>
+          <td>컴파일 오류 전달 필요</td>
+          <td class="ok">0회</td>
+          <td class="ok">0회</td>
+        </tr>
+        <tr>
+          <td>Unity 컴파일</td>
+          <td class="ok">PASS</td>
+          <td class="bad">FAIL × 2</td>
+          <td class="ok">PASS</td>
+          <td class="ok">자동 테스트 단계까지 정상 진행</td>
+        </tr>
+        <tr>
+          <td>관련 테스트</td>
+          <td class="ok">12 / 12 PASS</td>
+          <td class="bad">미실행</td>
+          <td class="ok">12 / 12 PASS</td>
+          <td class="ok">117 / 117 PASS</td>
+        </tr>
+        <tr>
+          <td>전체/광범위 EditMode</td>
+          <td class="ok">272 / 272 PASS</td>
+          <td class="bad">미실행</td>
+          <td class="ok">272 / 272 PASS</td>
+          <td class="ok">269 / 269 PASS</td>
+        </tr>
+        <tr>
+          <td>자가 복구</td>
+          <td class="ok">런타임 입력 오류 수정</td>
+          <td class="bad">완료 실패</td>
+          <td class="ok">40개 테스트 실패 복구</td>
+          <td class="ok">20개 테스트 실패 복구</td>
+        </tr>
+        <tr>
+          <td>최종 자동 재실행</td>
+          <td class="ok">PASS</td>
+          <td class="bad">도달 못함</td>
+          <td class="ok">PASS</td>
+          <td>Unity licensing-client 문제로 차단</td>
+        </tr>
+        <tr>
+          <td>Play Mode</td>
+          <td class="ok">PASS</td>
+          <td>검증 불가</td>
+          <td class="ok">PASS</td>
+          <td class="ok">PASS</td>
+        </tr>
+        <tr>
+          <td>최종 판정</td>
+          <td class="ok">Valid</td>
+          <td class="bad">Incomplete</td>
+          <td class="ok">Valid</td>
+          <td class="ok">Valid · final rerun externally blocked</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
@@ -215,92 +301,6 @@
       </div>
     </div>
 
-  </div>
-</section>
-
-<section id="comparison">
-  <h2>네 가지 실행 조건 비교</h2>
-  <p class="muted">
-    이번 비교에서는 모델 크기나 단순 응답 속도보다 실제 개발 작업을 끝까지 완성하는 행동에서 차이가 더 크게 나타났다.
-  </p>
-
-  <div class="card span-12" style="overflow-x:auto;margin-top:20px">
-    <table>
-      <thead>
-        <tr>
-          <th>항목</th>
-          <th>Qwen3.8-27B</th>
-          <th>Qwen3-Coder-Next 80B</th>
-          <th>Codex Sol / xhigh</th>
-          <th>Codex Terra / high</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>표시/기록 시간</td>
-          <td>43m 20s</td>
-          <td>19m 05s+ · 미완료</td>
-          <td>Worked for 14m 41s</td>
-          <td class="ok"><b>Worked for 10m 46s</b></td>
-        </tr>
-        <tr>
-          <td>사용자 개입</td>
-          <td>필요</td>
-          <td>컴파일 오류 전달 필요</td>
-          <td class="ok">0회</td>
-          <td class="ok">0회</td>
-        </tr>
-        <tr>
-          <td>Unity 컴파일</td>
-          <td class="ok">PASS</td>
-          <td class="bad">FAIL × 2</td>
-          <td class="ok">PASS</td>
-          <td class="ok">자동 테스트 단계까지 정상 진행</td>
-        </tr>
-        <tr>
-          <td>관련 테스트</td>
-          <td class="ok">12 / 12 PASS</td>
-          <td class="bad">미실행</td>
-          <td class="ok">12 / 12 PASS</td>
-          <td class="ok">117 / 117 PASS</td>
-        </tr>
-        <tr>
-          <td>전체/광범위 EditMode</td>
-          <td class="ok">272 / 272 PASS</td>
-          <td class="bad">미실행</td>
-          <td class="ok">272 / 272 PASS</td>
-          <td class="ok">269 / 269 PASS</td>
-        </tr>
-        <tr>
-          <td>자가 복구</td>
-          <td class="ok">런타임 입력 오류 수정</td>
-          <td class="bad">완료 실패</td>
-          <td class="ok">40개 테스트 실패 복구</td>
-          <td class="ok">20개 테스트 실패 복구</td>
-        </tr>
-        <tr>
-          <td>최종 자동 재실행</td>
-          <td class="ok">PASS</td>
-          <td class="bad">도달 못함</td>
-          <td class="ok">PASS</td>
-          <td>Unity licensing-client 문제로 차단</td>
-        </tr>
-        <tr>
-          <td>Play Mode</td>
-          <td class="ok">PASS</td>
-          <td>검증 불가</td>
-          <td class="ok">PASS</td>
-          <td class="ok">PASS</td>
-        </tr>
-        <tr>
-          <td>최종 판정</td>
-          <td class="ok">Valid</td>
-          <td class="bad">Incomplete</td>
-          <td class="ok">Valid</td>
-          <td class="ok">Valid · final rerun externally blocked</td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </section>
 
