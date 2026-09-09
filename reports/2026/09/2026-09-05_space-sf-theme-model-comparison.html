@@ -62,14 +62,14 @@
     <div class="eyebrow">RTX 5090 로컬 AI 엔지니어링</div>
     <h1>같은 Unity 비주얼 작업을<br>세 모델에 맡겨보았다</h1>
     <p class="lead">
-      기존 전투 화면을 <b>우주 SF 전술 전장</b>으로 바꾸는 동일한 작업을
+      기존 전투 화면을 <b>네온 그리드의 우주 SF 전술 전장</b>으로 바꾸는 동일한 작업을
       Codex GPT-5.6 Sol xhigh, Codex GPT-5.6 Terra high, Qwen3.8-27B에 각각 맡겼다.
       바닥 그리드, 전장 색상, 유닛 표현, UI 가독성처럼 눈으로 판단해야 하는 작업에서
       모델마다 구현 속도와 디자인 선택, 검증 방식이 어떻게 달라지는지 확인했다.
     </p>
     <div class="hero-meta">
       <span class="pill">Unity 6000.4.11f1</span>
-      <span class="pill">Space SF Theme</span>
+      <span class="pill">Neon Grid Space SF Theme</span>
       <span class="pill">Codex · GPT-5.6 Sol · xhigh</span>
       <span class="pill">Codex · GPT-5.6 Terra · high</span>
       <span class="pill">Qwen3.8-27B · 128K</span>
@@ -97,7 +97,7 @@
 <section id="goal">
   <h2>작업 목표</h2>
   <p class="muted">
-    전투 로직은 그대로 유지하면서 현재 프로토타입의 화면을 어두운 우주 SF 전장으로 바꾸는 것이 목표였다.
+    전투 로직은 그대로 유지하면서 현재 프로토타입의 화면을 네온 그리드 전장으로 바꾸는 것이 목표였다.
     같은 요구사항을 서로 다른 모델에 독립적으로 수행시켜 단순 코드 생성이 아니라
     <b>비주얼 해석, Unity 애셋 수정, 런타임 검증까지 포함한 작업 완성도</b>를 비교했다.
   </p>
@@ -148,8 +148,7 @@
 <section id="screenshots">
   <h2>작업 결과</h2>
   <p class="muted">
-    변경 전 화면과 세 모델의 결과를 한눈에 비교할 수 있도록 2열 2행 그리드로 정리했다.
-    화면 폭이 좁아지면 자동으로 1열로 전환된다.
+    세 모델 모두 자신만의 방식으로 네온 그리드 컨셉을 만들어냈다. 개인적으로는 Codex GPT-5.6 Sol이 만들어낸 컨셉이 가장 마음에 들었다. Qwen3.8-27B의 경우 작업 완료 까지 거의 1시간이 소요되었다. 이거 괜찮은걸까..
   </p>
 
   <div class="shot-grid">
@@ -210,7 +209,7 @@
           <span class="slot-path">assets/2026/09/05/codex-terra-high.png</span>
         </div>
       </div>
-      <div class="shot-caption">Terra high · Worked for 10m 37s · Visual choice</div>
+      <div class="shot-caption">Terra high · Worked for 10m 37s</div>
     </article>
 
     <article class="shot-card">
@@ -230,7 +229,7 @@
           <span class="slot-path">assets/2026/09/05/qwen38-27b.png</span>
         </div>
       </div>
-      <div class="shot-caption">Qwen3.8-27B · Elapsed 55m 57s · 277/277 PASS</div>
+      <div class="shot-caption">Qwen3.8-27B · Elapsed 55m 57s</div>
     </article>
   </div>
 </section>
