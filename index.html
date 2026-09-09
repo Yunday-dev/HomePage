@@ -192,10 +192,8 @@
       top: 18px;
       z-index: 10;
       display: grid;
-      grid-template-columns: minmax(260px, 1fr) auto;
       gap: 14px;
-      align-items: center;
-      padding: 12px;
+      padding: 16px 18px 18px;
       background: rgba(16, 24, 33, 0.92);
       border: 1px solid var(--line);
       border-radius: 16px;
@@ -203,8 +201,23 @@
       backdrop-filter: blur(18px);
     }
 
+    .filter-section {
+      display: grid;
+      gap: 9px;
+    }
+
+    .filter-section-title {
+      margin: 0;
+      color: var(--muted-strong);
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
     .search-wrap {
       position: relative;
+      min-width: 0;
     }
 
     .search-wrap svg {
@@ -239,27 +252,39 @@
 
     .project-filters {
       display: flex;
+      flex-wrap: wrap;
       gap: 7px;
-      max-width: 54vw;
-      overflow-x: auto;
-      scrollbar-width: none;
+      width: 100%;
+      overflow: visible;
     }
 
-    .project-filters::-webkit-scrollbar { display: none; }
+    .tag-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      width: 100%;
+      padding: 2px 0 0;
+      overflow: visible;
+    }
 
-    .filter-button {
+    .filter-button,
+    .tag-filter-button {
       flex: 0 0 auto;
-      min-height: 40px;
-      padding: 0 15px;
       background: transparent;
       border: 1px solid var(--line-bright);
       border-radius: 999px;
       color: var(--muted);
       cursor: pointer;
-      font-size: 0.75rem;
       font-weight: 750;
       letter-spacing: 0.04em;
       transition: 160ms ease;
+    }
+
+    /* 프로젝트: 기존 크기 유지 */
+    .filter-button {
+      min-height: 40px;
+      padding: 0 15px;
+      font-size: 0.75rem;
     }
 
     .filter-button:hover,
@@ -267,6 +292,27 @@
       background: var(--accent);
       border-color: var(--accent);
       color: #07110d;
+    }
+
+    /* 태그: 프로젝트보다 작고 가볍게 */
+    .tag-filter-button {
+      min-height: 28px;
+      padding: 0 10px;
+      border-color: #26394d;
+      color: #7890a6;
+      font-size: 0.64rem;
+      font-weight: 700;
+    }
+
+    .tag-filter-button:hover {
+      border-color: #45627e;
+      color: var(--muted-strong);
+    }
+
+    .tag-filter-button[aria-pressed="true"] {
+      background: var(--accent-soft);
+      border-color: rgba(105, 237, 179, 0.58);
+      color: var(--accent);
     }
 
     .results-meta {
@@ -381,9 +427,9 @@
     }
 
     .card-project {
-      margin: 0 0 9px;
+      margin: 0 0 11px;
       color: var(--accent);
-      font-size: 0.72rem;
+      font-size: 1.5rem;
       font-weight: 800;
       letter-spacing: 0.11em;
       text-transform: uppercase;
@@ -518,11 +564,14 @@
 
       .controls {
         position: static;
-        grid-template-columns: 1fr;
-        padding: 10px;
+        padding: 12px;
       }
 
-      .project-filters { max-width: 100%; }
+      .project-filters,
+      .tag-filters {
+        width: 100%;
+        max-width: 100%;
+      }
 
       .month-heading,
       .log-card {
@@ -600,7 +649,16 @@
           </svg>
           <input id="search" type="search" placeholder="제목, 프로젝트, 태그로 검색" autocomplete="off">
         </label>
-        <div id="project-filters" class="project-filters" aria-label="프로젝트 필터"></div>
+
+        <div class="filter-section">
+          <p class="filter-section-title">프로젝트</p>
+          <div id="project-filters" class="project-filters" aria-label="프로젝트 필터"></div>
+        </div>
+
+        <div class="filter-section">
+          <p class="filter-section-title">태그</p>
+          <div id="tag-filters" class="tag-filters" aria-label="태그 필터"></div>
+        </div>
       </div>
       <p id="load-error" class="error-message" role="alert"></p>
     </section>
@@ -622,16 +680,29 @@
   <script>
     (() => {
       const PROJECT_PARAM = "project";
+      const TAG_PARAM = "tag";
 
       function projectFromUrl() {
         const params = new URLSearchParams(window.location.search);
         return params.get(PROJECT_PARAM) || "ALL";
       }
 
-      const state = { reports: [], query: "", project: projectFromUrl() };
+      function tagsFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.getAll(TAG_PARAM).filter(Boolean);
+      }
+
+      const state = {
+        reports: [],
+        query: "",
+        project: projectFromUrl(),
+        tags: new Set(tagsFromUrl())
+      };
+
       const list = document.querySelector("#journal-list");
       const count = document.querySelector("#result-count");
       const filters = document.querySelector("#project-filters");
+      const tagFilters = document.querySelector("#tag-filters");
       const search = document.querySelector("#search");
       const error = document.querySelector("#load-error");
       const statusReports = document.querySelector("#status-reports");
@@ -658,73 +729,145 @@
         return element;
       }
 
-      function updateFilterButtons() {
-        filters.querySelectorAll("button").forEach((item) => {
-          item.setAttribute("aria-pressed", String(item.dataset.project === state.project));
-        });
+      function getProjects() {
+        return [...new Set(state.reports.map((report) => report.project).filter(Boolean))]
+          .sort((a, b) => a.localeCompare(b, "ko"));
       }
 
-      function writeProjectToUrl(project, { replace = false } = {}) {
-        const url = new URL(window.location.href);
+      function getTags() {
+        const tagMap = new Map();
 
-        if (project === "ALL") {
-          url.searchParams.delete(PROJECT_PARAM);
-        } else {
-          url.searchParams.set(PROJECT_PARAM, project);
-        }
+        state.reports.forEach((report) => {
+          if (!Array.isArray(report.tags)) return;
 
-        const method = replace ? "replaceState" : "pushState";
-        window.history[method]({ project }, "", url);
+          report.tags.forEach((tag) => {
+            const clean = String(tag ?? "").trim();
+            const key = normalize(clean);
+            if (key && !tagMap.has(key)) tagMap.set(key, clean);
+          });
+        });
+
+        return [...tagMap.values()].sort((a, b) => a.localeCompare(b, "ko"));
       }
 
       function resolveProject(value) {
         if (!value || value === "ALL") return "ALL";
 
-        const exact = state.reports.find((report) => report.project === value)?.project;
+        const projects = getProjects();
+        const exact = projects.find((project) => project === value);
         if (exact) return exact;
 
         const wanted = normalize(value);
-        const normalizedMatch = state.reports.find((report) => normalize(report.project) === wanted)?.project;
-        return normalizedMatch || "ALL";
+        return projects.find((project) => normalize(project) === wanted) || "ALL";
       }
 
-      function setProject(value, { updateUrl = true, replaceUrl = false } = {}) {
+      function resolveTags(values) {
+        const available = new Map(getTags().map((tag) => [normalize(tag), tag]));
+
+        return values
+          .map((value) => available.get(normalize(value)))
+          .filter(Boolean);
+      }
+
+      function updateProjectButtons() {
+        filters.querySelectorAll("button").forEach((item) => {
+          item.setAttribute("aria-pressed", String(item.dataset.project === state.project));
+        });
+      }
+
+      function updateTagButtons() {
+        tagFilters.querySelectorAll("button").forEach((item) => {
+          item.setAttribute("aria-pressed", String(state.tags.has(item.dataset.tag)));
+        });
+      }
+
+      function writeFilterStateToUrl({ replace = false } = {}) {
+        const url = new URL(window.location.href);
+
+        if (state.project === "ALL") {
+          url.searchParams.delete(PROJECT_PARAM);
+        } else {
+          url.searchParams.set(PROJECT_PARAM, state.project);
+        }
+
+        url.searchParams.delete(TAG_PARAM);
+        state.tags.forEach((tag) => url.searchParams.append(TAG_PARAM, tag));
+
+        const method = replace ? "replaceState" : "pushState";
+        window.history[method](
+          { project: state.project, tags: [...state.tags] },
+          "",
+          url
+        );
+      }
+
+      function setProject(value, { updateUrl = true } = {}) {
         state.project = resolveProject(value);
-        updateFilterButtons();
+        updateProjectButtons();
         render();
 
-        if (updateUrl) {
-          writeProjectToUrl(state.project, { replace: replaceUrl });
-        }
+        if (updateUrl) writeFilterStateToUrl();
       }
 
-      function createFilter(label, value) {
+      function toggleTag(value, { updateUrl = true } = {}) {
+        const next = new Set(state.tags);
+
+        if (next.has(value)) next.delete(value);
+        else next.add(value);
+
+        state.tags = new Set(resolveTags([...next]));
+        updateTagButtons();
+        render();
+
+        if (updateUrl) writeFilterStateToUrl();
+      }
+
+      function createProjectFilter(label, value) {
         const button = makeElement("button", "filter-button", label);
         button.type = "button";
         button.dataset.project = value;
         button.setAttribute("aria-pressed", String(state.project === value));
-        button.addEventListener("click", () => {
-          setProject(value);
-        });
+        button.addEventListener("click", () => setProject(value));
+        return button;
+      }
+
+      function createTagFilter(tag) {
+        const button = makeElement("button", "tag-filter-button", tag);
+        button.type = "button";
+        button.dataset.tag = tag;
+        button.setAttribute("aria-pressed", String(state.tags.has(tag)));
+        button.addEventListener("click", () => toggleTag(tag));
         return button;
       }
 
       function renderFilters() {
         filters.replaceChildren();
-        filters.append(createFilter("ALL", "ALL"));
+        filters.append(createProjectFilter("ALL", "ALL"));
+        getProjects().forEach((project) => {
+          filters.append(createProjectFilter(project, project));
+        });
 
-        const projects = [...new Set(state.reports.map((report) => report.project).filter(Boolean))]
-          .sort((a, b) => a.localeCompare(b, "ko"));
-
-        projects.forEach((project) => filters.append(createFilter(project, project)));
+        tagFilters.replaceChildren();
+        getTags().forEach((tag) => {
+          tagFilters.append(createTagFilter(tag));
+        });
 
         const requestedProject = state.project;
-        state.project = resolveProject(requestedProject);
-        updateFilterButtons();
+        const requestedTags = [...state.tags];
 
-        // 잘못된/삭제된 프로젝트 파라미터라면 기본 URL로 정리한다.
-        if (requestedProject !== state.project) {
-          writeProjectToUrl(state.project, { replace: true });
+        state.project = resolveProject(requestedProject);
+        state.tags = new Set(resolveTags(requestedTags));
+
+        updateProjectButtons();
+        updateTagButtons();
+
+        const projectChanged = requestedProject !== state.project;
+        const tagsChanged =
+          requestedTags.length !== state.tags.size ||
+          requestedTags.some((tag) => ![...state.tags].some((resolved) => normalize(resolved) === normalize(tag)));
+
+        if (projectChanged || tagsChanged) {
+          writeFilterStateToUrl({ replace: true });
         }
       }
 
@@ -739,13 +882,25 @@
       function getVisibleReports() {
         return state.reports.filter((report) => {
           const inProject = state.project === "ALL" || report.project === state.project;
+
+          const reportTags = new Set(
+            (Array.isArray(report.tags) ? report.tags : [])
+              .filter(Boolean)
+              .map(normalize)
+          );
+
+          // 여러 태그를 선택하면 선택한 태그를 모두 가진 기록만 표시한다. (AND)
+          const inTags = [...state.tags]
+            .every((tag) => reportTags.has(normalize(tag)));
+
           const haystack = normalize([
             report.title,
             report.project,
             report.summary,
             ...(Array.isArray(report.tags) ? report.tags : [])
           ].join(" "));
-          return inProject && (!state.query || haystack.includes(state.query));
+
+          return inProject && inTags && (!state.query || haystack.includes(state.query));
         });
       }
 
@@ -791,7 +946,7 @@
             "p",
             "",
             hasReports
-              ? "검색어나 프로젝트 필터를 변경해 보세요."
+              ? "검색어나 프로젝트·태그 필터를 변경해 보세요."
               : "reports 폴더에 HTML을 추가하고 인덱스를 생성하면 이곳에 표시됩니다."
           )
         );
@@ -833,7 +988,11 @@
       });
 
       window.addEventListener("popstate", () => {
-        setProject(projectFromUrl(), { updateUrl: false });
+        state.project = resolveProject(projectFromUrl());
+        state.tags = new Set(resolveTags(tagsFromUrl()));
+        updateProjectButtons();
+        updateTagButtons();
+        render();
       });
 
       fetch("./index.json", { cache: "no-store" })

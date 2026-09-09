@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="worklog-date" content="2026-09-03" />
-  <meta name="worklog-title" content="RTX 5090 로컬 LLM — 로컬 코딩 AI 에이전트로 Unity 게임 Hero의 이동과 공격 기능 구현" />
-  <meta name="worklog-project" content="로컬 LLM" />
-  <meta name="worklog-tags" content="RTX 5090,Local LLM,OpenCode,Unity,Qwen3.8-27B,Local Coding AI Agent,128K Context,Hero Command,Input System,Play Mode,Compaction,Task Timing" />
-  <meta name="worklog-summary" content="Qwen3.8-27B 기반 로컬 코딩 AI 에이전트를 실제 Unity 프로젝트에 투입해 Hero가 사용자의 입력을 받아 이동하고 공격하는 기능을 구현했다. 총 3번의 지시, 45분 정도 소요 됐다. 첫 구현 완료 후 AI 자체 테스트는 통과했지만 실제 플레이에서 입력 시스템 문제가 발견됐다. 구체적인 런타임 오류를 에이전트에게 전달하자, 이미 확보한 코드베이스와 구현 맥락을 바탕으로 문제 범위를 빠르게 좁혀 약 4분 만에 수정과 재검증을 마쳤고 지금 잘 동작한다. 로컬 LLM 생각보다 쓸 만하다." />
+  <meta name="worklog-title" content="로컬 AI 에이전트로 Unity 게임 Hero의 이동 · 공격 기능 구현하기" />
+  <meta name="worklog-project" content="RTX 5090 로컬 AI 엔지니어링" />
+  <meta name="worklog-tags" content="RTX 5090, Local LLM, Qwen3.8-27B, OpenCode, Unity, Coding Agent, 128K Context, Input System, Play Mode, Compaction" />
+  <meta name="worklog-summary" content="Qwen3.8-27B 기반 로컬 AI 에이전트를 실제 Unity 프로젝트에 투입해 Hero가 사용자의 입력을 받아 이동하고 공격하는 기능을 구현했다. 총 3번의 지시, 45분 정도 소요 됐다. 첫 구현 완료 후 AI 자체 테스트는 통과했지만 실제 플레이에서 입력 시스템 문제가 발견됐다. 구체적인 런타임 오류를 에이전트에게 전달하자, 이미 확보한 코드베이스와 구현 맥락을 바탕으로 문제 범위를 빠르게 좁혀 약 4분 만에 수정과 재검증을 마쳤고 지금 잘 동작한다. 로컬 LLM 꽤 쓸만하다는 생각이 들었다." />
   <meta name="worklog-visibility" content="public" />
-  <title>로컬 코딩 AI 에이전트로 Hero 수동 이동·공격 기능 구현</title>
+  <title>로컬 AI 에이전트로 Unity 게임 Hero의 이동 · 공격 기능 구현하기</title>
   <style>
     :root{
       --bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;
@@ -172,9 +172,12 @@
       <span class="brand-mark" aria-hidden="true"></span>
       <span class="brand-text">YES IT WORKS</span>
     </a>
-    <div class="eyebrow">로컬 LLM</div>
-    <h1>로컬 코딩 AI 에이전트로<br>Hero 수동 이동·공격 기능 구현</h1>
-    <meta name="worklog-summary" content="Qwen3.8-27B 기반 로컬 코딩 AI 에이전트를 실제 Unity 프로젝트에 투입해 Hero가 사용자의 입력을 받아 이동하고 공격 대상을 지정하는 기능을 구현했다. 자동 테스트 272/272는 통과했지만 실제 Play Mode에서 입력 시스템 문제가 발견됐다. 구체적인 런타임 오류를 에이전트에게 전달하자, 이미 확보한 코드베이스와 구현 맥락을 바탕으로 문제 범위를 입력 처리로 빠르게 좁혀 약 3분 38초 만에 수정과 재검증을 마쳤다. 어? 이거 꽤 쓸 만한데?" />
+    <div class="eyebrow">RTX 5090 로컬 AI 엔지니어링</div>
+    <h1>로컬 AI 에이전트로<br>Hero의 이동 · 공격 기능 구현하기</h1>
+    <p class="lead">
+      Qwen3.8-27B 기반 로컬 AI 에이전트를 실제 Unity 프로젝트에 투입해 Hero가 사용자의 입력을 받아 이동하고 공격하는 기능을 구현했다. 총 3번의 지시, 45분 정도 소요 됐다. 첫 구현 완료 후 AI 자체 테스트는 통과했지만 실제 플레이에서 입력 시스템 문제가 발견됐다. 구체적인 런타임 오류를 에이전트에게 전달하자, 이미 확보한 코드베이스와 구현 맥락을 바탕으로 문제 범위를 빠르게 좁혀 약 4분 만에 수정과 재검증을 마쳤고 지금 잘 동작한다. 로컬 LLM 꽤 쓸만하다는 생각이 들었다.
+    </p>
+    <meta name="worklog-summary" content="Qwen3.8-27B 기반 로컬 AI 에이전트를 실제 Unity 프로젝트에 투입해 Hero가 사용자의 입력을 받아 이동하고 공격 대상을 지정하는 기능을 구현했다. 자동 테스트 272/272는 통과했지만 실제 Play Mode에서 입력 시스템 문제가 발견됐다. 구체적인 런타임 오류를 에이전트에게 전달하자, 이미 확보한 코드베이스와 구현 맥락을 바탕으로 문제 범위를 입력 처리로 빠르게 좁혀 약 3분 38초 만에 수정과 재검증을 마쳤다. 어? 이거 꽤 쓸 만한데?" />
     <div class="hero-meta">
       <span class="pill">RTX 5090 Local AI</span>
       <span class="pill">Qwen3.8-27B Q4_K_M</span>
@@ -250,7 +253,7 @@
 
 <section id="progress">
   <h2>작업 과정</h2>
-  <p class="muted">로컬 코딩 AI 에이전트가 프로젝트 문서와 관련 코드를 분석한 뒤 구현과 테스트를 진행했다. 전체 과정에서 두 차례 사용자 판단이 필요했다.</p>
+  <p class="muted">로컬 AI 에이전트가 프로젝트 문서와 관련 코드를 분석한 뒤 구현과 테스트를 진행했다. 전체 과정에서 두 차례 사용자 판단이 필요했다.</p>
 
   <div class="timeline">
 
@@ -261,7 +264,7 @@
           <h3>기존 전투 구조와 테스트 영향 범위 분석</h3>
           <span class="tag">Analysis</span>
         </div>
-        <p>Hero의 자동 전투를 제거할 경우 기존 전투 테스트 다수가 영향을 받을 가능성이 확인됐다. 로컬 코딩 AI 에이전트는 기존 테스트를 대규모로 수정할지, 실제 Hero만 수동 제어 대상으로 분리할지 판단을 요청했다.</p>
+        <p>Hero의 자동 전투를 제거할 경우 기존 전투 테스트 다수가 영향을 받을 가능성이 확인됐다. 로컬 AI 에이전트는 기존 테스트를 대규모로 수정할지, 실제 Hero만 수동 제어 대상으로 분리할지 판단을 요청했다.</p>
         <p><b>사용자 개입 #1:</b> 기존 자동 전투 동작은 유지하고, 실제 Hero만 수동 명령을 받도록 하는 방향을 선택했다.</p>
       </div>
     </div>
@@ -286,7 +289,7 @@
           <h3>Hero 이동·공격 기능 구현</h3>
           <span class="tag">Implementation</span>
         </div>
-        <p>이후 로컬 코딩 AI 에이전트는 Hero의 자동 타깃 획득을 분리하고, 플레이어의 클릭에 따라 이동 또는 특정 적 공격 명령이 전달되도록 구현했다.</p>
+        <p>이후 로컬 AI 에이전트는 Hero의 자동 타깃 획득을 분리하고, 플레이어의 클릭에 따라 이동 또는 특정 적 공격 명령이 전달되도록 구현했다.</p>
         <p>일반 아군 유닛의 자동 전투는 그대로 유지했고, Battle Camera 기준 좌표 변환과 UI 클릭 제외 처리까지 함께 연결했다.</p>
         <p class="ok"><b>자동 검증:</b> Hero 관련 신규 테스트 12개 통과 · 전체 EditMode 테스트 272 / 272 통과 · git diff 검사 통과</p>
         <div class="callout" style="margin-top:14px"><b>구현 구간:</b> 23분 10초 · Compaction 1회 / 2분 12초</div>
@@ -315,7 +318,7 @@ but you have switched active Input handling to Input System package.</code></pre
           <h3>실제 런타임 입력 환경에 맞게 수정</h3>
           <span class="tag">Runtime Fix</span>
         </div>
-        <p>발견된 오류를 로컬 코딩 AI 에이전트에게 전달했고, 프로젝트 설정을 변경하는 대신 기존 Input System에 맞게 입력 처리 코드를 수정했다.</p>
+        <p>발견된 오류를 로컬 AI 에이전트에게 전달했고, 프로젝트 설정을 변경하는 대신 기존 Input System에 맞게 입력 처리 코드를 수정했다.</p>
         <p>수정 범위는 입력 처리 코드로 제한했고, 전투 명령이나 UI 판정 등 이미 구현된 나머지 로직은 그대로 유지했다.</p>
         <p class="ok"><b>수정 후:</b> Hero 관련 테스트 12 / 12 통과 · 전체 EditMode 272 / 272 통과 · 실제 Play Mode 정상 동작</p>
         <div class="callout" style="margin-top:14px"><b>런타임 수정 구간:</b> 3분 38초 · Compaction 없음</div>
@@ -402,7 +405,7 @@ but you have switched active Input handling to Input System package.</code></pre
 </section>
 
 <section id="observations">
-  <h2>로컬 코딩 AI 에이전트 작업에서 관찰한 점</h2>
+  <h2>로컬 AI 에이전트 작업에서 관찰한 점</h2>
   <p class="muted">이번 작업에서는 최종 코드뿐 아니라 기능을 완성하는 과정에서 어떤 부분에 사용자 판단이 필요했는지도 확인할 수 있었다.</p>
 
   <div class="grid" style="margin-top:20px">

@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="worklog-date" content="2026-09-01" />
-  <meta name="worklog-title" content="RTX 5090 로컬 LLM — 로컬 코딩 AI 에이전트 개발 환경 구축" />
-  <meta name="worklog-project" content="로컬 LLM" />
-  <meta name="worklog-tags" content="RTX 5090,Local LLM,llama.cpp,llama-server,OpenCode,Unity,Qwen,Qwen3.8-27B,Local Coding AI Agent,CUDA" />
-  <meta name="worklog-summary" content="Windows RTX 5090을 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결해 로컬 코딩 AI 에이전트 개발 환경을 구축했다. llama.cpp CUDA 환경, Qwen3.8-27B 서빙, OpenCode 연결과 인증을 구성하고 실제 Unity 저장소를 읽고 분석하는 단계까지 검증했다." />
+  <meta name="worklog-title" content="RTX 5090으로 코딩용 로컬 AI 에이전트 개발 환경 구축" />
+  <meta name="worklog-project" content="RTX 5090 로컬 AI 엔지니어링" />
+  <meta name="worklog-tags" content="RTX 5090, Local LLM, Qwen3.8-27B, llama.cpp, OpenCode, Unity, Coding Agent, CUDA" />
+  <meta name="worklog-summary" content="Windows RTX 5090을 로컬 LLM 추론 서버로 구성하고 MacBook Pro의 Unity 개발 환경과 연결해 코딩용 로컬 AI 에이전트 개발 환경을 구축했다. llama.cpp CUDA 환경, Qwen3.8-27B 서빙, OpenCode 연결과 인증을 구성하고 실제 Unity 저장소를 읽고 분석하는 단계까지 검증했다." />
   <meta name="worklog-visibility" content="public" />
-  <title>RTX 5090 로컬 LLM — 로컬 코딩 AI 에이전트 개발 환경 구축</title>
+  <title>RTX 5090으로 코딩용 로컬 AI 에이전트 개발 환경 구축</title>
   <style>
     :root {
       --bg: #0b0f14;
@@ -272,11 +272,11 @@
       <span class="brand-mark" aria-hidden="true"></span>
       <span class="brand-text">YES IT WORKS</span>
     </a>
-    <div class="eyebrow">로컬 LLM</div>
-    <h1>RTX 5090으로<br>로컬 코딩 AI 에이전트 개발 환경 구축</h1>
+    <div class="eyebrow">RTX 5090 로컬 AI 엔지니어링</div>
+    <h1>RTX 5090으로 코딩용 로컬 AI 에이전트 개발 환경 구축</h1>
     <p class="lead">
-      Windows 데스크탑의 RTX 5090을 로컬 LLM 추론 서버로 사용하고,
-      실제 Unity 개발은 MacBook Pro에서 계속 진행하는 개인용 AI 개발 환경을 구축했다.
+      Windows 데스크탑의 RTX 5090을 로컬 LLM 추론 서버로 사용하고
+      실제 Unity 개발은 MacBook Pro에서 진행하는 AI 개발 환경을 구축했다.
       목표는 단순히 로컬 모델을 실행하는 것이 아니라,
       <b>Mac의 개발 도구와 프로젝트를 유지한 채 OpenCode가 Windows의 GPU 추론을 사용할 수 있는 구조</b>를 만드는 것이었다.
       이날은 Qwen3.8-27B를 CUDA로 서빙하고 OpenCode를 연결한 뒤,
@@ -309,7 +309,7 @@
     <h2>작업 목표</h2>
     <p class="muted">
       이번 작업은 RTX 5090을 단순한 로컬 LLM 실행 장치가 아니라
-      Unity 개발을 보조하는 <b>로컬 코딩 AI 에이전트용 추론 서버</b>로 구성하는 것이 핵심이다.
+      Unity 개발을 보조하는 <b>로컬 AI 에이전트 추론 서버</b>로 구성하는 것이 핵심이다.
     </p>
 
     <div class="grid" style="margin-top:20px">
@@ -623,7 +623,7 @@ chmod 600 ~/.secrets/llama-api-key</code></pre>
           </p>
           <pre><code>Examine this Unity project. Do not modify any files.
 Identify the main gameplay architecture and the most important C# scripts.</code></pre>
-          <p class="ok"><b>결과:</b> 로컬 코딩 AI 에이전트가 실제 Repository를 탐색하고 관련 코드를 선택해 읽는 단계까지 정상 동작했다.</p>
+          <p class="ok"><b>결과:</b> 로컬 AI 에이전트가 실제 Repository를 탐색하고 관련 코드를 선택해 읽는 단계까지 정상 동작했다.</p>
         </div>
       </div>
 
@@ -649,7 +649,7 @@ Identify the main gameplay architecture and the most important C# scripts.</code
     <h2>다음 과정</h2>
     <p class="muted">
       인프라 구축과 Repository 분석은 완료했다.
-      다음부터는 로컬 코딩 AI 에이전트가 실제 개발 작업을 어디까지 끝낼 수 있는지 검증한다.
+      다음부터는 로컬 AI 에이전트가 실제 개발 작업을 어디까지 끝낼 수 있는지 검증한다.
     </p>
 
     <div class="grid" style="margin-top:22px">
