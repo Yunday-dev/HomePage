@@ -621,7 +621,14 @@
 
   <script>
     (() => {
-      const state = { reports: [], query: "", project: "ALL" };
+      const PROJECT_PARAM = "project";
+
+      function projectFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(PROJECT_PARAM) || "ALL";
+      }
+
+      const state = { reports: [], query: "", project: projectFromUrl() };
       const list = document.querySelector("#journal-list");
       const count = document.querySelector("#result-count");
       const filters = document.querySelector("#project-filters");
@@ -651,17 +658,53 @@
         return element;
       }
 
+      function updateFilterButtons() {
+        filters.querySelectorAll("button").forEach((item) => {
+          item.setAttribute("aria-pressed", String(item.dataset.project === state.project));
+        });
+      }
+
+      function writeProjectToUrl(project, { replace = false } = {}) {
+        const url = new URL(window.location.href);
+
+        if (project === "ALL") {
+          url.searchParams.delete(PROJECT_PARAM);
+        } else {
+          url.searchParams.set(PROJECT_PARAM, project);
+        }
+
+        const method = replace ? "replaceState" : "pushState";
+        window.history[method]({ project }, "", url);
+      }
+
+      function resolveProject(value) {
+        if (!value || value === "ALL") return "ALL";
+
+        const exact = state.reports.find((report) => report.project === value)?.project;
+        if (exact) return exact;
+
+        const wanted = normalize(value);
+        const normalizedMatch = state.reports.find((report) => normalize(report.project) === wanted)?.project;
+        return normalizedMatch || "ALL";
+      }
+
+      function setProject(value, { updateUrl = true, replaceUrl = false } = {}) {
+        state.project = resolveProject(value);
+        updateFilterButtons();
+        render();
+
+        if (updateUrl) {
+          writeProjectToUrl(state.project, { replace: replaceUrl });
+        }
+      }
+
       function createFilter(label, value) {
         const button = makeElement("button", "filter-button", label);
         button.type = "button";
         button.dataset.project = value;
         button.setAttribute("aria-pressed", String(state.project === value));
         button.addEventListener("click", () => {
-          state.project = value;
-          filters.querySelectorAll("button").forEach((item) => {
-            item.setAttribute("aria-pressed", String(item.dataset.project === value));
-          });
-          render();
+          setProject(value);
         });
         return button;
       }
@@ -669,9 +712,20 @@
       function renderFilters() {
         filters.replaceChildren();
         filters.append(createFilter("ALL", "ALL"));
+
         const projects = [...new Set(state.reports.map((report) => report.project).filter(Boolean))]
           .sort((a, b) => a.localeCompare(b, "ko"));
+
         projects.forEach((project) => filters.append(createFilter(project, project)));
+
+        const requestedProject = state.project;
+        state.project = resolveProject(requestedProject);
+        updateFilterButtons();
+
+        // 잘못된/삭제된 프로젝트 파라미터라면 기본 URL로 정리한다.
+        if (requestedProject !== state.project) {
+          writeProjectToUrl(state.project, { replace: true });
+        }
       }
 
       function renderStatus() {
@@ -776,6 +830,10 @@
       search.addEventListener("input", (event) => {
         state.query = normalize(event.target.value);
         render();
+      });
+
+      window.addEventListener("popstate", () => {
+        setProject(projectFromUrl(), { updateUrl: false });
       });
 
       fetch("./index.json", { cache: "no-store" })
