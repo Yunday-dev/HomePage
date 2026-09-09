@@ -1,6 +1,27 @@
 {
-  "generated_at": "2026-09-09T04:37:16+00:00",
+  "generated_at": "2026-09-09T12:00:45+00:00",
   "reports": [
+    {
+      "date": "2026-09-09",
+      "title": "코드 한 줄 직접 작성하지 않고 미니 RTS 전투 데모 만들기",
+      "project": "RTX 5090 로컬 AI 엔지니어링",
+      "tags": [
+        "RTX 5090",
+        "Local LLM",
+        "Qwen3.8-27B",
+        "OpenCode",
+        "Unity",
+        "KitWright",
+        "MCP",
+        "AI Native Development",
+        "RTS",
+        "Combat Demo",
+        "Game Development"
+      ],
+      "summary": "Unity에서 로컬 AI로 개발하기 위한 환경을 정리한 뒤, Qwen3.8-27B 기반 로컬 코딩 AI 에이전트에 작은 단위의 기능을 연속해서 맡겨 아군과 적군이 실시간으로 전투하고 HP Bar와 Laser Projectile이 동작하는 미니 RTS 전투 데모를 완성했다. 대부분의 기능 작업은 20분 안팎의 단위로 진행했으며, 코드베이스를 이해하고 여러 파일을 수정·검증하는 작업은 AI가 효과적이었지만 색상이나 카메라 위치 같은 단순한 조정은 사람이 직접 처리하는 편이 더 빠르다는 점도 확인했다.",
+      "file": "reports/2026/09/2026-09-09_local-ai-native-rts-combat-demo.html",
+      "visibility": "public"
+    },
     {
       "date": "2026-09-08",
       "title": "Unity MCP를 실제 개발 흐름에 맞게 설정하기",
