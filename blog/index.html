@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="YES IT WORKS의 공개 개발 기록">
+  <meta name="worklog-viewer-theme" content="dark-mint-v2">
+  <title>Work Log — YES IT WORKS</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #090e13;
+      --background-deep: #070b10;
+      --surface: #101821;
+      --surface-raised: #131d28;
+      --ink: #f1f5f8;
+      --muted: #8da4ba;
+      --muted-strong: #afbdca;
+      --line: #223142;
+      --line-bright: #30445a;
+      --accent: #69edb3;
+      --accent-strong: #8af5c8;
+      --accent-soft: rgba(105, 237, 179, 0.09);
+      --shadow: 0 28px 90px rgba(0, 0, 0, 0.34);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 88% -8%, rgba(61, 111, 142, 0.15), transparent 34rem),
+        linear-gradient(180deg, var(--background-deep), var(--background) 24rem);
+      color: var(--ink);
+      font-family: Inter, Pretendard, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; }
+
+    button,
+    input { font: inherit; }
+
+    .shell {
+      width: min(1240px, calc(100% - 64px));
+      margin: 0 auto;
+      padding: 38px 0 96px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      text-decoration: none;
+      color: var(--ink);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+    }
+
+    .brand-mark {
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 2px;
+      box-shadow: 14px 0 0 #486078;
+      margin-right: 14px;
+    }
+
+    .topbar-note {
+      margin: 0;
+      color: #758ba1;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.52fr);
+      gap: 72px;
+      align-items: end;
+      padding: 92px 0 76px;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 20px;
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 28px;
+      height: 2px;
+      background: currentColor;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--ink);
+      font-size: clamp(4.5rem, 9vw, 8.3rem);
+      font-weight: 850;
+      letter-spacing: -0.065em;
+      line-height: 0.84;
+      text-shadow: 0 10px 36px rgba(0, 0, 0, 0.28);
+    }
+
+    .hero-copy {
+      margin: 0;
+      padding: 4px 0 4px 28px;
+      border-left: 1px solid var(--line);
+      color: var(--muted-strong);
+      font-size: clamp(0.98rem, 1.5vw, 1.12rem);
+      line-height: 1.75;
+      word-break: keep-all;
+    }
+
+    .hero-copy strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-size: 0.76rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .archive-status {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin: 0 0 26px;
+    }
+
+    .status-card {
+      min-height: 144px;
+      padding: 26px 28px;
+      background: linear-gradient(145deg, var(--surface-raised), var(--surface));
+      border: 1px solid var(--line);
+      border-radius: 20px;
+    }
+
+    .status-label {
+      display: block;
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 750;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .status-value {
+      display: block;
+      color: var(--ink);
+      font-size: clamp(1.8rem, 4vw, 2.7rem);
+      font-weight: 820;
+      letter-spacing: -0.055em;
+      line-height: 1;
+    }
+
+    .status-card:first-child .status-value { color: var(--accent); }
+
+    .status-caption {
+      display: block;
+      margin-top: 12px;
+      color: #71879d;
+      font-size: 0.78rem;
+    }
+
+    .controls {
+      position: sticky;
+      top: 18px;
+      z-index: 10;
+      display: grid;
+      gap: 14px;
+      padding: 16px 18px 18px;
+      background: rgba(16, 24, 33, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .filter-section {
+      display: grid;
+      gap: 9px;
+    }
+
+    .filter-section-title {
+      margin: 0;
+      color: var(--muted-strong);
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .search-wrap {
+      position: relative;
+      min-width: 0;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      top: 50%;
+      left: 18px;
+      width: 19px;
+      height: 19px;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    #search {
+      width: 100%;
+      height: 52px;
+      padding: 0 18px 0 50px;
+      background: #0b1219;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      color: var(--ink);
+      outline: none;
+    }
+
+    #search::placeholder { color: #667b8f; }
+
+    #search:focus-visible {
+      background: #0a1118;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(105, 237, 179, 0.08);
+    }
+
+    .project-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      width: 100%;
+      overflow: visible;
+    }
+
+    .tag-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      width: 100%;
+      padding: 2px 0 0;
+      overflow: visible;
+    }
+
+    .filter-button,
+    .tag-filter-button {
+      flex: 0 0 auto;
+      background: transparent;
+      border: 1px solid var(--line-bright);
+      border-radius: 999px;
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 750;
+      letter-spacing: 0.04em;
+      transition: 160ms ease;
+    }
+
+    /* 프로젝트: 기존 크기 유지 */
+    .filter-button {
+      min-height: 40px;
+      padding: 0 15px;
+      font-size: 0.75rem;
+    }
+
+    .filter-button:hover,
+    .filter-button[aria-pressed="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #07110d;
+    }
+
+    /* 태그: 프로젝트보다 작고 가볍게 */
+    .tag-filter-button {
+      min-height: 28px;
+      padding: 0 10px;
+      border-color: #26394d;
+      color: #7890a6;
+      font-size: 0.64rem;
+      font-weight: 700;
+    }
+
+    .tag-filter-button:hover {
+      border-color: #45627e;
+      color: var(--muted-strong);
+    }
+
+    .tag-filter-button[aria-pressed="true"] {
+      background: var(--accent-soft);
+      border-color: rgba(105, 237, 179, 0.58);
+      color: var(--accent);
+    }
+
+    .results-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 44px 4px 22px;
+    }
+
+    .results-title {
+      margin: 0;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    #result-count {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .month-group + .month-group { margin-top: 64px; }
+
+    .month-heading {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 24px;
+      align-items: center;
+      margin: 0 0 18px;
+      color: #71879d;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .month-heading::after {
+      content: "";
+      height: 1px;
+      background: var(--line);
+    }
+
+    .log-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 120px minmax(0, 1fr) 42px;
+      gap: 28px;
+      align-items: start;
+      margin-bottom: 14px;
+      padding: 34px 30px;
+      background: linear-gradient(135deg, var(--surface), #0f1720);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      text-decoration: none;
+      isolation: isolate;
+      overflow: hidden;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .log-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      z-index: -1;
+      width: 3px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 180ms ease;
+    }
+
+    .log-card:hover::before,
+    .log-card:focus-visible::before {
+      opacity: 1;
+    }
+
+    .log-card:hover,
+    .log-card:focus-visible {
+      background: linear-gradient(135deg, var(--surface-raised), #111b25);
+      border-color: #37506a;
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
+
+    .log-card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .date-block {
+      display: flex;
+      flex-direction: column;
+      padding-top: 3px;
+    }
+
+    .date-day {
+      color: var(--ink);
+      font-size: 2.8rem;
+      font-weight: 820;
+      letter-spacing: -0.07em;
+      line-height: 0.9;
+    }
+
+    .date-weekday {
+      margin-top: 9px;
+      color: var(--muted-strong);
+      font-size: 0.7rem;
+      font-weight: 750;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .card-project {
+      margin: 0 0 11px;
+      color: var(--accent);
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: clamp(1.45rem, 3vw, 2.25rem);
+      font-weight: 790;
+      letter-spacing: -0.045em;
+      line-height: 1.18;
+      word-break: keep-all;
+    }
+
+    .card-summary {
+      max-width: 760px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .tag {
+      padding: 6px 9px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(105, 237, 179, 0.18);
+      border-radius: 999px;
+      color: #99d7bc;
+      font-size: 0.69rem;
+      font-weight: 700;
+    }
+
+    .card-arrow {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      margin-top: 2px;
+      border: 1px solid var(--line-bright);
+      border-radius: 50%;
+      transition: 180ms ease;
+    }
+
+    .log-card:hover .card-arrow,
+    .log-card:focus-visible .card-arrow {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #07110d;
+      transform: translate(3px, -3px);
+    }
+
+    .empty-state {
+      padding: 80px 24px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      text-align: center;
+    }
+
+    .empty-state h2 {
+      margin: 0 0 10px;
+      font-size: 1.5rem;
+      letter-spacing: -0.04em;
+    }
+
+    .empty-state p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .error-message {
+      display: none;
+      margin: 20px 0 0;
+      padding: 14px 16px;
+      background: rgba(255, 173, 75, 0.08);
+      border: 1px solid rgba(255, 173, 75, 0.24);
+      border-radius: 12px;
+      color: #f3bd77;
+      font-size: 0.86rem;
+      line-height: 1.55;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      margin-top: 90px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 760px) {
+      .shell {
+        width: min(100% - 28px, 1240px);
+        padding-top: 22px;
+      }
+
+      .topbar-note { display: none; }
+
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 34px;
+        padding: 70px 0 54px;
+      }
+
+      .hero-copy { max-width: 520px; }
+
+      .archive-status {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .status-card {
+        min-height: 0;
+        padding: 22px;
+      }
+
+      .controls {
+        position: static;
+        padding: 12px;
+      }
+
+      .project-filters,
+      .tag-filters {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .month-heading,
+      .log-card {
+        grid-template-columns: 64px minmax(0, 1fr);
+        gap: 16px;
+      }
+
+      .month-heading::after { grid-column: 2; }
+
+      .log-card {
+        padding: 26px 20px;
+        border-radius: 16px;
+      }
+
+      .date-day { font-size: 2rem; }
+
+      .card-arrow { display: none; }
+
+      footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="../" aria-label="YES IT WORKS 홈페이지로 이동">
+        <span class="brand-mark" aria-hidden="true"></span>
+        YES IT WORKS
+      </a>
+      <p class="topbar-note">Interesting ideas, crafted into play.</p>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Development Journal</p>
+        <h1 id="page-title">WORK<br>LOG.</h1>
+      </div>
+      <p class="hero-copy">
+        <strong>FIND SOMETHING INTERESTING.<br>AND CRAFT THE PLAY.</strong>
+        익숙한 규칙들 사이에서 흥미로운 지점을 발견하고 더 나은 플레이 경험으로 정제해가는 과정을 기록합니다.
+      </p>
+    </section>
+
+    <section class="archive-status" aria-label="Work Log 현황">
+      <article class="status-card">
+        <span class="status-label">Published Logs</span>
+        <strong id="status-reports" class="status-value">—</strong>
+        <span class="status-caption">공개 개발 기록</span>
+      </article>
+      <article class="status-card">
+        <span class="status-label">Active Projects</span>
+        <strong id="status-projects" class="status-value">—</strong>
+        <span class="status-caption">기록된 프로젝트</span>
+      </article>
+      <article class="status-card">
+        <span class="status-label">Latest Update</span>
+        <strong id="status-latest" class="status-value">—</strong>
+        <span class="status-caption">가장 최근 발행일</span>
+      </article>
+    </section>
+
+    <section aria-label="업무일지 검색 및 필터">
+      <div class="controls">
+        <label class="search-wrap" for="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+          </svg>
+          <input id="search" type="search" placeholder="제목, 프로젝트, 태그로 검색" autocomplete="off">
+        </label>
+
+        <div class="filter-section">
+          <p class="filter-section-title">프로젝트</p>
+          <div id="project-filters" class="project-filters" aria-label="프로젝트 필터"></div>
+        </div>
+
+        <div class="filter-section">
+          <p class="filter-section-title">태그</p>
+          <div id="tag-filters" class="tag-filters" aria-label="태그 필터"></div>
+        </div>
+      </div>
+      <p id="load-error" class="error-message" role="alert"></p>
+    </section>
+
+    <section aria-labelledby="journal-heading">
+      <div class="results-meta">
+        <h2 id="journal-heading" class="results-title">Journal Archive</h2>
+        <span id="result-count" aria-live="polite">불러오는 중…</span>
+      </div>
+      <div id="journal-list"></div>
+    </section>
+
+    <footer>
+      <span>© YESITWORKS</span>
+      <span>Public Development Journal</span>
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      const PROJECT_PARAM = "project";
+      const TAG_PARAM = "tag";
+
+      function projectFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(PROJECT_PARAM) || "ALL";
+      }
+
+      function tagsFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.getAll(TAG_PARAM).filter(Boolean);
+      }
+
+      const state = {
+        reports: [],
+        query: "",
+        project: projectFromUrl(),
+        tags: new Set(tagsFromUrl())
+      };
+
+      const list = document.querySelector("#journal-list");
+      const count = document.querySelector("#result-count");
+      const filters = document.querySelector("#project-filters");
+      const tagFilters = document.querySelector("#tag-filters");
+      const search = document.querySelector("#search");
+      const error = document.querySelector("#load-error");
+      const statusReports = document.querySelector("#status-reports");
+      const statusProjects = document.querySelector("#status-projects");
+      const statusLatest = document.querySelector("#status-latest");
+
+      const koMonth = new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long", timeZone: "UTC" });
+      const enMonth = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", timeZone: "UTC" });
+      const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "UTC" });
+
+      function parseDate(value) {
+        const date = new Date(`${value}T00:00:00Z`);
+        return Number.isNaN(date.getTime()) ? null : date;
+      }
+
+      function normalize(value) {
+        return String(value ?? "").trim().toLocaleLowerCase("ko-KR");
+      }
+
+      function makeElement(tag, className, text) {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (text !== undefined) element.textContent = text;
+        return element;
+      }
+
+      function getProjects() {
+        return [...new Set(state.reports.map((report) => report.project).filter(Boolean))]
+          .sort((a, b) => a.localeCompare(b, "ko"));
+      }
+
+      function getTags() {
+        const tagMap = new Map();
+
+        state.reports.forEach((report) => {
+          if (!Array.isArray(report.tags)) return;
+
+          report.tags.forEach((tag) => {
+            const clean = String(tag ?? "").trim();
+            const key = normalize(clean);
+            if (key && !tagMap.has(key)) tagMap.set(key, clean);
+          });
+        });
+
+        return [...tagMap.values()].sort((a, b) => a.localeCompare(b, "ko"));
+      }
+
+      function resolveProject(value) {
+        if (!value || value === "ALL") return "ALL";
+
+        const projects = getProjects();
+        const exact = projects.find((project) => project === value);
+        if (exact) return exact;
+
+        const wanted = normalize(value);
+        return projects.find((project) => normalize(project) === wanted) || "ALL";
+      }
+
+      function resolveTags(values) {
+        const available = new Map(getTags().map((tag) => [normalize(tag), tag]));
+
+        return values
+          .map((value) => available.get(normalize(value)))
+          .filter(Boolean);
+      }
+
+      function updateProjectButtons() {
+        filters.querySelectorAll("button").forEach((item) => {
+          item.setAttribute("aria-pressed", String(item.dataset.project === state.project));
+        });
+      }
+
+      function updateTagButtons() {
+        tagFilters.querySelectorAll("button").forEach((item) => {
+          item.setAttribute("aria-pressed", String(state.tags.has(item.dataset.tag)));
+        });
+      }
+
+      function writeFilterStateToUrl({ replace = false } = {}) {
+        const url = new URL(window.location.href);
+
+        if (state.project === "ALL") {
+          url.searchParams.delete(PROJECT_PARAM);
+        } else {
+          url.searchParams.set(PROJECT_PARAM, state.project);
+        }
+
+        url.searchParams.delete(TAG_PARAM);
+        state.tags.forEach((tag) => url.searchParams.append(TAG_PARAM, tag));
+
+        const method = replace ? "replaceState" : "pushState";
+        window.history[method](
+          { project: state.project, tags: [...state.tags] },
+          "",
+          url
+        );
+      }
+
+      function setProject(value, { updateUrl = true } = {}) {
+        state.project = resolveProject(value);
+        updateProjectButtons();
+        render();
+
+        if (updateUrl) writeFilterStateToUrl();
+      }
+
+      function toggleTag(value, { updateUrl = true } = {}) {
+        const next = new Set(state.tags);
+
+        if (next.has(value)) next.delete(value);
+        else next.add(value);
+
+        state.tags = new Set(resolveTags([...next]));
+        updateTagButtons();
+        render();
+
+        if (updateUrl) writeFilterStateToUrl();
+      }
+
+      function createProjectFilter(label, value) {
+        const button = makeElement("button", "filter-button", label);
+        button.type = "button";
+        button.dataset.project = value;
+        button.setAttribute("aria-pressed", String(state.project === value));
+        button.addEventListener("click", () => setProject(value));
+        return button;
+      }
+
+      function createTagFilter(tag) {
+        const button = makeElement("button", "tag-filter-button", tag);
+        button.type = "button";
+        button.dataset.tag = tag;
+        button.setAttribute("aria-pressed", String(state.tags.has(tag)));
+        button.addEventListener("click", () => toggleTag(tag));
+        return button;
+      }
+
+      function renderFilters() {
+        filters.replaceChildren();
+        filters.append(createProjectFilter("ALL", "ALL"));
+        getProjects().forEach((project) => {
+          filters.append(createProjectFilter(project, project));
+        });
+
+        tagFilters.replaceChildren();
+        getTags().forEach((tag) => {
+          tagFilters.append(createTagFilter(tag));
+        });
+
+        const requestedProject = state.project;
+        const requestedTags = [...state.tags];
+
+        state.project = resolveProject(requestedProject);
+        state.tags = new Set(resolveTags(requestedTags));
+
+        updateProjectButtons();
+        updateTagButtons();
+
+        const projectChanged = requestedProject !== state.project;
+        const tagsChanged =
+          requestedTags.length !== state.tags.size ||
+          requestedTags.some((tag) => ![...state.tags].some((resolved) => normalize(resolved) === normalize(tag)));
+
+        if (projectChanged || tagsChanged) {
+          writeFilterStateToUrl({ replace: true });
+        }
+      }
+
+      function renderStatus() {
+        const projects = new Set(state.reports.map((report) => report.project).filter(Boolean));
+        const latest = state.reports.map((report) => report.date).filter(Boolean).sort().at(-1);
+        statusReports.textContent = String(state.reports.length).padStart(2, "0");
+        statusProjects.textContent = String(projects.size).padStart(2, "0");
+        statusLatest.textContent = latest || "—";
+      }
+
+      function getVisibleReports() {
+        return state.reports.filter((report) => {
+          const inProject = state.project === "ALL" || report.project === state.project;
+
+          const reportTags = new Set(
+            (Array.isArray(report.tags) ? report.tags : [])
+              .filter(Boolean)
+              .map(normalize)
+          );
+
+          // 여러 태그를 선택하면 선택한 태그를 모두 가진 기록만 표시한다. (AND)
+          const inTags = [...state.tags]
+            .every((tag) => reportTags.has(normalize(tag)));
+
+          const haystack = normalize([
+            report.title,
+            report.project,
+            report.summary,
+            ...(Array.isArray(report.tags) ? report.tags : [])
+          ].join(" "));
+
+          return inProject && inTags && (!state.query || haystack.includes(state.query));
+        });
+      }
+
+      function createCard(report) {
+        const date = parseDate(report.date);
+        const link = makeElement("a", "log-card");
+        link.href = report.file;
+        link.setAttribute("aria-label", `${report.title} 업무일지 열기`);
+
+        const dateBlock = makeElement("div", "date-block");
+        dateBlock.append(
+          makeElement("span", "date-day", date ? String(date.getUTCDate()).padStart(2, "0") : "—"),
+          makeElement("span", "date-weekday", date ? weekday.format(date) : "DATE")
+        );
+
+        const content = makeElement("div", "card-content");
+        content.append(
+          makeElement("p", "card-project", report.project || "Development"),
+          makeElement("h3", "card-title", report.title || "Untitled Work Log")
+        );
+        if (report.summary) content.append(makeElement("p", "card-summary", report.summary));
+
+        if (Array.isArray(report.tags) && report.tags.length) {
+          const tagList = makeElement("ul", "tag-list");
+          report.tags.forEach((tag) => {
+            const item = makeElement("li", "tag", `#${tag}`);
+            tagList.append(item);
+          });
+          content.append(tagList);
+        }
+
+        const arrow = makeElement("span", "card-arrow", "↗");
+        arrow.setAttribute("aria-hidden", "true");
+        link.append(dateBlock, content, arrow);
+        return link;
+      }
+
+      function createEmptyState(hasReports) {
+        const wrapper = makeElement("div", "empty-state");
+        wrapper.append(
+          makeElement("h2", "", hasReports ? "검색 결과가 없습니다." : "첫 번째 Work Log를 기다리고 있습니다."),
+          makeElement(
+            "p",
+            "",
+            hasReports
+              ? "검색어나 프로젝트·태그 필터를 변경해 보세요."
+              : "reports 폴더에 HTML을 추가하고 인덱스를 생성하면 이곳에 표시됩니다."
+          )
+        );
+        return wrapper;
+      }
+
+      function render() {
+        const reports = getVisibleReports();
+        list.replaceChildren();
+        count.textContent = `${reports.length}개의 기록`;
+
+        if (!reports.length) {
+          list.append(createEmptyState(state.reports.length > 0));
+          return;
+        }
+
+        const groups = new Map();
+        reports.forEach((report) => {
+          const date = parseDate(report.date);
+          const key = date ? `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}` : "unknown";
+          if (!groups.has(key)) groups.set(key, { date, reports: [] });
+          groups.get(key).reports.push(report);
+        });
+
+        groups.forEach((group) => {
+          const section = makeElement("section", "month-group");
+          const headingText = group.date
+            ? `${enMonth.format(group.date)}`
+            : "Date Unknown";
+          section.append(makeElement("h2", "month-heading", headingText));
+          group.reports.forEach((report) => section.append(createCard(report)));
+          list.append(section);
+        });
+      }
+
+      search.addEventListener("input", (event) => {
+        state.query = normalize(event.target.value);
+        render();
+      });
+
+      window.addEventListener("popstate", () => {
+        state.project = resolveProject(projectFromUrl());
+        state.tags = new Set(resolveTags(tagsFromUrl()));
+        updateProjectButtons();
+        updateTagButtons();
+        render();
+      });
+
+      fetch("./index.json", { cache: "no-store" })
+        .then((response) => {
+          if (!response.ok) throw new Error(`index.json 응답 오류 (${response.status})`);
+          return response.json();
+        })
+        .then((data) => {
+          const reports = Array.isArray(data) ? data : data.reports;
+          if (!Array.isArray(reports)) throw new Error("index.json의 reports 형식이 올바르지 않습니다.");
+          state.reports = reports
+            .filter((report) => report && report.file)
+            .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")) || String(a.title || "").localeCompare(String(b.title || ""), "ko"));
+          renderStatus();
+          renderFilters();
+          render();
+        })
+        .catch((reason) => {
+          count.textContent = "0개의 기록";
+          error.style.display = "block";
+          error.textContent = `목록을 불러오지 못했습니다. ${reason.message}`;
+          list.replaceChildren(createEmptyState(false));
+        });
+    })();
+  </script>
+</body>
+</html>

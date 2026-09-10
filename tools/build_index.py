@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build ../index.json from worklog metadata in ../reports/**/*.html."""
+"""Build ../blog/index.json from worklog metadata in ../blog/reports/**/*.html."""
 
 from __future__ import annotations
 
@@ -131,7 +131,7 @@ def build_index(root: Path, output: Path) -> int:
 
 
 def main() -> int:
-    default_root = Path(__file__).resolve().parents[1]
+    default_root = Path(__file__).resolve().parents[1] / "blog"
     argument_parser = argparse.ArgumentParser(description=__doc__)
     argument_parser.add_argument("--root", type=Path, default=default_root, help="저장소 루트 디렉터리")
     argument_parser.add_argument("--output", type=Path, help="생성할 index.json 경로")
