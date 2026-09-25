@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "reports/**/*.html"
+      - "blog/reports/**/*.html"
       - "tools/build_index.py"
       - ".github/workflows/build-worklog-index.yml"
   workflow_dispatch:

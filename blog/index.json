@@ -1,6 +1,29 @@
 {
-  "generated_at": "2026-09-10T01:52:27+00:00",
+  "generated_at": "2026-09-25T01:48:39+00:00",
   "reports": [
+    {
+      "date": "2026-09-25",
+      "title": "신작용 게임 서비스 플랫폼, 코드보다 검증부터 시작했다",
+      "project": "모바일 게임 서비스 플랫폼",
+      "tags": [
+        "Unity 6.6",
+        "MagicOnion",
+        ".NET 10",
+        "EF Core 10",
+        "MariaDB",
+        "IL2CPP",
+        "iOS",
+        "Android",
+        "Game Server",
+        "Game Service Platform",
+        "Claude Code",
+        "AI Native Development",
+        "Technical Validation"
+      ],
+      "summary": "출시한 모바일 퍼즐 게임 「흰둥이는 퐁퐁퐁」의 Unity 클라이언트와 MagicOnion 서버를 분석해 신작에 재사용할 게임 서비스 플랫폼의 구조를 정했다. 인증 서버는 코드를 이식해 게임마다 인스턴스를 띄우고, 계정과 원격 설정을 맡던 두 서버는 게임별 게임 서버 하나로 합친다. 플랫폼 코드를 쓰기 전에 Unity 6.6, MagicOnion 7.11, .NET 10, EF Core 10, MariaDB 11.8 조합을 Android와 iOS 실기기에서 검증해 9개 검증 항목을 모두 마쳤다. 분석과 실험은 AI 코딩 에이전트에 맡기고 결정과 실기기 확인은 사람이 했으며, 그 과정의 결정 53개를 기록으로 남겼다.",
+      "file": "reports/2026/09/2026-09-25_game-service-platform-analysis-and-device-validation.html",
+      "visibility": "public"
+    },
     {
       "date": "2026-09-09",
       "title": "코드 한 줄 직접 작성하지 않고 미니 RTS 전투 데모 만들기",
