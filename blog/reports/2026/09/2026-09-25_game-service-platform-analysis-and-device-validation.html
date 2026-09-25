@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-09-25" />
+  <meta name="worklog-title" content="신작용 게임 서비스 플랫폼, 코드보다 검증부터 시작했다" />
+  <meta name="worklog-project" content="모바일 게임 서비스 플랫폼" />
+  <meta name="worklog-tags" content="Unity 6.6, MagicOnion, .NET 10, EF Core 10, MariaDB, IL2CPP, iOS, Android, Game Server, Game Service Platform, Claude Code, AI Native Development, Technical Validation" />
+  <meta name="worklog-summary" content="출시한 모바일 퍼즐 게임 「흰둥이는 퐁퐁퐁」의 Unity 클라이언트와 MagicOnion 서버를 분석해 신작에 재사용할 게임 서비스 플랫폼의 구조를 정했다. 인증 서버는 코드를 이식해 게임마다 인스턴스를 띄우고, 계정과 원격 설정을 맡던 두 서버는 게임별 게임 서버 하나로 합친다. 플랫폼 코드를 쓰기 전에 Unity 6.6, MagicOnion 7.11, .NET 10, EF Core 10, MariaDB 11.8 조합을 Android와 iOS 실기기에서 검증해 9개 검증 항목을 모두 마쳤다. 분석과 실험은 AI 코딩 에이전트에 맡기고 결정과 실기기 확인은 사람이 했으며, 그 과정의 결정 53개를 기록으로 남겼다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>신작용 게임 서비스 플랫폼, 코드보다 검증부터 시작했다 · 2026-09-25</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    justify-content:center;
+    gap:16px;
+    margin-top:20px;}
+    .result-preview-grid.single .result-preview-card{
+    width:536px;
+    max-width:100%;
+    justify-self:center;}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">모바일 게임 서비스 플랫폼</div>
+    <h1>신작용 게임 서비스 플랫폼,<br>코드보다 검증부터 시작했다</h1>
+    <p class="lead">
+      출시한 모바일 퍼즐 게임 「흰둥이는 퐁퐁퐁」의 Unity 클라이언트와 MagicOnion 서버는 잘 동작하고 있었지만,
+      인증 · 계정 · 설정 기능과 게임 전용 로직이 여러 서버에 섞여 있었다. 다음 게임부터 재사용할 수 있는
+      <b>모바일 게임 서비스 플랫폼</b>을 만들기로 하고, 플랫폼 코드를 쓰기 전에 기존 구조를 분석하고
+      새 기술 조합을 Android와 iOS 실기기에서 먼저 검증했다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">Unity 6.6</span><span class="pill">MagicOnion 7.11</span><span class="pill">.NET 10</span><span class="pill">EF Core 10</span><span class="pill">MariaDB 11.8</span><span class="pill">IL2CPP</span><span class="pill">Android · iOS 실기기</span><span class="pill">Claude Code</span><span class="pill">AI Native Development</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#analysis">기존 구조 분석</a><a href="#target">목표 구조</a><a href="#validation">실기기 검증</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">흰둥이의 서버는 인증을 맡는 AuthServer, 플레이어 데이터를 맡는 AccountServer, 원격 설정을 맡는 AppServer로 나뉘어 있었다. 이번 단계의 목표는 두 가지였다. 이 중에서 신작에 그대로 가져갈 것과 합칠 것, 버릴 것을 가르는 것. 그리고 새 버전의 Unity와 .NET으로 같은 흐름이 <b>실제 기기에서</b> 동작하는지 확인하는 것이었다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 출시한 게임의 서버를 통째로 복사하는 대신 검증된 부분만 골라 새 플랫폼으로 옮긴다면, 무엇을 가져가고 무엇을 버려야 할까? 그리고 최신 버전의 기술 조합에서도 그 흐름이 실기기에서 그대로 동작할까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">흰둥이 서버를 분석한 문서 세 개와 결정 기록을 만들었고, 버리는 실험 코드로 새 기술 조합을 검증했다. Android와 iOS 실기기에서 .NET 10 서버 호출, 설치, 게스트 로그인이 모두 성공했다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
+    <!-- 게시 전에 스크린샷의 내부 IP, 호스트 이름, 사용자 ID는 가려 주세요. -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">Android 실기기</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/09/25/phase1-android-device.png" alt="Android 실기기에서 세 가지 서버 호출이 모두 성공한 화면" />
+      </div>
+      <div class="result-preview-tail">Galaxy A16 · Android 16 · IL2CPP</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">iOS 실기기</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/09/25/phase1-ios-device.png" alt="iOS 실기기에서 세 가지 서버 호출이 모두 성공한 화면" />
+      </div>
+      <div class="result-preview-tail">iPhone X · iOS 16.7 · IL2CPP</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">9 / 9</div><div class="label">검증 항목</div><p>서버 쪽 4개와 클라이언트 쪽 5개의 검증을 모두 마쳤다.</p></div>
+    <div class="card span-3"><div class="metric ok">2</div><div class="label">실기기 플랫폼</div><p>Android 16과 iOS 16 기기에서 IL2CPP 빌드로 실행했다.</p></div>
+    <div class="card span-3"><div class="metric ok">3 → 2</div><div class="label">서버 구성</div><p>인증 · 계정 · 설정 서버 세 개를 인증 서버와 게임 서버 두 개로 정리하기로 했다.</p></div>
+    <div class="card span-3"><div class="metric ok">53</div><div class="label">결정 기록</div><p>분석과 검증 과정에서 내린 결정을 이유, 날짜와 함께 기록했다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> Unity 6.6, MagicOnion 7.11, .NET 10, EF Core 10, MariaDB 11.8로 이어지는 새 조합에서 기존 인증 흐름이 실기기에서도 그대로 동작했다. <b>이전 버전으로 되돌려야 했던 패키지는 하나도 없었다.</b></div>
+</section>
+
+<section id="analysis">
+  <h2>출시한 게임의 서버를 세 갈래로 나눠 봤다</h2>
+  <p class="muted">흰둥이 최종 출시 버전의 저장소를 Claude Code에게 읽기 전용으로 맡겨 구조를 분석하게 했다. 서버마다 무엇을 하는지, 어디까지 게임에 묶여 있는지, 무엇을 그대로 재사용할 수 있는지를 문서로 정리했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><div class="mini-title">Keep</div><h3>AuthServer</h3><p>게임 로직이 전혀 없는 인증 서버다. 설치, 게스트 로그인, 소셜 로그인, 토큰 갱신이 잘 동작하고 있어 코드를 이식해 공통 인증 서버로 쓰기로 했다.</p></div>
+    <div class="card span-4"><div class="mini-title">Merge</div><h3>AccountServer</h3><p>프로필, 재화, 결제 같은 공통 기능과 퍼즐 전용 로직이 한 서비스에 섞여 있었다. 공통 부분만 골라 게임 서버로 옮기고, 퍼즐 로직은 가져가지 않는다.</p></div>
+    <div class="card span-4"><div class="mini-title">Merge</div><h3>AppServer</h3><p>원격 설정(Remote Config)의 저장과 조회를 맡고 있었다. 원격 설정 기능만 게임 서버로 옮기고, 서버 사이의 내부 호출은 없앤다.</p></div>
+    <div class="card span-12">
+      <h3>모든 구성요소를 다섯 가지로 분류했다</h3>
+      <p>서버 코드, 공유 계약, 데이터베이스 테이블, Unity 네트워크 계층까지 하나씩 분류해 재사용 매트릭스로 정리했다.</p>
+      <ul>
+        <li><code>KEEP_AUTH_PLATFORM</code>: 인증 플랫폼으로 유지</li>
+        <li><code>MOVE_TO_GAMESERVER</code>: 게임 서버로 이동</li>
+        <li><code>EXTRACT_SHARED</code>: 클라이언트와 서버가 함께 쓰는 공통 패키지로 추출</li>
+        <li><code>REFERENCE_ONLY</code>: 코드는 가져가지 않고 설계만 참고</li>
+        <li><code>DROP</code>: 가져가지 않음</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>첫 계획은 방향이 어긋났다.</b> 처음 받은 계획은 기존 서버를 제자리에서 고쳐 새 구조로 바꾸는 이전 계획이었다. 하지만 목표는 신작을 위한 새 저장소였다. 규칙 파일(CLAUDE.md)에 “흰둥이는 옮기지 않는다”, “승인된 항목만 새 코드로 옮긴다”처럼 <b>하지 않을 것</b>을 명시하고 나서야 계획이 목표와 맞았다.</div>
+</section>
+
+<section id="target">
+  <h2>인증 서버는 게임마다, 게임 서버는 하나로</h2>
+  <p class="muted">분석을 바탕으로 목표 구조를 정했다. 인증 서버는 같은 코드로 게임마다 따로 띄우고, 계정과 원격 설정은 게임별 게임 서버 하나로 합친다. 게임마다 Firebase 프로젝트와 인증 데이터베이스를 분리하므로 게임 사이에 계정은 공유하지 않는다.</p>
+  <div class="flow">
+    <div class="node"><div class="mini-title">01 · Client</div><h3>Unity 클라이언트</h3><p class="muted">공통 네트워크 · 인증 · 원격 설정 계층 위에 게임 코드를 올린다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">02 · Auth</div><h3>AuthServer</h3><p class="muted">같은 코드로 게임마다 인스턴스를 띄운다. Firebase 프로젝트, 서명 키, 인증 DB도 게임별로 나눈다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">03 · Game</div><h3>GameServer</h3><p class="muted">플레이어, 재화, 결제, 원격 설정 모듈에 게임 전용 모듈을 더한다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">04 · Data</div><h3>MariaDB</h3><p class="muted">환경별 서버 하나를 여러 게임이 함께 쓰고, 스키마와 계정은 게임별로 나눈다.</p></div>
+  </div>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>모노레포 하나에 플랫폼과 게임을</h3><p>새 저장소에 공통 패키지, 인증 서버, 게임 서버 라이브러리, 샘플, 게임을 함께 둔다. 게임은 공통 패키지를 로컬 경로로 참조하고, 플랫폼 코드가 게임 코드를 참조하지 못하도록 빌드 단계에서 막는다.</p></div>
+    <div class="card span-6"><h3>처음부터 지킬 원칙</h3><ul><li>사용자는 로그인 토큰으로만 식별한다.</li><li>게임 수치는 코드가 아니라 원격 설정 키로 관리한다.</li><li>두 번째 게임이 생길 때만 공통화한다.</li><li>비밀 값은 저장소에 두지 않고, 로그에 토큰이나 개인정보를 남기지 않는다.</li></ul></div>
+  </div>
+</section>
+
+<section id="validation">
+  <h2>코드를 쓰기 전에 실기기에서 먼저 확인했다</h2>
+  <p class="muted">플랫폼 코드는 새 저장소에서 처음부터 쓰기로 했기 때문에, 그 전에 버리는 실험 코드로 기술 조합부터 확인했다. 결과만 문서로 남기고 실험 코드는 지우는 방식이다. 서버 쪽 검증을 먼저 끝낸 뒤 클라이언트와 실기기로 넘어갔다.</p>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>.NET 10 위의 MagicOnion 서버</h3><span class="tag">Server</span></div><p>MagicOnion 7.11로 만든 최소 서버를 .NET 10에서 띄우고, 콘솔 클라이언트에서 호출해 동작을 확인했다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>EF Core 10과 MariaDB 11.8</h3><span class="tag">Database</span></div><p>Pomelo의 EF Core 10 버전이 아직 없어 Microting 포크를 썼다. 마이그레이션, 마이크로초 단위 시간, 이모지, 행 잠금(FOR UPDATE), 중복 키 감지까지 기존 코드가 기대하는 동작을 모두 확인했다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>인증 서버 로컬 실행</h3><span class="tag">Auth</span></div><p>흰둥이의 인증 서버를 Docker 컨테이너로 로컬에서 띄웠다. 빈 데이터베이스에 기존 마이그레이션을 적용하고, 설치 → 로그인 → 토큰 갱신 흐름을 실제로 실행해 점검했다.</p></div></div>
+    <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>Unity 6.6 샘플과 패키지</h3><span class="tag">Client</span></div><p>에디터 스크립트로 번들 ID, IL2CPP, 코드 제거 수준, 자동 서명을 설정하고, MagicOnion 클라이언트, YetAnotherHttpHandler, MessagePack의 최신 버전을 설치했다.</p></div></div>
+    <div class="step"><div class="dot">5</div><div class="card"><div class="step-head"><h3>실기기에서 세 가지 호출</h3><span class="tag">Device</span></div><p>Galaxy A16과 iPhone X에서 .NET 10 서버 호출, 설치, 게스트 로그인이 모두 성공했다. Android는 명령줄로 설치했고, iOS 16 기기는 Xcode에서 실행했다.</p></div></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>확정한 조합:</b> Unity 6.6 · MagicOnion 7.11 · YetAnotherHttpHandler 1.11.5 · MessagePack 3.1.10 · Grpc.Net.Client 2.84 · .NET 10 · EF Core 10 · MariaDB 11.8. 최신 안정 버전이 모두 동작해서 이전 버전으로 되돌린 패키지는 없었다.</div>
+</section>
+
+<section id="lessons">
+  <h2>검증하면서 알게 된 것</h2>
+  <p class="muted">모두 통과했지만 그냥 통과한 것은 아니었다. 다음 단계 설계에 바로 반영할 내용이 여럿 나왔다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>Unity 배치 모드는 패키지를 한 번에 복원하지 못했다</h3><p>새 프로젝트에서는 MagicOnion 패키지가 필요로 하는 NuGet DLL이 없어 컴파일 오류로 먼저 멈췄다. Unity를 실행하기 전에 명령줄 도구로 NuGet 패키지를 복원하는 단계를 빌드 스크립트에 넣기로 했다.</p></div>
+    <div class="card span-4"><h3>iOS 16 기기는 명령줄로 설치할 수 없었다</h3><p>Xcode 26의 설치 도구는 iOS 17 이상 기기를 대상으로 한다. iPhone X는 Xcode 화면에서 실행했고, 설치 자동화에는 iOS 17 이상 기기를 쓰기로 했다.</p></div>
+    <div class="card span-4"><h3>같은 Wi-Fi의 개발 서버 접속에는 iOS 권한이 필요했다</h3><p>로컬 네트워크 권한 팝업이 떠 있는 동안 첫 요청은 실패했고, 허용한 뒤 다시 시도하자 성공했다. 운영 서버에는 해당하지 않으므로 개발 빌드에서만 한 번 재시도하도록 했다.</p></div>
+    <div class="card span-4"><h3>평문 HTTP/2는 예외 설정 없이 동작했다</h3><p>YetAnotherHttpHandler는 자체 네트워크 스택을 써서 Android의 평문 차단이나 iOS의 App Transport Security가 적용되지 않았다. 코드 제거 수준을 High로 올려도 link.xml 없이 동작했다.</p></div>
+    <div class="card span-4"><h3>MariaDB 11.8의 정렬 규칙은 명시해야 했다</h3><p>마이그레이션 과정에서 테이블마다 정렬 규칙이 섞였고, 이전 정렬 규칙은 서로 다른 이모지를 같은 문자로 취급했다. 기본 정렬 규칙을 명시하고, ID처럼 정확히 일치해야 하는 컬럼은 바이너리 정렬을 쓰기로 했다.</p></div>
+    <div class="card span-4"><h3>기기 인식 문제는 연결부터 의심했다</h3><p>Android는 USB 허브를 거치자 충전조차 되지 않았고, Mac 포트에 직접 연결하자 바로 인식됐다. iPhone은 케이블을 한 번 다시 꽂자 Xcode에 나타났다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>그 밖에:</b> Docker Desktop 뒤에서는 모든 클라이언트 IP가 같은 내부 주소로 보였고, 서버와 클라이언트가 서로 다른 MessagePack 버전을 쓰고 있었다. 클라이언트 IP는 설정한 프록시의 헤더에서만 읽고, 패키지 버전은 저장소 전체에서 한 곳에 고정하기로 했다.</div>
+</section>
+
+<section id="process">
+  <h2>결정은 사람이, 실행은 AI 에이전트가</h2>
+  <p class="muted">이번 작업은 설계 대화와 실행을 나눠서 진행했다. 방향과 결정은 대화로 정했고, 저장소 분석과 실험 코드, 빌드, 로그 확인은 Claude Code에게 맡겼다. Claude Code는 단계마다 계획을 먼저 보여주고 승인을 받은 뒤에만 파일을 바꿨다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3 class="ok">AI 에이전트가 맡은 일</h3><ul><li>저장소 분석과 분석 문서 작성</li><li>실험용 서버와 클라이언트 코드 작성</li><li>Docker 구성과 데이터베이스 마이그레이션</li><li>Unity 배치 빌드, Xcode 프로젝트 생성, Android 설치</li><li>서버 로그와 데이터베이스로 결과 교차 확인</li><li>결과 문서와 정리 목록 작성</li></ul></div>
+    <div class="card span-6"><h3 class="warn">사람이 직접 한 일</h3><ul><li>방향 설정과 53개의 결정</li><li>기기 연결과 신뢰, USB 디버깅 허용</li><li>iOS 16 기기를 Xcode에서 실행</li><li>로컬 네트워크 권한 허용</li><li>Firebase 콘솔 설정</li><li>계획 승인과 보고서 검토</li></ul></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>권한을 줄수록 “하지 말 것”을 먼저 적었다.</b> 원본 저장소는 읽기 전용으로 두고, 비밀 값은 저장소 밖 폴더에서 실행 시점에만 읽고 출력하지 않게 했다. 파일 삭제는 목록만 만들게 한 뒤 사람이 확인하고 실행했다. 이런 규칙을 규칙 파일에 먼저 적어 두자 AI 에이전트에게 실제 빌드와 실행까지 안심하고 맡길 수 있었다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>코드를 쓰기 전에 확신부터 만들었다</h2>
+  <p class="muted">이번 단계에서는 플랫폼 코드를 한 줄도 쓰지 않았다. 대신 무엇을 가져갈지, 어떤 구조로 만들지, 어떤 기술 조합이 실제로 동작하는지를 먼저 확정했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>이번 단계의 진행 순서</h3>
+      <pre><code>출시한 게임의 구조 분석
+        ↓
+가져갈 것 · 합칠 것 · 버릴 것 분류
+        ↓
+목표 구조와 원칙 결정
+        ↓
+버리는 실험 코드로 기술 조합 검증
+        ↓
+Android · iOS 실기기에서 확인
+        ↓
+결정 기록으로 정리</code></pre>
+      <p class="muted" style="margin-top:14px">새 플랫폼을 만들 때 가장 비싼 실수는 코드를 다 쓴 뒤에야 기술 조합이 기기에서 동작하지 않는다는 것을 알게 되는 것이다. 이번 단계는 그 위험을 먼저 없애는 데 집중했다.</p>
+    </div>
+    <div class="card span-4"><div class="metric ok">0</div><div class="label">작성한 플랫폼 코드</div><p>실험 코드는 모두 버렸다. 남긴 것은 분석 문서, 검증 결과, 그리고 53개의 결정이다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 출시한 게임의 서버는 새 플랫폼의 좋은 출발점이었다. 인증 서버는 코드를 이식해 그대로 살리고, 나머지는 검증된 부분만 새 코드로 옮긴다. 최신 기술 조합도 Android와 iOS 실기기에서 문제없이 동작해서, <b>이제 새 저장소에서 플랫폼 코드를 쓰기 시작할 준비가 됐다.</b></div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>출시한 게임 「흰둥이는 퐁퐁퐁」의 서버를 분석해, 인증 서버는 이식하고 계정 · 원격 설정 서버는 게임 서버 하나로 합치는 플랫폼 구조를 정했다.</li>
+      <li>플랫폼 코드를 쓰기 전에 Unity 6.6, MagicOnion 7.11, .NET 10, EF Core 10, MariaDB 11.8 조합을 Android와 iOS 실기기에서 검증했고 9개 항목을 모두 마쳤다.</li>
+      <li>분석과 실험은 AI 에이전트에게 맡기고 결정과 실기기 확인은 사람이 했다. 규칙 파일로 “하지 말 것”을 먼저 정해 둔 것이 안정적인 협업의 핵심이었다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>새 저장소와 인증 서버 이식</h3><span class="tag">Phase 2</span></div><p>yesitworks-platform 모노레포의 골격을 만들고 패키지 버전을 한 곳에 고정한다. 인증 서버를 .NET 10으로 이식하면서 통합 테스트와 CI를 함께 구성한다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>첫 수직 슬라이스</h3><span class="tag">Phase 3</span></div><p>원격 설정 확인 → 자동 게스트 시작 → 게임 입장(프로필 자동 생성) → 지갑 조회까지 하나의 흐름을 실기기에서 연결한다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>출시 필수 기능과 결제</h3><span class="tag">Phase 4–5</span></div><p>계정 삭제, 소셜 로그인, 원격 설정 관리 도구, 영수증 검증과 중복 지급 방지를 차례로 붙인다.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">모바일 게임 서비스 플랫폼 · Public Work Log · 2026-09-25</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
