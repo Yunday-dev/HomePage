@@ -1,6 +1,31 @@
 {
-  "generated_at": "2026-09-25T01:48:39+00:00",
+  "generated_at": "2026-09-28T01:10:35+00:00",
   "reports": [
+    {
+      "date": "2026-09-27",
+      "title": "게스트 로그인부터 재화 지갑까지 만들고, 실기기 14가지 상황에서 버그 3개를 잡았다",
+      "project": "모바일 게임 서비스 플랫폼",
+      "tags": [
+        "Unity 6.6",
+        "MagicOnion",
+        ".NET 10",
+        "EF Core 10",
+        "MariaDB",
+        "IL2CPP",
+        "iOS",
+        "Android",
+        "Game Server",
+        "Game Service Platform",
+        "Remote Config",
+        "Guest Login",
+        "Device Testing",
+        "Claude Code",
+        "AI Native Development"
+      ],
+      "summary": "모바일 게임 서비스 플랫폼에 앱 실행 → 점검 · 업데이트 확인 → 게스트 로그인 → 게임 입장 → 재화 지갑 조회로 이어지는 첫 흐름을 서버와 Unity 클라이언트에 걸쳐 만들었다. 앱 강제 종료, 비행기 모드, Wi-Fi 끊김, iOS 권한 창, 토큰 만료, 로그아웃, 계정 삭제 등 14가지 상황을 Android와 iPhone 실기기에서 테스트했다. 자동 테스트 500개가 모두 통과한 뒤에도 실기기에서 문제 다섯 가지가 나왔고, 그중 세 가지를 고쳐 다시 확인했으며 두 가지는 다음 단계 설계로 넘겼다. 계획은 사람이 검토해 고치고, 구현과 빌드, Android 기기 조작은 AI 코딩 에이전트에게 맡겼다.",
+      "file": "reports/2026/09/2026-09-27_guest-login-wallet-and-device-tests.html",
+      "visibility": "public"
+    },
     {
       "date": "2026-09-25",
       "title": "신작용 게임 서비스 플랫폼, 코드보다 검증부터 시작했다",
