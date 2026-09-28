@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-09-27" />
+  <meta name="worklog-title" content="게스트 로그인부터 재화 지갑까지 만들고, 실기기 14가지 상황에서 버그 3개를 잡았다" />
+  <meta name="worklog-project" content="모바일 게임 서비스 플랫폼" />
+  <meta name="worklog-tags" content="Unity 6.6, MagicOnion, .NET 10, EF Core 10, MariaDB, IL2CPP, iOS, Android, Game Server, Game Service Platform, Remote Config, Guest Login, Device Testing, Claude Code, AI Native Development" />
+  <meta name="worklog-summary" content="모바일 게임 서비스 플랫폼에 앱 실행 → 점검 · 업데이트 확인 → 게스트 로그인 → 게임 입장 → 재화 지갑 조회로 이어지는 첫 흐름을 서버와 Unity 클라이언트에 걸쳐 만들었다. 앱 강제 종료, 비행기 모드, Wi-Fi 끊김, iOS 권한 창, 토큰 만료, 로그아웃, 계정 삭제 등 14가지 상황을 Android와 iPhone 실기기에서 테스트했다. 자동 테스트 500개가 모두 통과한 뒤에도 실기기에서 문제 다섯 가지가 나왔고, 그중 세 가지를 고쳐 다시 확인했으며 두 가지는 다음 단계 설계로 넘겼다. 계획은 사람이 검토해 고치고, 구현과 빌드, Android 기기 조작은 AI 코딩 에이전트에게 맡겼다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>게스트 로그인부터 재화 지갑까지 만들고, 실기기 14가지 상황에서 버그 3개를 잡았다 · 2026-09-27</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    justify-content:center;
+    gap:16px;
+    margin-top:20px;}
+    .result-preview-grid.single .result-preview-card{
+    width:536px;
+    max-width:100%;
+    justify-self:center;}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+    /* 좁은 화면 보정: 그리드 칸이 긴 내용(pre 등) 폭만큼 늘어나 화면 밖으로 넘치지 않게 한다. */
+    .step{grid-template-columns:42px minmax(0,1fr)}.grid>*,.step>.card{min-width:0}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">모바일 게임 서비스 플랫폼</div>
+    <h1>게스트 로그인부터 재화 지갑까지 만들고,<br>실기기 14가지 상황에서 버그 3개를 잡았다</h1>
+    <p class="lead">
+      앱을 켜면 점검과 업데이트 여부를 확인하고, 게스트로 로그인한 뒤, 게임에 들어가며 프로필과 재화 지갑을 받는 흐름을 만들었다.
+      그리고 앱 강제 종료, 비행기 모드, 권한 창, 토큰 만료 같은 <b>14가지 상황을 Android와 iPhone 실기기에서 테스트했다.</b>
+      자동 테스트 500개가 모두 통과한 뒤에도 실기기에서 문제 다섯 가지가 나왔고, 그중 세 가지를 이번에 고쳤다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">Unity 6.6</span><span class="pill">MagicOnion 7.11</span><span class="pill">.NET 10</span><span class="pill">EF Core 10</span><span class="pill">MariaDB 11.8</span><span class="pill">IL2CPP</span><span class="pill">Android · iOS 실기기</span><span class="pill">Remote Config</span><span class="pill">Claude Code</span><span class="pill">AI Native Development</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#parts">만든 것</a><a href="#review">설계 검토</a><a href="#devices">실기기 테스트</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">지난 작업에서 새 저장소의 뼈대를 만들고 인증 서버를 옮겼다. 이번에는 그 위에 앱 실행부터 게임 입장까지 이어지는 첫 흐름을 올렸다. 게임 개발에서 흔히 “수직 슬라이스”라고 부르는, 처음부터 끝까지 한 번에 이어지는 얇은 기능 묶음이다. 출시한 게임 「흰둥이는 퐁퐁퐁」의 코드에서 검증된 부분만 골라 새로 만들고, <b>실제 Android와 iPhone에서</b> 끝까지 동작시키는 것이 완료 기준이었다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 자동 테스트가 모두 통과하면 실기기에서도 그대로 동작할까? 권한 창이 뜨고, 앱이 강제 종료되고, 네트워크가 끊기고, 로그인 토큰이 만료되는 실제 상황에서도 사용자가 멈추거나 계정을 잃지 않을까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">서버 두 개와 Unity 클라이언트에 걸친 작업을 다섯 번에 나눠 병합했다. Android는 명령줄 스크립트로 앱을 자동 조작해 68개 확인 항목을 모두 통과했고, iPhone X는 Xcode에서 실행해 사람이 직접 조작하며 14가지 상황을 모두 통과했다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
+    <!-- 게시 전에 스크린샷의 내부 IP, 호스트 이름, 사용자 ID는 가려 주세요. -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">Android 실기기</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/09/27/phase3-android-device.png" alt="Android 실기기에서 앱을 강제 종료한 뒤 다시 실행해도 같은 플레이어로 지갑 화면에 들어간 모습" />
+      </div>
+      <div class="result-preview-tail">Galaxy A16 · Android 16 · IL2CPP</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">iOS 실기기</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/09/27/phase3-ios-device.png" alt="iPhone X에서 로컬 네트워크 권한을 늦게 허용해도 재시도 버튼 없이 지갑 화면에 들어간 모습" />
+      </div>
+      <div class="result-preview-tail">iPhone X · iOS 16.7 · IL2CPP</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">14</div><div class="label">실기기 테스트 상황</div><p>강제 종료, 비행기 모드, Wi-Fi 끊김, 권한 창, 토큰 만료, 로그아웃, 계정 삭제 등을 두 기기에서 확인했다.</p></div>
+    <div class="card span-3"><div class="metric ok">500</div><div class="label">자동 테스트</div><p>.NET 테스트 435개와 Unity 에디터 테스트 65개가 모두 통과했다.</p></div>
+    <div class="card span-3"><div class="metric ok">68 / 68</div><div class="label">Android 확인 항목</div><p>첫 실행에서 60/61이었고, 실패한 항목을 고친 뒤 모두 통과했다.</p></div>
+    <div class="card span-3"><div class="metric warn">5 → 3</div><div class="label">실기기에서 찾은 문제</div><p>다섯 가지 중 세 가지를 고쳐 다시 확인했고, 두 가지는 다음 단계 설계로 넘겼다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 앱 실행 → 점검 · 업데이트 확인 → 게스트 로그인 → 게임 입장 → 재화 지갑 조회까지의 흐름이 Android와 iOS 실기기에서 동작했다. 자동 테스트를 모두 통과한 뒤에도 <b>실기기가 다섯 가지 문제를 찾아냈고</b>, 세 가지는 이번에 고쳐 다시 기기에서 확인했다.</div>
+</section>
+
+<section id="parts">
+  <h2>로그인부터 지갑까지, 다섯 번에 나눠 만들었다</h2>
+  <p class="muted">한 번에 만들지 않고 다섯 번에 나눴다. 매번 계획 → 검토 → 구현 → 보고 → 병합 순서로 끝냈고, 다음 작업이 알아야 할 내용은 저장소의 설계 문서에 남겼다.</p>
+  <div class="flow">
+    <div class="node"><div class="mini-title">01 · Config</div><h3>점검 · 업데이트 확인</h3><p class="muted">로그인하기 전에 서버 점검 중인지, 강제 업데이트가 필요한지 먼저 확인한다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">02 · Login</div><h3>게스트 로그인</h3><p class="muted">처음이면 게스트 계정을 만들고, 다시 켰다면 저장된 로그인 정보로 이어서 시작한다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">03 · Game</div><h3>게임 입장</h3><p class="muted">처음 입장할 때 프로필과 지갑을 만들고, 원격 설정에 정한 초기 재화를 지급한다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">04 · Wallet</div><h3>재화 지갑</h3><p class="muted">서버가 정한 순서대로 재화를 보여 준다.</p></div>
+  </div>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>원격 설정 서버</h3><span class="tag">Server</span></div><p>게임 서버의 데이터베이스 기반을 만들고, 기존 게임의 원격 설정 기능을 옮겼다. 점검 시간대, 강제 업데이트 기준 버전, 설정마다 누구에게 보여 줄지를 새로 설계했다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>플레이어 프로필과 재화 지갑</h3><span class="tag">Server</span></div><p>처음 게임에 들어올 때 프로필과 지갑을 만든다. 같은 계정으로 첫 요청 16개가 동시에 와도 프로필은 하나만 생기고, 삭제된 프로필은 다시 만들지 않는다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>Unity와 분리한 네트워크 코어</h3><span class="tag">Client</span></div><p>토큰 갱신, 재시도, 앱 시작 절차를 Unity에 의존하지 않는 코드로 분리했다. 그래서 기기 없이도 가짜 서버로 이 규칙들을 반복 테스트하고, 실제 서버를 띄운 CI 점검에서도 같은 상황을 돌릴 수 있다.</p></div></div>
+    <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>Unity 연결 계층과 IL2CPP 빌드 검사</h3><span class="tag">Unity</span></div><p>기기 저장소(PlayerPrefs), 메인 스레드 처리, 기기의 국가 설정 읽기를 붙였다. 빌드할 때 쓰지 않는 코드를 가장 강하게 지우는 설정(High)에서도 필요한 코드가 남아 있는지 빌드 결과물을 검사하는 스크립트를 만들었다.</p></div></div>
+    <div class="step"><div class="dot">5</div><div class="card"><div class="step-head"><h3>샘플 앱과 실기기 테스트 도구</h3><span class="tag">Device</span></div><p>점검 화면, 로그인 화면, 지갑 화면을 가진 샘플 앱과 테스트 버튼을 만들었다. 서버가 일부러 응답을 늦추는 요청 같은 테스트용 장치는 샘플에만 두고, 실제 게임이 쓰는 플랫폼 코드에는 넣지 않았다.</p></div></div>
+  </div>
+</section>
+
+<section id="review">
+  <h2>코드를 쓰기 전에 설계부터 고쳤다</h2>
+  <p class="muted">매번 Claude Code가 먼저 계획을 내고, 별도의 대화에서 검토해 고친 뒤 승인했다. 구현한 뒤에 고친 것보다 계획 단계에서 바꾼 것이 훨씬 많았다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>점검 시간대를 따로 뺐다</h3><p>앱 버전과 점검 설정은 조건에 가장 잘 맞는 한 줄을 통째로 쓴다. 그래서 플랫폼별 설정이 생기면 전체 대상으로 켠 점검이 iOS에는 적용되지 않는 구조였다. 점검은 별도의 시간대 목록으로 나눴다.</p></div>
+    <div class="card span-4"><h3>강제 업데이트는 최소 지원 버전으로</h3><p>“강제 업데이트 여부” 표시와 버전 범위 조건 대신 “이 버전 미만은 업데이트 필요”라는 기준 하나로 바꿨다. 플랫폼마다 한 줄이면 되고, 조건끼리 우선순위가 꼬여 강제 업데이트가 빠지는 일이 없다.</p></div>
+    <div class="card span-4"><h3>서버만 쓰는 설정 값</h3><p>설정을 “누구나”와 “로그인한 사용자”로만 나누면, 초기 지급량처럼 서버만 쓰는 값도 모든 사용자에게 내려간다. 서버 전용 범위를 추가했다.</p></div>
+    <div class="card span-4"><h3>DB가 멈춰도 응답은 멈추지 않게</h3><p>설정은 백그라운드에서 주기적으로 다시 읽고, 요청에는 마지막으로 읽어 둔 값으로 바로 답한다. DB 장애 테스트에서도 점검 확인 요청은 모두 0.5초 안에 끝났다.</p></div>
+    <div class="card span-4"><h3>한 번의 시도 기한과 전체 기한</h3><p>요청의 제한 시간이 하나뿐이면, 응답 없이 멈춘 첫 시도가 시간을 다 써서 다시 시도할 여유가 없다. 한 번의 시도는 5초, 재시도를 포함한 전체는 15초로 나눴다.</p></div>
+    <div class="card span-4"><h3>저장은 디스크에 쓰는 것까지</h3><p>모바일에서 강제 종료된 앱은 PlayerPrefs에 적은 값을 디스크에 쓰지 못할 수 있다. 기기 식별값은 설치 요청을 보내기 전에 반드시 디스크에 쓰게 했다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>그 밖에:</b> 초기 지급 설정이 비어 있으면 0을 주지 않고 오류를 내게 했다. 신규 플레이어의 재화가 영구히 틀어지는 것보다, 첫 입장이 실패해서 문제가 바로 드러나는 편이 낫다.</div>
+</section>
+
+<section id="devices">
+  <h2>자동 테스트가 다 통과한 뒤에도, 실기기는 다섯 가지를 찾아냈다</h2>
+  <p class="muted">Android는 USB로 연결한 Galaxy A16에서 스크립트가 앱을 설치하고, 버튼을 누르고, 강제 종료와 비행기 모드까지 자동으로 조작했다. iPhone X는 Xcode에서 실행하고 사람이 단계마다 직접 조작했다. 단계마다 기대 결과와 함께 “다르게 나오면 무엇을 뜻하는지”를 먼저 적어 두고 시작했다.</p>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>권한 창을 천천히 누르면 첫 요청이 실패했다</h3><span class="tag">수정 완료</span></div>
+      <p>iOS는 같은 Wi-Fi의 개발 서버에 처음 접속할 때 로컬 네트워크 권한 창을 띄우고, 창이 떠 있는 동안의 요청은 실패한다. 앱은 창이 닫히기를 기다렸다가 한 번 더 보내는데, 기다리는 시간이 2초뿐이었다. 창을 읽고 누르는 사이에 그 재시도까지 실패했다. 기다리는 시간을 10초로 늘리되, 앱이 화면으로 돌아오면 바로 보내게 했다.</p>
+      <ul>
+        <li><b>0.02~1.2초</b> 첫 요청(점검 확인)이 3번 실패했다. 권한 창 때문에 연결이 막혔다.</li>
+        <li><b>1.3초</b> 권한 창이 뜨며 앱이 화면 뒤로 밀렸다.</li>
+        <li><b>8.77초</b> 허용을 누르자 기다리던 재시도가 바로 나가 성공했다.</li>
+        <li><b>9.4초</b> 로그인과 게임 입장까지 끝났다. 재시도 버튼은 뜨지 않았다.</li>
+      </ul>
+      <p class="muted" style="margin-top:12px">일부러 다섯까지 세고 허용을 누른 테스트다. 기다리는 시간이 2초였다면 재시도는 약 3.2초에, 권한 창이 떠 있는 채로 나가 실패했을 것이다.</p>
+    </div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>게임 도중 삭제된 계정에 아무 메시지가 없었다</h3><span class="tag">수정 완료</span></div>
+      <p>계정이 삭제된 뒤 로그인 토큰을 갱신하면 서버는 “사용자 없음”(<code>UserNotFound</code>)으로 답한다. 앱은 이 답을 일시적인 실패로 보고 요청만 실패시켰다. 사용자는 다음에 앱을 켤 때까지 이유 없는 실패만 보게 된다. 이 답을 되돌릴 수 없는 실패로 바꾸자, 곧바로 이어지는 게스트 로그인이 “삭제된 계정”이라고 답했고, 앱은 그 자리에서 계정 차단 이벤트를 받았다. 실패한 요청을 다시 보내지도 않았다. 샘플 앱은 이 이벤트를 화면 로그로 보여 주고, 실제 게임은 이 이벤트를 받아 안내 화면을 띄우면 된다. 수정 전에는 앱을 다시 켜야 비로소 삭제 안내가 떴다. 서버가 “사용자 없음”으로 답하는 방식은 기존 게임에서 그대로 가져온 것이라, 계정 삭제 기능을 만드는 다음 단계에서 함께 정하기로 했다.</p>
+    </div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>토큰이 만료된 뒤 로그아웃하면 서버에 로그인이 남았다</h3><span class="tag">수정 완료</span></div>
+      <p>로그아웃 요청은 15분짜리 접속 토큰으로 인증했는데, 로그아웃할 때는 일부러 토큰을 새로 받지 않게 설계했다. 그래서 접속 토큰이 만료된 뒤의 로그아웃은 서버에 닿지 못했고, 기기에서만 로그인 정보가 지워졌다. 추정으로 끝내지 않고, 토큰이 만료되는 시각을 기다렸다가 같은 상황을 재현했다.</p>
+      <pre style="white-space:pre-wrap;overflow-wrap:anywhere"><code>Logout: none, gRPC Unauthenticated; local tokens cleared</code></pre>
+      <p class="muted" style="margin-top:12px">이제 로그아웃은 요청에 담긴 장기 토큰(리프레시 토큰)으로 인증한다. 그 토큰을 가진 쪽은 이미 로그인을 이어 갈 수 있으니, 로그아웃할 권한을 주는 것은 새로운 권한이 아니다. 기기 백업에 남은 토큰으로 로그인이 되살아날 위험도 함께 막았다.</p>
+    </div></div>
+    <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>서버는 저장했는데 앱은 실패로 봤다</h3><span class="tag">다음 단계로</span></div>
+      <p>서버가 4초 동안 응답을 늦추는 저장 요청 도중에 비행기 모드를 켰다. 저장 요청은 자동으로 다시 보내지 않게 되어 있어서 한 번만 나갔지만, 그 요청은 끊기기 직전에 서버에 도착해 저장됐다. 사용자가 다시 누르면 두 번 저장된다. Android와 iPhone 모두 같았다. 같은 요청이 두 번 적용되지 않도록 요청마다 고유 ID를 붙이는 설계를 다음 단계로 넘겼다.</p>
+    </div></div>
+    <div class="step"><div class="dot">5</div><div class="card"><div class="step-head"><h3>iOS는 백그라운드로 가면 응답을 잃었다</h3><span class="tag">다음 단계로</span></div>
+      <p>요청 도중 홈 화면으로 나갔다가 돌아오는 테스트에서, Android는 백그라운드에서 요청을 끝냈지만 iPhone은 매번 수동 재시도로 끝났다. 서버는 요청을 처리했지만, iOS가 앱을 일시 정지시키는 사이 응답이 사라졌다. 조회처럼 다시 보내도 안전한 요청은 앱이 돌아왔을 때 한 번 더 자동으로 보내는 방안을 다음 단계로 넘겼다.</p>
+    </div></div>
+  </div>
+
+  <div class="result-preview-grid pair">
+    <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
+    <!-- 게시 전에 스크린샷의 내부 IP, 호스트 이름, 사용자 ID는 가려 주세요. -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">수정 전: 토큰 만료 뒤 로그아웃</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/09/27/phase3-ios-logout-before-fix.png" alt="토큰이 만료된 뒤 로그아웃해 서버에 닿지 못했다는 로그가 찍힌 iPhone X 로그인 화면" />
+      </div>
+      <div class="result-preview-tail">iPhone X · 로그아웃이 서버에 닿지 못함</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">수정 후: 게임 도중 삭제 감지</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/09/27/phase3-ios-deleted-account.png" alt="게임 도중 계정 삭제를 감지해 계정 차단 이벤트가 로그에 찍힌 iPhone X 화면" />
+      </div>
+      <div class="result-preview-tail">iPhone X · account blocked: DeletedUser</div>
+    </div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>고친 뒤 다시 확인했다:</b> 세 가지를 고친 빌드로 Android의 68개 확인 항목을 다시 돌려 모두 통과했다. iPhone X에서도 삭제 · 정지된 계정과 로그아웃을 다시 확인했고, 로그아웃 뒤 서버에 남은 로그인은 없었다.</div>
+</section>
+
+<section id="lessons">
+  <h2>검증하면서 알게 된 것</h2>
+  <p class="muted">문제가 아니었던 결과에서도 배운 것이 많았다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>재시도 4회는 규칙 위반이 아니었다</h3><p>재시도는 최대 3회인데 4회가 찍혔다. 서버 로그를 보니 테스트 도중 15분짜리 접속 토큰이 자연스럽게 만료된 것이었다. 토큰 때문에 거절된 1번과 재시도 규칙 안의 3번이라 규칙은 지켜졌고, 두 가지를 따로 보여 주게 고쳤다.</p></div>
+    <div class="card span-4"><h3>앱이 서버 버그를 찾았다</h3><p>앱의 네트워크 코어는 응답의 성공 여부 값을 엄격하게 확인한다. 그 덕에 앞서 만든 원격 설정 서버가 성공 대신 기본값을 돌려주고 있던 결함이 드러났다. 서버 테스트가 이 값을 보지 않아 놓친 것이다.</p></div>
+    <div class="card span-4"><h3>모든 커밋이 테스트를 통과해야 했다</h3><p>마지막 커밋만 검증했더니 중간 커밋 하나가 테스트에 실패했다. 올리기 전에 커밋 순서를 정리했고, 그 뒤로는 커밋마다 빌드와 테스트를 확인한다.</p></div>
+    <div class="card span-4"><h3>CI 실패는 로그부터 봤다</h3><p>CI 점검이 한 번 실패했지만 코드 문제가 아니었다. 컨테이너 이미지 저장소의 일시 장애(503)였고, 원인을 확인한 뒤에 다시 실행했다. 원인을 모른 채 다시 돌리면 진짜 문제도 가려진다.</p></div>
+    <div class="card span-4"><h3>Unity 빌드가 설정 파일을 바꿨다</h3><p>새로 받은 저장소에서 테스트만 돌리면 URP 설정 파일의 한 목록이 비워지고, 앱을 빌드하면 되돌아왔다. Unity에 알려진 문제라서, 이 차이는 되돌리고 커밋하지 않는 규칙을 만들었다.</p></div>
+    <div class="card span-4"><h3>작업 세션은 짧게, 결정은 문서에</h3><p>AI 에이전트의 작업 세션이 길어지면 앞의 대화를 요약하는 과정에서 세부가 빠지고 비용도 커졌다. 작업마다 새 세션으로 시작하고, 결정과 다음 작업이 알아야 할 내용은 저장소 문서에 남겨 이어받게 했다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>그 밖에:</b> 10번에 한 번 실패하던 테스트는 코드가 아니라 테스트의 타이밍 문제였다. 테스트용 서버 데이터를 새로 만든 뒤에는 기기에 남아 있던 예전 계정 대신 새 계정이 만들어졌는데, 이것도 설계한 대로의 복구 동작이었다.</div>
+</section>
+
+<section id="process">
+  <h2>계획은 사람이 고치고, 실행은 AI 에이전트가</h2>
+  <p class="muted">지난 단계처럼 설계 대화와 실행을 나눴다. 이번에는 작업마다 Claude Code가 계획을 먼저 내고, 별도의 대화에서 검토해 고친 뒤 승인했다. 구현, 테스트, 빌드, Android 조작은 Claude Code가 하고, 코드 올리기와 병합, iPhone 조작, 결정은 사람이 했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3 class="ok">AI 에이전트가 맡은 일</h3><ul><li>작업별 계획 초안과 구현</li><li>커밋마다 빌드와 테스트, 마지막 커밋의 전체 검증</li><li>Android · iOS 빌드와 빌드 결과물 검사</li><li>Galaxy A16 자동 테스트와 서버 로그 · DB 대조</li><li>설계 결정과 테스트 증거 정리</li></ul></div>
+    <div class="card span-6"><h3 class="warn">사람이 직접 한 일</h3><ul><li>계획 검토와 20개의 설계 결정</li><li>코드 올리기, PR 생성과 병합</li><li>iPhone X를 Xcode에서 실행하고 테스트 단계 수행</li><li>권한 허용, 비행기 모드, Wi-Fi 끄기, 앱 강제 종료 같은 기기 조작</li><li>민감한 기록 확인과 결론 전달</li><li>스크린샷 정리</li></ul></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>기대 결과를 먼저 적었다.</b> 기기 테스트는 단계마다 무엇이 보여야 하는지와, 다르게 나오면 무엇을 뜻하는지를 먼저 정해 두고 시작했다. 로그아웃이 서버에 닿지 않았다는 로그나 재시도 4회 같은 낯선 결과가 나왔을 때 곧바로 서버 로그와 대조해 원인을 좁힐 수 있었던 이유다. 민감한 기록이 있는 폴더는 AI 에이전트가 읽지 못하게 설정으로 막고, 필요한 판단은 사람이 직접 확인해 결론만 전했다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>자동 테스트는 출발선이었다</h2>
+  <p class="muted">자동 테스트 500개가 모두 통과한 상태에서 기기 테스트를 시작했다. 하지만 권한 창을 누르는 속도, 토큰이 만료되는 시각, iOS의 앱 일시 정지처럼 실제 기기와 실제 시간에서만 생기는 조건이 문제를 드러냈다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>이번 단계의 진행 순서</h3>
+      <pre><code>작업별 계획
+        ↓
+설계 검토와 승인
+        ↓
+구현과 자동 테스트 (커밋마다)
+        ↓
+Android 자동 실행 · iPhone 수동 테스트
+        ↓
+기기에서 찾은 문제 수정
+        ↓
+고친 빌드로 기기에서 다시 확인</code></pre>
+      <p class="muted" style="margin-top:14px">기기 테스트를 마지막에 한 번 하는 확인 절차가 아니라, 고친 뒤 다시 돌리는 반복으로 다뤘다.</p>
+    </div>
+    <div class="card span-4"><div class="metric ok">20</div><div class="label">설계 결정</div><p>무엇을 왜 바꿨는지 이유와 날짜를 함께 기록했다. 다음 작업은 이 기록을 이어받아 시작한다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 앱 실행부터 게임 입장까지의 흐름이 Android와 iOS 실기기에서 동작한다. 점검 확인, 게스트 로그인, 게임 입장, 재화 지갑으로 이어지는 흐름과 그 아래의 재시도 · 토큰 갱신 규칙이 실제 네트워크 조건에서 검증됐다. <b>이제 계정 삭제와 소셜 로그인 같은 출시 필수 기능을 올릴 차례다.</b></div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>앱 실행 → 점검 · 업데이트 확인 → 게스트 로그인 → 게임 입장 → 재화 지갑까지의 흐름을 서버와 Unity 클라이언트에 걸쳐 만들었다.</li>
+      <li>강제 종료, 비행기 모드, 권한 창, 토큰 만료 등 14가지 상황을 Android와 iPhone 실기기에서 테스트해 문제 다섯 가지를 찾았고, 세 가지를 고쳐 다시 확인했다.</li>
+      <li>계획은 사람이 검토해 고치고 실행은 AI 에이전트가 맡았다. 기대 결과를 먼저 적어 둔 것이 낯선 결과의 원인을 빠르게 찾는 열쇠였다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>출시 필수 기능</h3><span class="tag">Phase 4</span></div><p>계정 삭제, 게임마다 따로 쓰는 Firebase 프로젝트로 하는 소셜 로그인, 원격 설정을 파일로 관리하고 서버에 바로 반영하는 도구, 운영 로그와 서버 상태 점검, 개발 · 운영 서버 환경을 붙인다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>이번에 넘긴 문제</h3><span class="tag">Phase 4</span></div><p>같은 저장 요청이 두 번 적용되지 않게 하는 요청 ID, iOS에서 앱이 돌아왔을 때의 자동 재시도, 삭제된 계정에 대한 서버 응답, 기기 안의 로그인 정보 보안 저장을 정한다. 소셜 계정 테스트와, 인터넷에서 접속할 수 있는 서버로 Wi-Fi → 모바일 데이터 전환 테스트도 다시 돌린다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>결제</h3><span class="tag">Phase 5</span></div><p>영수증 검증과 중복 지급 방지를 붙인다.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">모바일 게임 서비스 플랫폼 · Public Work Log · 2026-09-27</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
