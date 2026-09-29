@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-09-29" />
+  <meta name="worklog-title" content="로컬에서만 돌던 게임 서버를 실 서버의 개발 환경에 올렸다" />
+  <meta name="worklog-project" content="모바일 게임 서비스 플랫폼" />
+  <meta name="worklog-tags" content=".NET 10, MagicOnion, gRPC, Docker, MariaDB, HAProxy, OPNsense, Let's Encrypt, Firebase, Deployment, Claude Code, AI Native Development" />
+  <meta name="worklog-summary" content="지금까지 노트북 안에서만 돌던 게임 서버 두 개를 실 서버의 개발 환경에 올려 인터넷에서 접속되게 했다. 실제 서버를 건드리기 전에 같은 경로를 로컬에서 흉내 내 전 과정을 예행 연습했고, 그 덕분에 평문 HTTP/2 구간의 프로토콜 문제와 헬스 체크 설계를 미리 잡았다. 배포 후 공개 엔드포인트 검사 22개와 클라이언트 시나리오 56개가 모두 통과했고, 같은 장비에서 운영 중인 기존 게임 서비스는 전혀 영향을 받지 않았다. 100번에 2번꼴로 실패하던 테스트를 추적해 첫 실행 시 실제로 발생할 수 있던 데이터베이스 교착도 함께 고쳤다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>로컬에서만 돌던 게임 서버를 실 서버의 개발 환경에 올렸다 · 2026-09-29</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    justify-content:center;
+    gap:16px;
+    margin-top:20px;}
+    .result-preview-grid.single .result-preview-card{
+    width:536px;
+    max-width:100%;
+    justify-self:center;}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">모바일 게임 서비스 플랫폼</div>
+    <h1>로컬에서만 돌던 게임 서버를,<br>실 서버의 개발 환경에 올렸다</h1>
+    <p class="lead">
+      지금까지 만든 인증 서버와 게임 서버는 노트북 안에서만 돌고 있었다. 이번에는 이 둘을
+      실 서버에 올려 <b>인터넷에서 접속되는 개발 환경</b>으로 만들었다. 같은 장비에서는
+      출시한 게임이 실제로 서비스되고 있어서, 새 환경을 올리면서 그쪽을 건드리지 않는 것이
+      이번 작업의 가장 중요한 조건이었다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">.NET 10</span><span class="pill">MagicOnion</span><span class="pill">gRPC</span><span class="pill">Docker</span><span class="pill">MariaDB 11.8</span><span class="pill">HAProxy</span><span class="pill">OPNsense</span><span class="pill">Let's Encrypt</span><span class="pill">Claude Code</span><span class="pill">AI Native Development</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#rehearsal">예행 연습</a><a href="#deploy">실제 배포</a><a href="#deadlock">교착 버그 추적</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">여기까지 만든 것은 노트북에서만 확인한 서버였다. 테스트도 통과하고 로컬 환경에서도 잘 돌았지만, 그것만으로는 실제 기기에서 쓸 수 없다. 휴대폰이 접속하려면 인터넷에서 닿는 주소와 인증서가 있어야 하고, 서버는 계속 켜져 있어야 한다. 이번 작업의 목표는 그 개발 환경을 실제로 만드는 것이었다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 출시한 게임이 실제로 서비스되고 있는 장비 위에, 새 게임용 서버를 <b>그 서비스를 한 번도 흔들지 않고</b> 올릴 수 있을까? 그리고 배포 절차를 처음 실행하면서 생기는 실수를, 실제 장비를 건드리기 전에 미리 걸러낼 수 있을까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">개발 환경이 올라갔고 인터넷에서 접속된다. 인증 서버와 게임 서버가 각각의 공개 주소로 서비스되고, 전용 데이터베이스와 최소 권한 계정, 원격 설정까지 적용을 마쳤다. 같은 장비의 기존 게임 서비스는 컨테이너 목록도 프록시 설정도 그대로였다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. 필요 없으면 카드를 지우세요. -->
+    <!-- 게시 전에 스크린샷의 내부 IP와 사용자 ID는 가려 주세요. -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">프록시 상태</div>
+      <div class="result-preview-media">
+        <img src="../../../assets/2026/09/29/phase4-d2-haproxy-stats.png" alt="새로 만든 두 백엔드가 모두 정상이고 응답 내용까지 확인하는 검사를 통과한 화면" />
+      </div>
+      <div class="result-preview-tail">두 백엔드 모두 응답 내용 검사 통과</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">공개 주소 확인</div>
+      <div class="result-preview-media">
+        <img src="../../../assets/2026/09/29/phase4-d2-public-check.png" alt="공개 주소로 인증 서버의 설정 문서를 받아온 터미널 화면" />
+      </div>
+      <div class="result-preview-tail">인터넷에서 인증 서버 응답 확인</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">22 / 22</div><div class="label">공개 엔드포인트 검사</div><p>주소 확인, 인증서, 설정 문서, 차단해야 할 경로까지 모두 통과했다.</p></div>
+    <div class="card span-3"><div class="metric ok">56 / 56</div><div class="label">클라이언트 시나리오</div><p>설치부터 게임 입장, 계정 삭제까지 공개 주소로 실행해 모두 통과했다.</p></div>
+    <div class="card span-3"><div class="metric ok">12</div><div class="label">운영 절차 단계</div><p>비밀 생성부터 롤백까지, 사람이 실행할 순서를 문서로 남겼다.</p></div>
+    <div class="card span-3"><div class="metric ok">0</div><div class="label">기존 서비스 영향</div><p>운영 중인 게임의 컨테이너와 프록시 설정은 한 줄도 바뀌지 않았다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 이제 휴대폰에서 인터넷을 통해 개발 서버에 접속할 수 있다. 다음 단계의 실기기 시험, 특히 <b>Wi-Fi에서 셀룰러로 바뀌는 순간의 재시도 시험</b>은 이 환경이 있어야만 할 수 있는 것이었다.</div>
+</section>
+
+<section id="rehearsal">
+  <h2>실제 서버를 건드리기 전에, 노트북에서 똑같이 해봤다</h2>
+  <p class="muted">배포 절차를 처음 실행할 때 가장 위험한 것은 설정 하나를 빠뜨리고도 모르는 것이다. 그래서 실제 장비를 건드리기 전에, 같은 경로를 노트북 안에 그대로 만들어 전 과정을 한 번 돌렸다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <h3>무엇을 흉내 냈나</h3>
+      <ul>
+        <li>방화벽에서 쓰는 것과 같은 버전의 프록시를 컨테이너로 띄우고, 임시 인증서로 암호화 구간을 끝냈다</li>
+        <li>주소 이름으로 서비스를 나누고, 프록시 뒤는 암호화 없는 통신으로 넘겼다</li>
+        <li>실제와 같은 버전과 문자 정렬 규칙의 데이터베이스를 띄웠다</li>
+        <li>스키마와 계정 생성, 마이그레이션, 원격 설정 적용, 클라이언트 시나리오까지 순서대로 실행했다</li>
+      </ul>
+    </div>
+    <div class="card span-6">
+      <h3>예행 연습에서 걸린 것</h3>
+      <ul>
+        <li><b>프로토콜 불일치</b>: 프록시는 암호화된 주소로 받았다고 알려주는데 서버에는 암호화 없이 전달된다. 서버가 이 조합을 거부해 모든 호출이 실패했다</li>
+        <li><b>점검 요청 거부</b>: 다른 장비에서 상태 확인을 보내면 서버가 요청을 거부했다</li>
+        <li><b>점검 명령 없음</b>: 컨테이너 안에 흔히 쓰는 내려받기 도구가 없어서, 상태 확인을 다른 방법으로 만들어야 했다</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>세 가지 모두 실제 배포 전에 고쳤다.</b> 특히 첫 번째는 고치지 않았다면 배포 직후 모든 요청이 실패했을 문제다. 출시한 게임의 프록시 설정을 읽어 보니 같은 문제를 이미 다른 방식으로 풀고 있었고, <b>그 방식을 그대로 따르기로 했다.</b> 검증된 길을 두고 새 방법을 쓸 이유가 없었다.</div>
+</section>
+
+<section id="deploy">
+  <h2>데이터베이스부터 프록시까지, 열두 단계</h2>
+  <p class="muted">배포는 한 번에 하지 않고 단계마다 결과를 확인하며 진행했다. 각 단계는 명령을 실행하고, 기대한 출력이 나왔는지 확인한 뒤에야 다음으로 넘어갔다.</p>
+  <div class="timeline" style="margin-top:20px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>전용 데이터베이스 컨테이너</h3><span class="tag">데이터베이스 장비</span></div><p>기존 게임의 데이터베이스에 스키마만 더하는 대신, 새 게임용 컨테이너를 따로 띄웠다. 연결 수 한도와 수명을 서로 나눠 갖지 않게 하려는 것이다. 관리자 접속은 비밀번호가 명령줄에 남지 않도록 설정 파일을 컨테이너 안에 넣는 방식으로 했다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>스키마와 최소 권한 계정</h3><span class="tag">노트북에서 실행</span></div><p>서비스용 계정은 조회와 수정만, 마이그레이션용 계정만 구조 변경까지 할 수 있게 나눴다. 원격 설정 도구는 설정 테이블 네 개에만 접근하고 삭제 권한은 아예 없다. 실행 전에 만들어질 문장을 먼저 출력해 검토했고, 이미 있는 이름이 있으면 아무것도 바꾸지 않고 멈추게 했다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>비밀 값과 키 파일</h3><span class="tag">서버 장비</span></div><p>서명 키와 외부 인증 서비스의 계정 키는 서버의 관리자 소유로 두고, 컨테이너만 속하는 전용 그룹에 읽기 권한을 줬다. 그 그룹에는 사람이 한 명도 없다. 키 파일을 읽을 수 없으면 서버가 아예 시작하지 않는다.</p></div></div>
+    <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>서버 장비에서 직접 이미지 빌드</h3><span class="tag">서버 장비</span></div><p>지금까지는 작업용 PC에서 만들어 옮겼지만, 노트북과 서버의 프로세서 종류가 달라 그대로 옮기면 실행되지 않는다. 서버에 읽기 전용 열쇠로 소스를 받아 그 자리에서 빌드했다. 이미지에는 어떤 코드로 만들었는지 커밋 번호를 새겨 두었다.</p></div></div>
+    <div class="step"><div class="dot">5</div><div class="card"><div class="step-head"><h3>배포와 마이그레이션</h3><span class="tag">서버 장비</span></div><p>마이그레이션은 별도 일회성 실행으로 먼저 돌고, 서비스는 그 뒤에 시작한다. 상태 확인이 통과할 때까지 기다린 뒤, 시작 로그에서 발급자 주소, 서명 키, 허용 로그인 방식이 의도한 값인지 확인했다.</p></div></div>
+    <div class="step"><div class="dot">6</div><div class="card"><div class="step-head"><h3>프록시 설정</h3><span class="tag">방화벽</span></div><p>주소 이름으로 서비스를 나누는 규칙과, 상태 확인용 경로를 외부에서 막는 규칙을 추가했다. 상태 확인은 응답이 왔는지만 보지 않고 <b>응답 내용까지</b> 확인하도록 했다.</p></div></div>
+    <div class="step"><div class="dot">7</div><div class="card"><div class="step-head"><h3>원격 설정 적용</h3><span class="tag">노트북에서 실행</span></div><p>설정은 데이터베이스를 직접 고치지 않고, 저장소에 둔 파일을 도구로 반영한다. 적용 전에 무엇이 바뀔지 먼저 출력하고, 적용 후에는 서버가 실제로 그 버전을 서비스하는지 확인한 뒤에야 성공으로 처리한다.</p></div></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>기존 서비스를 건드리지 않기 위한 장치.</b> 새로 만드는 것에는 모두 다른 이름과 포트를 쓰고, 네트워크도 공유하지 않았다. 스크립트는 새 게임 이름이 붙은 대상만 건드리고, 같은 이름이 이미 있으면 멈춘다. 그리고 작업 전후로 컨테이너 목록을 저장해 비교했다. 실제로 늘어난 줄은 새 서비스 두 개뿐이었다.</div>
+</section>
+
+<section id="deadlock">
+  <h2>100번에 2번 실패하던 테스트를 끝까지 쫓아갔다</h2>
+  <p class="muted">이전 단계에서 테스트 하나가 아주 가끔 실패했다. 혼자 돌리면 200번을 돌려도 통과하고, 전체 테스트와 함께 돌릴 때만 100번에 2번쯤 실패했다. 그냥 넘어갈 수도 있었지만, 원인을 모르는 실패는 나중에 실제 오류가 생겼을 때 판단을 흐린다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <h3>어떻게 잡았나</h3>
+      <p>실패했을 때만 자세한 정보를 남기도록 테스트를 고쳤다. 어떤 호출이 실패했는지, 서버가 그 순간 어떤 오류를 기록했는지, 데이터베이스가 돌려준 오류 번호가 무엇인지를 함께 출력하게 했다.</p>
+      <p>그 상태로 전체 테스트를 반복해서 돌렸고, 54번째 실행에서 실패를 잡았다. 데이터베이스 교착이었다.</p>
+    </div>
+    <div class="card span-6">
+      <h3>실제로 무슨 일이었나</h3>
+      <p>같은 사람의 계정 삭제와 첫 게임 입장이 동시에 일어나면, 두 작업이 같은 데이터를 <b>서로 반대 순서로</b> 잠갔다. 데이터베이스가 한쪽을 강제로 취소했는데, 게임 입장 쪽에는 다시 시도하는 규칙이 없어 그대로 오류가 됐다.</p>
+      <p class="warn">테스트만의 문제가 아니었다. 실제로도 그 순간에 걸린 사람은 첫 실행에서 오류 화면을 보고 다시 시도 버튼을 눌러야 했다.</p>
+    </div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>두 가지를 함께 고쳤다.</b> 교착으로 취소되면 최대 세 번까지 다시 시도하게 했고, 잠그는 순서를 삭제 쪽과 같게 맞췄다. 순서를 맞추는 것이 진짜 해법인지 확인하려고, 옛 순서에서는 <b>매번</b> 교착이 나고 새 순서에서는 <b>한 번도</b> 나지 않는 것을 보여주는 테스트를 먼저 만들었다. 추측이 아니라 근거로 고치기 위해서다.</div>
+</section>
+
+<section id="lessons">
+  <h2>이번에 알게 된 것</h2>
+  <p class="muted">배포는 성공했지만, 그 과정에서 문서를 여섯 군데 고쳐야 했다. 모두 실제로 실행해 봐야만 드러나는 것들이었다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>상태 확인은 "응답이 왔는지"로는 부족했다</h3><p>내부망에서 주소 하나가 다른 기기로 넘어간 적이 있었다. 프록시는 그 기기가 응답한다는 이유로 정상이라고 판단했다. 그래서 응답 내용에 우리 서버만 내는 값이 들어 있는지까지 확인하도록 바꿨다. 두 서비스의 확인 규칙을 서로 바꿔 걸어 보고, 실제로 실패하는 것도 확인했다.</p></div>
+    <div class="card span-4"><h3>프로세서 종류가 다르면 이미지를 옮길 수 없다</h3><p>작업용 노트북과 서버의 프로세서 계열이 달라, 예전처럼 만들어서 옮기는 방식이 통하지 않았다. 개발 환경은 서버에서 직접 빌드하는 쪽으로 바꿨다. 운영 환경은 자동 빌드와 저장소를 쓰기로 하고 나중으로 미뤘다.</p></div>
+    <div class="card span-4"><h3>서버가 주소를 스스로 만들지 않게 했다</h3><p>인증 서버가 알려주는 설정 문서의 주소를 요청 헤더가 아니라 설정값에서만 만들도록 바꿨다. 프록시가 중간에 있는 구조에서는 요청에서 유래한 값을 믿으면 주소가 틀어질 수 있다.</p></div>
+    <div class="card span-4"><h3>비밀 값 검사에도 최소 길이가 필요했다</h3><p>설정 파일의 값이 로그에 새지 않았는지 확인하는 검사가 모든 줄을 의심스럽다고 보고했다. 값이 한 글자인 설정 하나가 모든 줄에 우연히 들어 있었기 때문이다. 짧은 값은 건너뛰도록 고쳤다.</p></div>
+    <div class="card span-4"><h3>접속 주소가 제대로 전달되는지 확인했다</h3><p>프록시 뒤에서는 모든 접속이 프록시 주소로 보일 수 있다. 실제로 저장된 값을 확인해 보니 접속한 기기의 주소가 제대로 들어가 있었다. 대신 접속 주소를 저장하게 된 만큼, 언제까지 보관할지를 출시 전에 정할 항목으로 남겼다.</p></div>
+    <div class="card span-4"><h3>로그에도 보관 기간이 필요하다</h3><p>컨테이너 로그는 크기 제한만 걸 수 있고 기간 제한은 없다. 그런데 로그에는 사용자 식별자가 들어간다. 주 1회 컨테이너를 다시 만들어 로그가 일주일을 넘지 않게 했다.</p></div>
+  </div>
+</section>
+
+<section id="process">
+  <h2>명령은 AI가 준비하고, 실행은 사람이 했다</h2>
+  <p class="muted">이번 작업은 운영 중인 장비를 다루기 때문에 역할을 더 분명히 나눴다. AI 코딩 에이전트에게는 <b>원격 장비와 공유 데이터베이스에 직접 명령하지 말 것</b>을 규칙으로 못 박고, 도구 수준에서도 막았다. 대신 정확한 명령과 "이렇게 나오면 성공"이라는 기준을 받아 사람이 실행했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3 class="ok">AI 에이전트가 맡은 일</h3><ul><li>배포 설계와 결정 초안</li><li>설정 파일, 스크립트, 운영 절차 문서 작성</li><li>로컬 예행 연습 환경 구성과 실행</li><li>단계마다 실행할 명령과 성공 기준 제시</li><li>공개 주소를 대상으로 한 읽기 전용 검사</li><li>결과 기록과 문서 수정</li></ul></div>
+    <div class="card span-6"><h3 class="warn">사람이 직접 한 일</h3><ul><li>인프라 정보 확인과 설계 결정</li><li>서버와 데이터베이스 장비에서 명령 실행</li><li>방화벽의 주소, 인증서, 프록시 설정</li><li>외부 인증 서비스의 계정과 키 발급</li><li>단계마다 결과 확인과 승인</li><li>코드 병합</li></ul></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>예행 연습이 이 분업을 가능하게 했다.</b> AI 에이전트는 실제 서버를 볼 수 없다. 그래서 실제와 같은 구조를 로컬에 만들어 거기서 검증하게 했고, 사람은 그 결과를 실제 장비에 옮기는 역할만 했다. 실제로 걸린 문제 세 가지가 모두 예행 연습에서 먼저 나왔다는 점에서, 이 방식은 값을 했다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>이제 휴대폰이 접속할 서버가 생겼다</h2>
+  <p class="muted">지금까지는 테스트가 통과했다는 것이 유일한 근거였다. 이번 작업으로 실제 주소, 실제 인증서, 실제 데이터베이스 위에서 같은 흐름이 동작한다는 것이 확인됐다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>이번 작업의 진행 순서</h3>
+      <pre><code>배포 설계와 결정
+        ↓
+설정 파일 · 스크립트 · 절차 문서 작성
+        ↓
+로컬에서 같은 경로를 만들어 예행 연습
+        ↓
+예행 연습에서 나온 문제 수정
+        ↓
+실제 장비에 단계별 배포
+        ↓
+공개 주소로 검사 · 기존 서비스 무영향 확인</code></pre>
+      <p class="muted" style="margin-top:14px">배포에서 가장 비싼 실수는 운영 중인 서비스를 멈추는 것이다. 이번에는 새로 만드는 모든 것에 다른 이름과 포트를 주고, 작업 전후를 비교하는 절차를 넣어 그 위험을 줄였다.</p>
+    </div>
+    <div class="card span-4"><div class="metric ok">6</div><div class="label">절차 문서 수정</div><p>실제로 실행해 보고 나서야 드러난 것들이다. 다음 게임에서는 이 비용이 없다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 예행 연습에 쓴 시간이 실제 배포에서 회수됐다. 실제 장비에서 막힌 곳은 거의 없었고, 막힌 것도 대부분 문서의 표현 문제였다. <b>다음 게임을 올릴 때는 이 절차를 그대로 따라가면 된다.</b></div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>노트북에서만 돌던 인증 서버와 게임 서버를 실 서버에 올려, 인터넷에서 접속되는 개발 환경으로 만들었다.</li>
+      <li>실제 장비를 건드리기 전에 같은 경로를 로컬에 만들어 예행 연습했고, 배포 직후 모든 요청이 실패했을 문제를 포함해 세 가지를 미리 잡았다.</li>
+      <li>100번에 2번 실패하던 테스트를 추적해 실제 사용자도 겪을 수 있던 데이터베이스 교착을 찾아 고쳤다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>데이터베이스 백업</h3><span class="tag">진행 예정</span></div><p>매일 자동으로 덤프를 만들어 암호화한 뒤 별도 저장 장치로 옮긴다. 복원이 실제로 되는지 주 1회 자동으로 확인하는 것까지 만들어야 백업이라고 할 수 있다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>소셜 로그인과 실기기 시험</h3><span class="tag">Phase 4 마무리</span></div><p>Unity 클라이언트에 소셜 로그인 화면을 붙이고, 실제 기기에서 로그인 · 연동 · 계정 삭제를 확인한다. Wi-Fi에서 셀룰러로 바뀌는 순간의 재시도 시험은 이번에 만든 개발 환경을 대상으로 한다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>결제</h3><span class="tag">Phase 5</span></div><p>영수증 검증과 중복 지급 방지를 붙인다. 이때 결제 기록 테이블이 생기므로, 계정 삭제 시 그 기록을 어떻게 다룰지도 함께 정리한다.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">모바일 게임 서비스 플랫폼 · Public Work Log · 2026-09-29</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
