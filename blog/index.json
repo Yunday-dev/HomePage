@@ -1,6 +1,25 @@
 {
-  "generated_at": "2026-09-29T11:11:15+00:00",
+  "generated_at": "2026-10-02T04:22:49+00:00",
   "reports": [
+    {
+      "date": "2026-10-02",
+      "title": "백업을 만들었고, 그게 진짜 복구되는지 확인했다",
+      "project": "모바일 게임 서비스 플랫폼",
+      "tags": [
+        "Backup",
+        "MariaDB",
+        "age",
+        "rsync",
+        "Synology",
+        "Docker",
+        "Disaster Recovery",
+        "Claude Code",
+        "AI Native Development"
+      ],
+      "summary": "게임 데이터베이스를 매일 자동으로 백업하는 체계를 만들었다. 백업 파일을 만드는 것보다 그 파일이 실제로 복구되는지 확인하는 쪽에 공을 들였다. 한 달에 한 번 백업을 임시 데이터베이스에 실제로 복원해 테이블과 행 수를 대조하고, 어딘가 멈추면 메일이 온다. 만드는 과정에서 안전장치가 계속 불어났는데, 1인 개발에 맞게 절반쯤 덜어냈다. 그 판단과 이유도 함께 적었다.",
+      "file": "reports/2026/10/2026-10-02_database-backup-and-restore-verification.html",
+      "visibility": "public"
+    },
     {
       "date": "2026-09-29",
       "title": "로컬에서만 돌던 게임 서버를 실 서버의 개발 환경에 올렸다",
