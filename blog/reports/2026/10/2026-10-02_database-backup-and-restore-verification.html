@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-10-02" />
+  <meta name="worklog-title" content="백업을 만들었고, 그게 진짜 복구되는지 확인했다" />
+  <meta name="worklog-project" content="모바일 게임 서비스 플랫폼" />
+  <meta name="worklog-tags" content="Backup, MariaDB, age, rsync, Synology, Docker, Disaster Recovery, Claude Code, AI Native Development" />
+  <meta name="worklog-summary" content="게임 데이터베이스를 매일 자동으로 백업하는 체계를 만들었다. 백업 파일을 만드는 것보다 그 파일이 실제로 복구되는지 확인하는 쪽에 공을 들였다. 한 달에 한 번 백업을 임시 데이터베이스에 실제로 복원해 테이블과 행 수를 대조하고, 어딘가 멈추면 메일이 온다. 만드는 과정에서 안전장치가 계속 불어났는데, 1인 개발에 맞게 절반쯤 덜어냈다. 그 판단과 이유도 함께 적었다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>백업을 만들었고, 그게 진짜 복구되는지 확인했다 · 2026-10-02</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    justify-content:center;
+    gap:16px;
+    margin-top:20px;}
+    .result-preview-grid.single .result-preview-card{
+    width:536px;
+    max-width:100%;
+    justify-self:center;}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">모바일 게임 서비스 플랫폼</div>
+    <h1>데이터베이스 백업을 만들었고,<br>그게 진짜 복구되는지 확인했다</h1>
+    <p class="lead">
+      게임 데이터베이스를 매일 백업하는 체계를 만들었다. 사실 백업 파일을 만드는 것 자체는
+      어렵지 않다. 어려운 건 <b>그 파일이 정말 복구되는지 아는 것</b>이다. 백업이 조용히
+      망가져 있어도 평소에는 아무 일도 일어나지 않는다. 필요해진 날에야 알게 된다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">MariaDB</span><span class="pill">age</span><span class="pill">rsync</span><span class="pill">Synology</span><span class="pill">Docker</span><span class="pill">Claude Code</span><span class="pill">AI Native Development</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#flow">백업 흐름</a><a href="#check">복구 확인</a><a href="#found">실제로 걸린 것들</a><a href="#cut">덜어낸 것들</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">지난주에 개발 환경을 서버에 올렸다. 아직 테스트 계정 몇 개뿐이지만, 출시하면 여기에 플레이어들의 진행 상황이 쌓인다. 그때 백업 체계를 처음 만드는 건 늦다. 실수해도 괜찮은 지금 만들어 두는 게 목적이었다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 백업이 "있다"는 것과 "쓸 수 있다"는 것은 다르다. 파일이 생겼다는 사실만으로 안심해도 될까? 그리고 혼자 운영하는 입장에서 <b>매일 신경 쓰지 않아도 되는</b> 구조로 만들 수 있을까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">매일 밤 백업이 저절로 만들어지고, 다른 장비로 옮겨지고, 손댈 수 없게 잠긴다. 한 달에 한 번 그 백업을 실제로 복원해 본다. 어딘가 멈추면 메일이 온다.</p>
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">매일</div><div class="label">자동 백업</div><p>만들고, 옮기고, 잠그는 것까지 사람 손이 가지 않는다.</p></div>
+    <div class="card span-3"><div class="metric ok">월 1회</div><div class="label">복구 확인</div><p>실제로 복원해 본다. 명령 한 줄이면 끝난다.</p></div>
+    <div class="card span-3"><div class="metric ok">90일</div><div class="label">지울 수 없는 보관</div><p>서버가 뚫려도 과거 백업은 건드릴 수 없다.</p></div>
+    <div class="card span-3"><div class="metric ok">0</div><div class="label">평소 알림</div><p>문제가 있을 때만 메일이 온다. 조용하면 정상이다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 백업이 실제로 복원된다는 걸 눈으로 확인했다. 암호를 풀고, 임시 데이터베이스에 넣고, 테이블 13개와 71행이 그대로인지 대조하는 것까지 통과했다. <b>"아마 될 것"이 "된다"가 된 순간이다.</b></div>
+</section>
+
+<section id="flow">
+  <h2>매일 밤 벌어지는 일</h2>
+  <p class="muted">새벽에 네 가지가 차례로 돈다. 각 단계는 앞 단계가 끝난 뒤 시작하도록 시간을 띄워 뒀다.</p>
+  <div class="timeline" style="margin-top:20px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>백업 파일 만들기</h3><span class="tag">03:17</span></div><p>데이터베이스 전체를 한 시점 기준으로 떠낸다. 서비스를 멈추지 않고 할 수 있는 방식이다. 떠낸 내용은 압축하고 암호화한다. <b>암호가 풀린 상태의 파일이 디스크에 저장되는 순간이 없다.</b> 떠내기, 압축, 암호화가 한 줄로 이어져 흐른다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>다른 장비로 옮기기</h3><span class="tag">04:07</span></div><p>저장 장치가 데이터베이스 서버에서 <b>가져간다</b>. 반대로 서버가 밀어 넣는 방식이면, 서버가 뚫렸을 때 저장 장치의 백업까지 지울 수 있다. 가져가는 쪽으로 하면 서버에는 저장 장치에 쓸 수 있는 경로가 아예 없다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>지울 수 없게 잠그기</h3><span class="tag">04:37</span></div><p>저장 장치가 그날의 상태를 통째로 찍어 두고, 90일간 삭제를 거부하도록 잠근다. 랜섬웨어처럼 백업부터 지우려는 공격에 대비한 것이다.</p></div></div>
+    <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>잘 돌았는지 확인</h3><span class="tag">09:07</span></div><p>어젯밤 백업이 만들어졌는지, 제대로 옮겨졌는지, 복구 확인이 너무 오래 밀리지 않았는지를 본다. <b>문제가 있을 때만</b> 메일을 보낸다. 성공 알림은 아예 만들지 않았다. 매일 "잘 됐습니다" 메일을 받으면 결국 안 읽게 된다.</p></div></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>암호화를 두 사람 몫으로 나눴다.</b> 백업 파일은 두 개의 열쇠 중 <b>아무거나 하나</b>로 열린다. 하나는 확인용 컴퓨터에, 하나는 집 밖에 둔다. 집에 무슨 일이 생겨도 밖의 열쇠로 열 수 있고, 밖의 것을 잃어도 집의 것으로 열 수 있다. 열쇠를 하나만 지정하면 스크립트가 아예 실행을 거부한다.</div>
+</section>
+
+<section id="check">
+  <h2>"백업이 있다"와 "백업을 쓸 수 있다"는 다르다</h2>
+  <p class="muted">백업 파일의 크기가 정상이고 날짜도 최신이면 괜찮아 보인다. 하지만 그 파일이 열리는지, 열어서 데이터베이스에 넣으면 제대로 들어가는지는 해봐야 안다. 그래서 한 달에 한 번, 실제로 복원해 보는 작업을 넣었다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <h3>어떻게 하나</h3>
+      <ul>
+        <li>저장 장치에서 가장 최근 백업을 읽는다</li>
+        <li>열쇠로 암호를 푼다</li>
+        <li><b>임시 데이터베이스를 띄워 실제로 집어넣는다</b></li>
+        <li>테이블 개수, 행 수, 버전 기록을 백업 당시 기록과 대조한다</li>
+        <li>임시 데이터베이스는 지운다. 흔적이 남지 않는다</li>
+      </ul>
+    </div>
+    <div class="card span-6">
+      <h3>무엇을 잡아내나</h3>
+      <ul>
+        <li>파일이 중간에 끊긴 경우</li>
+        <li>암호가 잘못된 열쇠로 걸린 경우</li>
+        <li>크기는 정상인데 내용이 비어 있는 경우</li>
+        <li>일부 테이블이 빠진 경우</li>
+      </ul>
+      <p class="muted" style="margin-top:12px">모두 파일만 봐서는 알 수 없고, 넣어 봐야 드러나는 것들이다.</p>
+    </div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>그리고 이 확인이 멈춘 것도 알 수 있어야 한다.</b> 확인 작업은 결과를 저장 장치에 한 줄 남긴다. 저장 장치는 매일 그 줄의 날짜를 본다. 오래 갱신되지 않으면 메일이 온다. <b>자기가 죽은 걸 스스로 알릴 수는 없기 때문에</b>, 결과를 다른 장비에 남기는 구조로 만들었다.</div>
+</section>
+
+<section id="found">
+  <h2>실제로 돌려 보니 걸린 것들</h2>
+  <p class="muted">연습 환경에서는 전부 통과했는데, 실제 장비에 올리니 문제가 줄줄이 나왔다. 전부 실제로 해봐야만 드러나는 종류였다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>복구 확인이 파일을 못 읽었다</h3><p>저장 장치가 가져온 파일에 접근 권한이 제대로 붙지 않았다. 파일은 멀쩡히 있는데 읽을 수가 없었다. 연습 환경은 일반 폴더를 쓰기 때문에 이 문제가 드러날 수 없었다. <b>이걸 못 잡았으면 정작 복구가 필요한 날 막혔을 것이다.</b></p></div>
+    <div class="card span-4"><h3>알림 메일이 조용히 끊겨 있었다</h3><p>알림을 설정하고 시험 메일을 보냈더니 실패했다. 인증이 만료돼 있었는데 아무 표시도 없었다. <b>백업 알림을 다 만들어 놓고 정작 메일이 안 가는 상태</b>가 될 뻔했다. 설정 직후 일부러 실패를 만들어 메일이 오는지 확인하는 절차를 넣었다.</p></div>
+    <div class="card span-4"><h3>정전 후 저절로 안 켜지는 설정</h3><p>올해 처음 정전이 있었는데 장비들이 스스로 켜지지 않았다. 확인해 보니 그 설정이 꺼져 있었다. 운영 중인 게임의 서버 컨테이너 열두 개도 자동 재시작 설정이 없었다. 전부 켜 뒀다.</p></div>
+    <div class="card span-4"><h3>권한을 고치니 다른 게 망가졌다</h3><p>읽기 권한을 고쳤더니, 결과를 기록할 폴더의 쓰기 권한이 함께 덮였다. 확인 작업은 전부 통과했는데 결과가 기록되지 않는 상태가 됐다. <b>"결과가 실제로 기록됐는가"를 별도 항목으로 만들어 둔 덕에</b> 바로 잡혔다.</p></div>
+    <div class="card span-4"><h3>자동 실행이 안 됐다</h3><p>복구 확인을 자동으로 돌리려 했지만, 운영체제가 자동 실행된 작업에 더 엄격한 제한을 걸고 있었다. 직접 실행하면 되는데 자동으로는 안 됐다. 억지로 뚫지 않고 <b>한 달에 한 번 직접 실행</b>하기로 했다. 한계로 기록해 뒀다.</p></div>
+    <div class="card span-4"><h3>백업 하나가 아직 비어 있다</h3><p>집 밖에 보관할 사본은 외장 디스크에 담기로 했는데, 아직 디스크가 없다. <b>그때까지는 화재나 도난이면 서버와 백업이 함께 사라진다.</b> 숨기지 않고 미완으로 적어 뒀다.</p></div>
+  </div>
+</section>
+
+<section id="cut">
+  <h2>안전장치를 지키는 안전장치가 생기기 시작했다</h2>
+  <p class="muted">작업 중반에 이상한 일이 벌어졌다. 백업이 조용히 실패하면 안 된다고 생각해서 감시를 붙였고, 그 감시가 멈추면 안 되니 또 다른 확인을 붙였다. 그러다 보니 한 달에 해야 할 일이 계속 늘어났다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <h3 class="warn">덜어낸 것</h3>
+      <ul>
+        <li>외부 감시 서비스 가입과 관리</li>
+        <li>클라우드 저장소 계정, 접근 키, 지역 설정</li>
+        <li>매주 로그를 들여다보는 절차</li>
+        <li>분기마다 하는 별도 점검 의식</li>
+        <li>다른 안전장치를 확인하는 것이 유일한 목적인 단계들</li>
+      </ul>
+    </div>
+    <div class="card span-6">
+      <h3 class="ok">남긴 것</h3>
+      <ul>
+        <li>매일 자동 백업과 이동, 잠금</li>
+        <li>문제가 있을 때만 오는 메일 한 통</li>
+        <li>한 달에 한 번 직접 돌리는 복구 확인</li>
+        <li>집 밖에 둘 사본 한 벌</li>
+      </ul>
+      <p class="muted" style="margin-top:12px">기준은 하나였다. <b>설정 한 번으로 끝나는가, 아니면 매달 손이 가는가.</b></p>
+    </div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>덜어낸 대가도 분명히 적어 뒀다.</b> 알림 경로가 망가지면 몇 달 모를 수 있고, 복구 확인을 잊으면 그만큼 밀린다. 지금은 잃어도 되는 데이터라 감수할 만하다. 다만 <b>출시 전에 다시 볼 항목</b>으로 전부 기록해 뒀다. 그때는 데이터가 그 비용을 치를 만한 가치가 있다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>백업은 만드는 것보다 확인하는 쪽이 어렵다</h2>
+  <p class="muted">이번 작업에서 가장 오래 걸린 건 백업을 만드는 부분이 아니었다. 그게 정말 쓸 수 있는지 확인하는 장치를 만들고, 그 장치가 멈춘 것도 알아챌 수 있게 하는 부분이었다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>한 달에 한 번 하는 일</h3>
+      <pre><code>복구 확인 명령 한 줄
+        ↓
+결과가 통과인지 본다
+        ↓
+외장 디스크를 꽂고 사본을 복사한다
+        ↓
+디스크를 집 밖으로 가져간다</code></pre>
+      <p class="muted" style="margin-top:14px">나머지는 전부 자동이다. 문제가 생기면 메일이 오고, 조용하면 정상이다.</p>
+    </div>
+    <div class="card span-4"><div class="metric ok">6</div><div class="label">실제로 걸린 문제</div><p>연습 환경에서는 하나도 안 나왔다. 실제 장비에서만 드러나는 것들이었다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 백업 파일이 생겼다는 것만으로는 아무것도 보장되지 않는다. 열어서, 넣어 보고, 맞는지 대조해야 비로소 백업이라고 부를 수 있다. <b>그 확인을 자동으로 할 수 없다면 적어도 잊지 않을 장치는 있어야 한다.</b></div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>게임 데이터베이스를 매일 자동으로 백업하고, 다른 장비로 옮기고, 90일간 지울 수 없게 잠그는 체계를 만들었다.</li>
+      <li>백업이 실제로 복원되는지 한 달에 한 번 확인하고, 그 확인이 멈춘 것도 알아챌 수 있게 했다.</li>
+      <li>만드는 과정에서 안전장치가 계속 불어났고, 1인 개발에 맞게 절반쯤 덜어내면서 그 대가도 함께 기록했다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>소셜 로그인과 실기기 시험</h3><span class="tag">진행 예정</span></div><p>클라이언트에 구글과 애플 로그인을 붙이고, 실제 휴대폰에서 로그인과 계정 연동, 계정 삭제를 확인한다. Wi-Fi에서 셀룰러로 바뀌는 순간의 재시도 시험도 여기서 한다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>결제</h3><span class="tag">다음 단계</span></div><p>영수증 검증과 중복 지급 방지를 붙인다. 결제 기록이 생기면 계정 삭제 시 그 기록을 어떻게 다룰지도 함께 정리해야 한다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>출시 전 다시 볼 것들</h3><span class="tag">출시 준비</span></div><p>보관 기간, 확인 주기, 집 밖 사본의 주기, 외부에서의 감시. 이번에 덜어낸 것들을 그때 다시 꺼내 본다.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">모바일 게임 서비스 플랫폼 · Public Work Log · 2026-10-02</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
