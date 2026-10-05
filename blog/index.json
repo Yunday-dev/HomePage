@@ -1,9 +1,33 @@
 {
-  "generated_at": "2026-10-02T04:22:49+00:00",
+  "generated_at": "2026-10-05T07:33:18+00:00",
   "reports": [
     {
+      "date": "2026-10-04",
+      "title": "Google · Apple 로그인부터 계정 삭제까지, 두 실기기에서 끝까지 확인했다",
+      "project": "모바일 게임 서비스 플랫폼",
+      "tags": [
+        "Unity 6.6",
+        "Firebase Authentication",
+        "Sign in with Apple",
+        "Google Sign-In",
+        "MagicOnion",
+        ".NET 10",
+        "MariaDB",
+        "iOS",
+        "Android",
+        "Account Deletion",
+        "Token Revocation",
+        "Device Testing",
+        "Claude Code",
+        "AI Native Development"
+      ],
+      "summary": "샘플 클라이언트에 Google과 Apple 로그인, 게스트 계정 연결과 전환, 로그아웃, 계정 삭제 화면을 붙이고, 공개 주소로 열어 둔 개발 서버를 상대로 Android와 iOS 실기기에서 네 번의 세션을 돌려 24개 사례를 모두 통과했다. Apple 로그인은 그럴듯한 원인 셋이 차례로 틀린 끝에, 실패 지점을 로그로 드러내고서야 Firebase에 넘기는 인자 하나가 빠진 것으로 밝혀졌다. Apple이 요구하는 계정 삭제 시 토큰 폐기는 서버 삭제 앞에 두어도 삭제가 끝까지 성공했고, 폐기는 Apple 계정 설정의 앱 목록으로 확인했다. Android 세션은 Claude Code가 adb로 폰을 직접 운전했고 사람은 로그인 시트를 누르고 서버 상태를 만드는 SQL을 실행했다.",
+      "file": "reports/2026/10/2026-10-04_social-login-and-account-deletion-device-tests.html",
+      "visibility": "public"
+    },
+    {
       "date": "2026-10-02",
-      "title": "백업을 만들었고, 그게 진짜 복구되는지 확인했다",
+      "title": "데이터베이스 백업을 만들었고, 그게 진짜 복구되는지 확인했다",
       "project": "모바일 게임 서비스 플랫폼",
       "tags": [
         "Backup",
