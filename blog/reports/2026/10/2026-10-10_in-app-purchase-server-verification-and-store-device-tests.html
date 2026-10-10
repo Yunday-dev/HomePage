@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-10-10" />
+  <meta name="worklog-title" content="인앱 결제 서버 검증과 두 스토어 실기기 테스트: 응답이 끊겨도 한 번만 지급하기" />
+  <meta name="worklog-project" content="모바일 게임 서비스 플랫폼" />
+  <meta name="worklog-tags" content="In-App Purchase, App Store Server API, Google Play Billing, StoreKit 2, Idempotency, Unity 6.6, MagicOnion, .NET 10, MariaDB, iOS, Android, Game Server, Game Service Platform, Claude Code, AI Native Development" />
+  <meta name="worklog-summary" content="게임 서비스 플랫폼에 인앱 결제 모듈을 만들었다. 구매 확인은 서버가 스토어에 직접 묻고, 상품이 무엇을 주는지는 코드가 아니라 카탈로그 데이터가 정하며, 같은 거래가 두 번 도착해도 한 번만 지급한다. Unity 쪽은 Unity IAP 패키지 대신 StoreKit 2와 Play Billing을 직접 감싼 얇은 브리지를 썼다. App Store 샌드박스와 Google Play 라이선스 테스터로 실제 구매 12건을 돌려, 응답이 끊기거나 앱을 다시 켜거나 다른 계정에서 복원해도 거래 하나에 지급 한 번이라는 결과를 확인했다. 서버 테스트는 950개에서 1,019개가 됐고, 사람이 한 일은 결제 시트를 누르고 데이터베이스를 조회하는 것뿐이었다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>인앱 결제 서버 검증과 두 스토어 실기기 테스트: 응답이 끊겨도 한 번만 지급하기 · 2026-10-10</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    justify-content:center;
+    gap:16px;
+    margin-top:20px;}
+    .result-preview-grid.single .result-preview-card{
+    width:536px;
+    max-width:100%;
+    justify-self:center;}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+    table.cases{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+    table.cases th,table.cases td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top}
+    table.cases th{color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">모바일 게임 서비스 플랫폼</div>
+    <h1>인앱 결제 서버 검증과<br>두 스토어 실기기 테스트</h1>
+    <p class="lead">
+      결제는 돈이 오가는 기능이라 "대체로 된다"로는 부족하다. 응답이 끊겨 클라이언트가 같은 구매를 다시 보내도,
+      앱을 껐다 켜도, 다른 계정에서 복원을 눌러도 <b>거래 하나에 지급은 한 번</b>이어야 한다.
+      이번 단계에서는 그 규칙을 서버에 세우고, App Store 샌드박스와 Google Play 테스터로 실제 구매를 돌려 확인했다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">App Store Server API</span><span class="pill">Google Play Developer API</span><span class="pill">StoreKit 2</span><span class="pill">Play Billing 9</span><span class="pill">Unity 6.6</span><span class="pill">.NET 10 · MariaDB 11.8</span><span class="pill">iPhone X · Galaxy A16</span><span class="pill">Claude Code</span><span class="pill">AI Native Development</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#wallet">지갑과 요청 ID</a><a href="#catalog">제품 카탈로그</a><a href="#server">구매 서버</a><a href="#client">Unity 클라이언트</a><a href="#devices">실기기 테스트</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">앞 단계까지 플랫폼에는 인증, 플레이어 프로필, 지갑, 원격 설정, 소셜 로그인과 계정 삭제가 갖춰졌다. 이번 단계의 목표는 <b>결제</b>였다. 출시한 게임 「흰둥이는 퐁퐁퐁」의 결제 코드에서 검증된 부분을 가져오되, 이번에는 세 가지를 처음부터 구조로 못 박기로 했다. 구매 확인은 클라이언트가 아니라 서버가 스토어에 직접 묻는다. 상품이 무엇을 주는지는 코드 상수가 아니라 데이터가 정한다. 그리고 같은 거래가 몇 번 도착하든 지급은 한 번이다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 모바일 네트워크에서 결제 응답이 유실되는 일은 드물지 않다. 그때 플레이어는 "구매했는데 안 들어왔다"고 느끼고, 서버는 "두 번 지급했다"가 될 수 있다. 두 상황을 동시에 막는 구조를 만들고, 그것이 테스트 더블이 아니라 <b>실제 스토어와 실제 기기</b>에서 성립하는지 어떻게 증명할까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">다섯 파트로 나눠 진행했다. 지갑 쓰기와 요청 ID, 제품 카탈로그, 구매 서버, Unity 클라이언트, 그리고 실제 스토어 검증. 파트마다 계획 → 승인 → 구현 → 보고 → CI → 병합을 거쳤고, 마지막 파트에서 iPhone X와 Galaxy A16으로 실제 구매를 돌렸다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
+    <!-- 게시 전에 스크린샷의 계정 이메일, 내부 IP, 사용자 ID는 가려 주세요. -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">iOS · App Store 샌드박스</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/10/10/phase5-ios-sandbox-purchase.png" alt="iPhone X에서 샌드박스 결제 시트가 뜨고 구매가 지급된 화면" />
+      </div>
+      <div class="result-preview-tail">iPhone X · iOS 16.7 · 샌드박스 테스터</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">Android · Google Play 테스트 결제</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/10/10/phase5-android-play-test-purchase.png" alt="Galaxy A16에서 Google Play 테스트 카드 결제 시트가 뜬 화면" />
+      </div>
+      <div class="result-preview-tail">Galaxy A16 · Android 16 · 라이선스 테스터</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">12 / 12</div><div class="label">거래 · 지급</div><p>두 스토어에서 실제 구매 12건을 돌렸고, 거래 12건에 지급은 정확히 12번이었다. 두 번 지급된 거래는 없다.</p></div>
+    <div class="card span-3"><div class="metric ok">1,019</div><div class="label">서버 테스트</div><p>단계 시작 때 950개에서 69개가 늘었다. 병렬 호출, 응답 유실 재생, 복원, 삭제 경합, 로그에 영수증이 남지 않는지까지 포함한다.</p></div>
+    <div class="card span-3"><div class="metric ok">0.8 ~ 1.6초</div><div class="label">스토어 확인 시간</div><p>서버가 Apple이나 Google에 거래를 묻고 지급까지 끝내는 데 걸린 시간. 재시도 응답은 수십 밀리초였다.</p></div>
+    <div class="card span-3"><div class="metric ok">5</div><div class="label">파트 · PR</div><p>지갑 → 카탈로그 → 구매 서버 → Unity → 실기기 순서로 다섯 개의 PR을 병합했다. 모두 CI 세 작업을 통과했다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 응답이 한 번 유실돼도, 모든 응답이 유실돼 앱을 다시 켜도, 다른 게임 계정에서 복원을 눌러도, 결제가 보류됐다가 나중에 승인돼도 <b>거래 하나에 행 하나, 지급 한 번</b>이었다. 직접 만든 StoreKit 2와 Play Billing 브리지는 폰에서 처음 돌렸는데 고칠 것이 없었다.</div>
+</section>
+
+<section id="wallet">
+  <h2>같은 요청을 다시 보내도 한 번만 적용된다</h2>
+  <p class="muted">결제에 앞서 지갑에 돈을 넣고 빼는 서버 API부터 다시 만들었다. 재화를 쓰는 쪽과 주는 쪽은 서버 안에서 게임 모듈이 호출하는 API이고, 클라이언트가 금액을 직접 지정하는 경로는 처음부터 두지 않았다. 가격과 보상은 게임 규칙이지 클라이언트가 보내는 값이 아니기 때문이다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>요청 ID</h3><p>클라이언트가 돈이 움직이는 요청을 보낼 때는 요청마다 고유 ID를 붙인다. 서버는 플레이어의 프로필 행을 잠근 뒤 그 ID를 찾아보고, 이미 처리한 ID면 저장해 둔 응답을 그대로 돌려준다. 같은 ID로 다른 내용을 보내면 거부한다. 아무것도 쓰지 않은 거부(잔액 부족 등)는 저장하지 않아서, 충전 뒤 다시 보내면 정상으로 평가된다.</p></div>
+    <div class="card span-6"><h3>64비트 잔액</h3><p>흰둥이의 잔액은 32비트였다. 사용자가 샘플뿐인 지금이 바꾸기 가장 싼 시점이라 잔액과 금액을 64비트로 넓혔다. 넘침 검사는 64비트 범위에서 한다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>구매에는 요청 ID를 쓰지 않는다.</b> 구매는 스토어가 발급한 거래 ID가 이미 고유하므로 <code>(플랫폼, 거래 ID)</code>로 중복을 막는다. 요청 ID는 교환처럼 스토어가 끼지 않는 쓰기용이다. 이 구분을 처음 지시문에 잘못 적었다가 Claude Code가 결정 기록을 근거로 바로잡았다.</div>
+</section>
+
+<section id="catalog">
+  <h2>상품이 무엇을 주는지는 데이터가 정한다</h2>
+  <p class="muted">흰둥이는 상품 ID와 지급량이 코드 상수에 있었다. 이번에는 환경별 카탈로그 파일(JSON)을 저장소에 두고, 원격 설정과 같은 방식의 도구로 검증 → 계획 → 적용해서 테이블에 넣는다. 서버는 이 테이블의 불변 스냅샷을 들고 있다가 관리 엔드포인트로 다시 읽는다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>상품 한 줄의 내용</h3><p>스토어 공통 상품 ID, 유형(소모성 · 비소모성), 지급 목록(통화와 수량) 또는 자격(entitlement) 목록, 활성 여부. 가격과 표시 이름은 스토어가 소유하므로 파일에 없다.</p></div>
+    <div class="card span-4"><h3>삭제하지 않는다</h3><p>파일에서 빠진 상품은 비활성화될 뿐 테이블에서 사라지지 않는다. 비활성 상품이라도 검증된 거래가 오면 지급한다. 플레이어가 돈을 냈기 때문이다. 상품의 유형은 한 번 정하면 바꾸지 못하게 도구가 막는다.</p></div>
+    <div class="card span-4"><h3>카탈로그 버전</h3><p>클라이언트가 상품 목록을 캐시하고 바뀐 때만 다시 받도록, 활성 상품 내용의 해시를 버전으로 돌려준다. 갱신 시각을 쓰면 내용이 같은데도 바뀐 것처럼 보이거나 복원 뒤 값이 되풀이될 수 있어 해시를 택했다.</p></div>
+  </div>
+</section>
+
+<section id="server">
+  <h2>구매 확인은 서버가 스토어에 직접 묻는다</h2>
+  <p class="muted">클라이언트는 스토어가 준 거래 정보를 서버에 넘기기만 한다. 서버는 기존 거래를 먼저 확인하고, 카탈로그에서 상품을 찾고, 데이터베이스 트랜잭션 밖에서 스토어에 묻고, 그다음 플레이어 행을 잠근 채 거래 기록과 지급을 한 트랜잭션으로 끝낸다. 흰둥이의 순서를 그대로 지키되 스토어 호출을 잠금 밖으로 뺐다.</p>
+  <div class="flow">
+    <div class="node"><div class="mini-title">01 · Check</div><h3>기존 거래 확인</h3><p class="muted">같은 (플랫폼, 거래 ID)가 있으면 스토어에 묻지 않고 저장된 지급 내용을 돌려준다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">02 · Verify</div><h3>스토어 검증</h3><p class="muted">Apple은 App Store Server API, Google은 Play Developer API. 응답의 번들 ID, 상품 ID, 거래 ID, 폐기 여부를 대조한다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">03 · Grant</div><h3>기록과 지급</h3><p class="muted">프로필 행 잠금 → 거래 행 삽입(영수증은 해시만) → 카탈로그대로 지갑과 자격에 지급. 유니크 키가 2차 지급을 구조적으로 막는다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">04 · Ack</div><h3>Google 승인</h3><p class="muted">지급이 커밋된 뒤 서버가 acknowledge를 호출한다. 실패하면 백그라운드에서 재시도한다.</p></div>
+  </div>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>Apple: 서명까지 검증</h3><p>흰둥이는 이미 폐기 예고된 영수증 검증 대신 App Store Server API를 쓰고 있어서 그 경로를 이식했다. 거기에 Apple이 돌려주는 서명된 거래 정보의 서명과 인증서 체인을 Apple Root CA에 대고 검증하는 단계를 더했다. 환경은 Production 우선으로 두고, 거래가 없으면 샌드박스에 다시 묻는다. 운영 서버가 쓸 조회 순서를 샌드박스 구매로 미리 증명하기 위해서다.</p></div>
+    <div class="card span-6"><h3>Google: SDK 없이 REST 세 개</h3><p>Google의 공식 .NET 패키지는 릴리스가 잦고 의존 트리가 커서 버전을 고정하기 나쁘다. 구매 조회, 승인, 토큰 발급 세 가지 REST 호출을 <code>HttpClient</code>로 직접 하고, 서비스 계정 토큰은 작은 코드로 만들어 캐시한다. 테스트는 HTTP 수준의 스텁이 스토어를 대신한다.</p></div>
+    <div class="card span-6"><h3>승인은 서버가, 소비는 클라이언트가</h3><p>Google Play는 승인되지 않은 구매를 3일 뒤 환불한다. 앱이 응답을 못 받고 죽어도 지급이 환불로 이어지지 않도록 승인은 서버가 한다. 비소모성 구매는 클라이언트가 OK를 받으면 거래를 끝내고 다시 호출하지 않으므로, 승인 실패는 서버 백그라운드가 30분마다 최대 48회 재시도한다. 소모성의 consume은 클라이언트가 한다. 서버가 하면 폰의 Play 캐시가 "이미 소유"로 남기 때문이다.</p></div>
+    <div class="card span-6"><h3>로그에 남지 않는 것</h3><p>영수증 원문, 구매 토큰, 서명된 거래, 발급 토큰, 키는 로그에도 데이터베이스에도 남지 않는다. 데이터베이스에는 해시만 저장한다. 이를 확인하는 캡처 로그 테스트가 세 플랫폼의 구매와 복원을 실패 사례까지 돌리며 Trace 수준 로그를 뒤진다. 이 테스트가 HTTP 클라이언트 팩토리가 요청 주소(구매 토큰 포함)를 찍던 것을 잡아냈다.</p></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>한 가지 예외.</b> Google 승인을 백그라운드에서 재시도하려면 구매 토큰이 필요하다. 그래서 승인이 끝날 때까지만 토큰을 행에 두고, 승인되거나 포기하면 지운다. "해시만 저장"의 유일한 한정 예외로 결정 기록에 적었다.</div>
+</section>
+
+<section id="client">
+  <h2>Unity IAP 대신 직접 만든 얇은 브리지</h2>
+  <p class="muted">클라이언트 쪽은 세 층이다. 게임 코드가 부르는 공통 구매 흐름(상태, 재시도, 재생, 카탈로그 캐시), 스토어별 어댑터, 그리고 네이티브 브리지. 게임 코드는 <code>client.Purchases.PurchaseAsync("상품 ID")</code>만 부르고, 어느 폰이냐에 따라 아래가 바뀐다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>왜 Unity IAP를 쓰지 않았나</h3><ul><li>Unity IAP 5.4는 6월 이후 여섯 번 릴리스됐고, 서비스 코어와 텔레메트리 패키지가 딸려 온다. 저장소 전체에서 패키지 버전을 한 곳에 고정하는 원칙과 맞지 않았다.</li><li>Unity IAP의 confirm은 Google 승인까지 수행한다. 승인을 서버가 맡는 이번 설계와 겹친다.</li><li>이미 Google 로그인과 Play API를 직접 호출로 가져갔으니 같은 방향이다.</li></ul></div>
+    <div class="card span-6"><h3>대신 받아들인 비용</h3><ul><li>Swift(StoreKit 2)와 Java(Play Billing 9.1.0) 각 300줄 정도를 직접 소유한다. Swift는 저장소에 처음 들어왔다.</li><li>Play Billing 메이저 버전은 매년 8월 기한이 있어 한 줄 올리고 재검증해야 한다. 그 절차를 운영 문서에 적어 두었다.</li><li>안전장치: 실기기에서 브리지 하나가 안 되고 그 자리에서 못 고치면 그 스토어만 Unity IAP로 바꾼다는 규칙을 미리 정했다. 어댑터 뒤의 인터페이스는 그대로라 교체 범위가 한정된다.</li></ul></div>
+  </div>
+  <div class="grid" style="margin-top:16px">
+    <div class="card span-4"><h3>끝내기는 OK일 때만</h3><p>스토어 거래를 finish하는 것은 서버가 OK 또는 "이미 처리됨"을 답했을 때뿐이다. 보류, 스토어 불가, 상품 사용 불가면 거래를 미완료로 두고, 다음 실행이나 복원이 마무리한다.</p></div>
+    <div class="card span-4"><h3>계정 토큰</h3><p>Apple의 appAccountToken과 Google의 obfuscatedAccountId에 게임 계정 ID(해시)를 실어 보낸다. 첫 지급에서 스토어가 돌려준 계정이 요청한 계정과 다르면 거부한다. 영수증을 다른 계정에 넘겨 지급받는 경로를 막는다.</p></div>
+    <div class="card span-4"><h3>시간 제한 보정</h3><p>구매·복원 호출은 다른 호출의 5초 시도로는 부족했다. 서버의 스토어 호출 예산이 10초씩 두 번이라, 이 두 호출만 시도당 25초, 총 60초로 넓혔다. 실제 측정은 0.8~1.6초라 여유가 크다.</p></div>
+  </div>
+</section>
+
+<section id="devices">
+  <h2>실제 스토어, 실제 기기, 실제 구매 12건</h2>
+  <p class="muted">서버 테스트의 스텁은 우리가 가정한 모양만 검사한다. 재전달, 응답 유실, 보류 구매, 승인 규칙은 실제 스토어만 만들어 낸다. 샘플 앱을 App Store Connect와 Play Console에 등록하고, 샌드박스 테스터와 라이선스 테스터로 세 번의 기기 세션을 돌렸다.</p>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>iPhone X · App Store 샌드박스 · 8사례</h3><span class="tag">약 60분</span></div>
+      <table class="cases">
+        <tr><th>사례</th><th>확인한 것</th></tr>
+        <tr><td>상점 열기</td><td>Swift 브리지의 첫 실행. 상품 두 개와 한국어 이름·가격이 떴다.</td></tr>
+        <tr><td>소모품 구매</td><td>Apple이 키를 받아들였고, 실제 인증서 체인 검증이 통과했으며, Production에 없으면 샌드박스로 가는 조회 순서가 동작했다.</td></tr>
+        <tr><td>비소모품 구매 → 재실행</td><td>자격이 구매 응답과 게임 입장 응답 양쪽에서 왔다. 재생할 거래 없음.</td></tr>
+        <tr><td>응답 한 번 유실</td><td>두 번째 시도가 "이미 처리됨"으로 답했다. 지급은 한 번, Apple에 다시 묻지 않았다.</td></tr>
+        <tr><td>모든 응답 유실 → 재실행 두 번</td><td>서버에는 행이 이미 생겼고, 첫 재실행의 재생이 거래를 끝냈다. 재시도 2회 + 세션 내 재생 3회 + 재실행 재생 1회, 여섯 번 모두 행에서 답했다.</td></tr>
+        <tr><td>다른 계정에서 복원</td><td>자격만 재적용, 통화는 없음. 거래 행의 소유자는 첫 구매자 그대로.</td></tr>
+        <tr><td>구입 기록 지운 뒤 재구매</td><td>세 번째 시도에 통과. 절차가 밝혀졌다(아래).</td></tr>
+      </table>
+    </div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>Galaxy A16 · Google Play 라이선스 테스터 · 8사례</h3><span class="tag">약 75분</span></div>
+      <p>맥에서 사이드로드한 디버그 빌드로 라이선스 테스터 결제가 됐다. Play 서명 빌드는 필요 없었다. iOS와 같은 사례에 더해:</p>
+      <table class="cases">
+        <tr><th>사례</th><th>확인한 것</th></tr>
+        <tr><td>소모품 구매</td><td>Google이 서비스 계정 키를 받아들였고, 조회와 승인이 동작했으며, 라이선스 테스터에게도 계정 ID를 돌려줬다(열려 있던 질문).</td></tr>
+        <tr><td>모든 응답 유실</td><td>앱이 응답을 못 받았는데도 <b>서버가 스스로 승인</b>했다. 승인을 서버에 둔 이유가 그대로 증명됐다.</td></tr>
+        <tr><td>보류 구매(느린 테스트 카드)</td><td>앱은 아무것도 보내지 않았고, 62초 뒤 Play가 승인하자 스토어 업데이트를 받아 탭도 재실행도 없이 지급됐다.</td></tr>
+        <tr><td>거절 카드</td><td>지급 없음, 행 없음. 거절 자체는 7분 안에 관측되지 않아 미검증으로 남겼다.</td></tr>
+        <tr><td>승인 확인</td><td>여섯 행 모두 1회차 승인. 10분 뒤에도 비소모품이 소유 상태였다. 3일 뒤 Play Console 주문 확인은 남겨 두었다.</td></tr>
+      </table>
+    </div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>Galaxy A16 · LTE · 교환 응답 유실</h3><span class="tag">약 20분</span></div><p>Wi-Fi를 끄고 모바일 네트워크로 인터넷에 공개된 개발 서버(운영 환경과 같은 구성)에 붙여, 응답을 4초 붙잡고 비행기 모드로 끊기, 8초 붙잡기, 응답 한 번 버리기, 전부 버리기를 돌렸다. 18개 검사 모두 통과. 유실 뒤 같은 요청 ID로 재시도해도 한 번만 적용됐다. 이 세션만 서버에 테스트 컨트롤을 켜는 3분 반짜리 윈도우를 열었다 닫았다.</p></div></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>발견 하나.</b> 첫 iOS 구매에서 서버가 같은 거래를 두 번 봤다. 하나는 "다른 계정의 구매"로 거부, 하나는 OK. 샘플 앱이 "새로 설치" 버튼으로 클라이언트 객체를 새로 만들면서 옛 객체를 떼지 않아, 옛 게스트가 스토어 업데이트를 받아 재생한 것이었다. 서버의 계정 토큰 검사가 설계대로 막았고 지급은 한 번이었지만, 클라이언트 코어에 detach를 추가하고 테스트로 고정했다. 세션은 재실행으로 우회해 이어갔다.</div>
+</section>
+
+<section id="lessons">
+  <h2>콘솔과 기기에서 알게 된 것</h2>
+  <p class="muted">문서로는 알 수 없고 직접 눌러 봐야 아는 것들이다. 운영 문서의 게임별 스토어 절차에 그대로 들어갔다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>샌드박스 구입 기록 지우기는 세 단계</h3><p>폰에서만 지우면 상품이 여전히 소유 상태였다. App Store Connect에서 지우니 Apple은 거래를 잊었지만 폰은 캐시된 거래를 계속 보내 "유효하지 않은 영수증"이 됐다. 폰과 콘솔 둘 다 지운 뒤 앱의 복원(AppStore.sync)으로 동기화하고 나서야 정상 시트가 떴다.</p></div>
+    <div class="card span-4"><h3>Play "인앱 상품"은 "일회성 제품 + 구매 옵션"이 됐다</h3><p>Play Console의 상품 구조가 바뀌어 상품마다 구매 옵션(offer)이 붙는다. Java 브리지가 구매 옵션의 토큰을 골라 구매 흐름에 넘겨야 하는데, 첫 실행에서 가격까지 제대로 떴다.</p></div>
+    <div class="card span-4"><h3>단위를 알면 콘솔 작업이 줄어든다</h3><p>Play 서비스 계정의 주문 권한은 계정 수준이라 앱을 추가할 필요가 없었다. Apple의 샌드박스 테스터와 인앱 구입 키는 팀 단위라 흰둥이 것이 샘플에도 쓰였다. 키 파일만 샘플용으로 새로 발급해 유출 시 격리를 유지했다.</p></div>
+    <div class="card span-4"><h3>앱의 첫 비소모품은 앱 버전과 함께 심사</h3><p>App Store Connect는 앱의 첫 비소모품을 단독 심사하지 않는다. 샘플은 심사에 보내지 않아 무관했지만, 첫 게임의 첫 버전 제출 때 적용되는 규칙이라 절차에 적었다.</p></div>
+    <div class="card span-4"><h3>Android 앱 데이터 백업이 설치 ID를 되살린다</h3><p>앱을 지우고 새로 설치했는데 이전 빌드의 설치 ID와 토큰이 돌아왔다. 운영 서버는 모르는 값이라 새 설치로 처리됐지만, 기기 백업이 인증 상태를 옮길 수 있다는 점은 출시 전 항목으로 남겼다.</p></div>
+    <div class="card span-4"><h3>테스트 카드의 보류는 약 1분</h3><p>Play의 "몇 분 후 승인" 카드는 62초 만에 승인됐고, 앱은 스토어 업데이트 경로로 지급했다. 스토어 업데이트 수신은 폰에서 처음 돌아간 경로였다. iOS 샌드박스에는 승인 대기(Ask to Buy)와 환불을 만들 방법이 없어 첫 게임으로 넘겼다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>그 밖에:</b> iOS 16에서는 비행기 모드가 Wi-Fi를 끄지 않는 경우가 있어 제어 센터에서 따로 꺼야 했다. 통신사 네트워크에서 1.1.1.1 ping이 막혀 있어 테스트 스크립트의 인터넷 확인을 도메인 이름으로 바꿨다. 시트가 떠 있는 시간이 로그의 소요 시간에 섞여, 서버 쪽 호출별 로그 줄에서 따로 읽어야 실제 스토어 응답 시간이 나왔다.</div>
+</section>
+
+<section id="process">
+  <h2>결제 시트는 사람이, 나머지는 AI 에이전트가</h2>
+  <p class="muted">파트마다 Claude Code를 새 세션으로 시작해 계획을 먼저 받고, 설계 대화에서 검토·승인한 뒤 구현하게 했다. 보고는 정해진 형식으로 받아 다시 검토하고, push와 병합만 사람이 했다. 실기기 세션에서는 Android 앱 조작과 로그 판독을 Claude Code가 adb로 맡았고, 사람은 결제 시트를 누르고 데이터베이스 조회 명령을 실행해 출력을 넘겼다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3 class="ok">AI 에이전트가 맡은 일</h3><ul><li>파트별 계획과 결정 권고, 코드와 테스트, 마이그레이션</li><li>커밋마다 깨끗한 작업 트리에서 검사 · 빌드 · 테스트, 마지막 커밋은 양쪽 플레이어 빌드와 스모크 · 리허설까지</li><li>dev 서버 배포 명령 준비, 공개 엔드포인트와 SmokeClient로 교차 확인</li><li>Android 기기 조작, 로그 수집, 사례별 판정</li><li>세션 결과와 스토어 절차를 운영 문서로 정리</li></ul></div>
+    <div class="card span-6"><h3 class="warn">사람이 직접 한 일</h3><ul><li>계획 검토와 37개의 결정, 스토어 검증 범위(두 스토어 모두) 선택</li><li>App Store Connect · Play Console · Firebase 콘솔 설정, 키 발급</li><li>내부망에서 dev 서버 배포와 비밀 파일 배치</li><li>iPhone을 Xcode에서 실행, 두 폰의 결제 시트 탭, 데이터베이스 조회</li><li>push, 병합, 비밀 번들 갱신</li></ul></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>검사가 숨겨진 커밋을 되돌렸다.</b> 한 커밋이 비밀 값 검사에 걸렸는데, 검사 출력을 파이프로 줄이는 바람에 종료 코드가 묻혀 커밋이 통과한 것처럼 보였다. push 전이라 수정 커밋을 원 커밋에 접고(fold) 브랜치를 다시 검증했다. 이후 커밋 전 검사 8개를 한 번에 돌리고 종료 코드를 하나씩 보는 스크립트와 pre-commit 훅을 넣었다. 검사는 4초면 끝난다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>중복 지급 방지는 설계가 아니라 증명으로 끝난다</h2>
+  <p class="muted">서버 테스트 1,019개가 통과해도 그것은 우리가 가정한 스토어의 모양에 대한 통과다. 실제 Apple 인증서 체인, 실제 Google 승인 규칙, 실제 폰의 캐시와 백업은 스텁이 만들지 못한다. 이번 단계의 종료 기준을 "실제 테스트 구매에서 중복 지급 없음"으로 둔 이유다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>이번 단계의 진행 순서</h3>
+      <pre><code>지갑 쓰기 API와 요청 ID
+        ↓
+제품 카탈로그(파일 → 테이블 → 스냅샷)
+        ↓
+구매 서버(스토어 검증 · 멱등 지급 · 서버 승인)
+        ↓
+Unity 클라이언트(자체 브리지 · 재생 · 복원)
+        ↓
+App Store 샌드박스 · Google Play 테스터 · LTE 실기기
+        ↓
+게임별 스토어 절차를 운영 문서로</code></pre>
+      <p class="muted" style="margin-top:14px">실기기 세션에서 고친 코드는 클라이언트 detach 하나와 테스트 스크립트의 ping 대상뿐이었다. 서버는 세션 동안 한 줄도 바뀌지 않았다.</p>
+    </div>
+    <div class="card span-4"><div class="metric ok">12 · 12 · 12</div><div class="label">거래 · 행 · 지급</div><p>두 스토어에서 응답 유실, 재실행 재생, 다른 계정 복원, 보류 구매 뒤에도 거래 하나에 행 하나, 지급 한 번이었다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 결제 모듈은 서버가 스토어에 직접 묻고, 카탈로그가 지급을 정하며, 거래 ID와 요청 ID로 중복을 막는 구조로 완성됐다. 두 스토어의 실제 구매로 그 구조가 폰에서 성립함을 확인했고, 다음 게임이 따라 할 스토어 등록 절차까지 문서로 남겼다. <b>이제 첫 신작을 이 플랫폼 위에 올릴 차례다.</b></div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>인앱 결제를 서버 검증 중심으로 만들었다. 구매 확인은 서버가 App Store Server API와 Play Developer API에 직접 묻고, 지급은 카탈로그 데이터가 정하며, 같은 거래는 (플랫폼, 거래 ID)로 한 번만 지급한다.</li>
+      <li>Unity IAP 대신 StoreKit 2와 Play Billing을 직접 감싼 얇은 브리지를 썼고, iPhone X와 Galaxy A16에서 실제 구매 12건을 돌려 응답 유실·재실행·복원·보류 뒤에도 중복 지급이 없음을 확인했다.</li>
+      <li>코드와 기기 조작은 AI 에이전트가, 결제 시트와 콘솔과 데이터베이스 조회는 사람이 맡았다. 콘솔에서 직접 확인한 사실들이 다음 게임의 스토어 등록 절차가 됐다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>첫 신작의 범위와 환경</h3><span class="tag">Phase 6</span></div><p>어떤 게임을 어느 범위로 만들지 정하고, 운영 환경(스키마, 계정, 도메인, Firebase 프로젝트)과 첫 게임의 스토어 앱 · 키를 이번에 적어 둔 절차대로 만든다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>결제 단계가 첫 게임에 넘긴 결정</h3><span class="tag">Phase 6</span></div><p>구매 전 계정 연결을 요구할지, 환불 · 폐기 알림(App Store Server Notifications, Play voided purchases)에 어떻게 대응할지, 유료 · 무료 통화의 소비 순서를 어떻게 둘지는 첫 게임이 정한다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>출시 게이트</h3><span class="tag">Before launch</span></div><p>개인정보 양식, Android 삭제 화면의 지연, 기기 백업과 인증 상태, R8 매핑과 네이티브 심벌 업로드, 보존 기간의 법률 확인을 출시 전에 닫는다.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">모바일 게임 서비스 플랫폼 · Public Work Log · 2026-10-10</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
