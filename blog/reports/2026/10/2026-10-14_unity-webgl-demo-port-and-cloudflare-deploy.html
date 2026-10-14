@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-10-14" />
+  <meta name="worklog-title" content="서비스 중인 모바일 퍼즐게임을 이틀 만에 웹 체험판으로: 플랫폼 SDK 격리, 서버 스텁, 자동 완주 검증, Cloudflare 배포" />
+  <meta name="worklog-project" content="Unity WebGL" />
+  <meta name="worklog-tags" content="Unity WebGL, Unity 6, URP, MagicOnion, IL2CPP, Emscripten, Playwright, Cloudflare Workers, Brotli, GA4, Spine, Claude Code, AI Native Development" />
+  <meta name="worklog-summary" content="출시 중인 모바일 퍼즐게임 「흰둥이는 퐁퐁퐁」을 10스테이지 웹 체험판으로 포팅해 play.yesitworks.io 에 배포했다. 로그인, 결제, 푸시, 광고, MagicOnion 서버 연동이 모두 들어 있는 프로젝트에서 기존 코드 경로를 한 줄도 바꾸지 않고 조건부 컴파일로 격리했고 서버는 PlayerPrefs 기반 로컬 스텁으로 대체했다. headless Chromium 이 빌드마다 10스테이지를 자동 완주하며 예외를 세는 smoke 테스트를 만들어 사람은 결정과 UI 다듬기와 실기기 확인만 했다. 313MB 개발 빌드는 25.8MB 배포 빌드가 됐고 첫 로딩은 약 7초다. Cloudflare 가 Brotli 를 이중 압축하는 문제는 Unity 의 압축 해제 폴백으로 풀었다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>서비스 중인 모바일 퍼즐게임을 이틀 만에 웹 체험판으로 · 2026-10-14</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    justify-content:center;
+    gap:16px;
+    margin-top:20px;}
+    .result-preview-grid.single .result-preview-card{
+    width:536px;
+    max-width:100%;
+    justify-self:center;}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+    table.cases{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+    table.cases th,table.cases td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top}
+    table.cases th{color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">Unity WebGL</div>
+    <h1>서비스 중인 모바일 퍼즐게임을<br>이틀 만에 웹 체험판으로</h1>
+    <p class="lead">
+      출시 중인 모바일 게임에는 로그인, 소셜 연동, 결제, 푸시, 광고, 게임 서버까지 다 들어 있다. 그 프로젝트에서
+      <b>모바일 빌드를 한 줄도 깨지 않고</b> 10스테이지짜리 웹 체험판을 잘라내려면 기능을 지우는 것이 아니라
+      컴파일에서 격리하고 서버는 로컬 스텁으로 바꾸고 사람 대신 브라우저가 매 빌드를 완주하게 해야 했다.
+      이틀 뒤 <b>play.yesitworks.io</b> 가 떴다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">Unity 6 · URP 17</span><span class="pill">WebGL · IL2CPP · Emscripten</span><span class="pill">MagicOnion 7</span><span class="pill">Spine 4.3</span><span class="pill">Playwright · headless Chromium</span><span class="pill">Cloudflare Workers</span><span class="pill">GA4</span><span class="pill">Claude Code</span><span class="pill">AI Native Development</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#audit">감사부터</a><a href="#isolate">격리와 빌드 관통</a><a href="#stub">서버 스텁</a><a href="#smoke">자동 완주 검증</a><a href="#deploy">배포</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">「흰둥이는 퐁퐁퐁」은 Unity 6 와 MagicOnion 게임 서버로 서비스 중인 모바일 퍼즐게임이다. 마케팅용으로 브라우저에서 10스테이지까지 바로 플레이할 수 있는 체험판을 만들고 싶었다. 조건은 세 가지였다. 체험판 작업이 모바일 빌드에 영향을 주면 안 된다. 서버 없이 돌아야 한다. 그리고 체험판 끝에서 앱 설치로 이어져야 한다. 작업은 로컬 Claude Code 로 하고 Claude와 대화하며 매 단계 지시문과 보고서 형식을 정했다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 플랫폼 SDK 가 코드 곳곳에 직접 박혀 있고 추상화가 없는 프로젝트에서 기존 코드 경로를 건드리지 않고 WebGL 빌드를 통과시킬 수 있을까? 그리고 매 빌드마다 사람이 브라우저를 열어 10판을 깨지 않고도 빌드 안정성을 어떻게 확인할까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">감사 → 빌드 관통 → 서버 스텁 → 스테이지 로컬화 → 체험판 UI → 애널리틱스와 Release 프로파일 → 배포의 순서로 진행했다. 단계마다 지시문을 보내고 정해진 형식의 보고서를 받아 다음 지시문을 썼다. 빌드와 브라우저 확인은 Claude Code 가 혼자 반복했고 사람은 결정과 UI 작업과 실기기 확인을 맡았다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
+    <!-- 후보: src/Blast21.Client/Builds/smoke-stage1.png, smoke-complete.png -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">1스테이지 · 로컬 데이터로 로드된 보드</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/10/14/webdemo-stage1.png" alt="웹 체험판 1스테이지. 퍼즐 보드와 흰둥이 캐릭터가 세로 화면에 표시된 모습" />
+      </div>
+      <div class="result-preview-tail">아이폰에서 크롬으로 실행</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">10스테이지 완주 · 설치 유도 팝업</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/10/14/webdemo-complete.png" alt="10스테이지 체험 완료 팝업. 앱 다운로드와 처음부터 다시 버튼" />
+      </div>
+      <div class="result-preview-tail">일본어 로컬라이징</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">313 → 25.8 MB</div><div class="label">개발 빌드 → 배포 빌드</div><p>예외 스택트레이스 제거, 스트리핑 상향, Brotli 압축으로 전송량이 12분의 1이 됐다. 실제 도메인에서 첫 로딩은 약 7초다.</p></div>
+    <div class="card span-3"><div class="metric ok">0</div><div class="label">기존 코드 경로 변경</div><p>모든 변경은 <code>#if UNITY_WEBGL</code> 과 <code>#if DEMO_BUILD</code> 안에 있거나 새 파일이다. 모바일 빌드가 읽는 코드는 그대로다.</p></div>
+    <div class="card span-3"><div class="metric ok">10 / 10</div><div class="label">자동 완주</div><p>headless Chromium 이 매 빌드마다 10스테이지를 클리어하고, 건너뛰기와 실패와 새로고침 뒤 진행도 유지까지 확인한다. C# 예외 1건이면 FAIL 이다.</p></div>
+    <div class="card span-3"><div class="metric ok">2일</div><div class="label">계획부터 배포까지</div><p>첫날 10:26 에 계획을 세워 23:49 에 Release 빌드가 나왔고, 둘째 날 16:02 에 play.yesitworks.io 가 떴다. 커밋 15개.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 서버 없이 10스테이지를 플레이하고, 5스테이지와 10스테이지에서 챕터 보상(목걸이, 안경)이 지급되며, 완주하면 OS 를 판별해 App Store 또는 Play 스토어를 연다. 브라우저 언어를 따라 한국어 · 영어 · 일본어로 뜨고, 진행도는 새로고침 뒤에도 유지된다. 부팅부터 스토어 클릭까지 8종의 GA4 이벤트가 나간다.</div>
+</section>
+
+<section id="audit">
+  <h2>고치기 전에 지도를 그린다</h2>
+  <p class="muted">첫 지시문은 "코드를 수정하지 말고 조사만 해라"였다. 플랫폼 SDK 참조 지점, WebGL 에서 안 도는 코드(스레드, 동기 블로킹), 서버 호출 지점과 그중 없으면 게임이 멈추는 것, 에셋 규모, Spine 셰이더, 입력 코드를 표로 받았다. 이 감사 보고서가 이후 모든 지시문의 근거가 됐다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>추상화 없음</h3><p>로그인, 소셜, 결제, 푸시, 광고 전부 인터페이스가 없었다. <code>AppServices.Instance.X</code> 싱글턴에 <code>AddComponent</code> 로 붙는 구조라, 인터페이스를 새로 뽑는 대신 "같은 클래스명과 같은 public 시그니처의 빈 구현"으로 교체하기로 했다.</p></div>
+    <div class="card span-4"><h3>서버 대기 지점 9개</h3><p>앱 시작부터 첫 플레이까지 RPC 6개, CDN 다운로드, 원격 Addressables 스테이지 로드가 순서대로 걸려 있었다. 모든 RPC 는 연결 실패 시 0.5초 간격 무한 재시도였다. 스텁으로 대체할 인터페이스는 <code>IAccountService</code> 7개, <code>IAuthService</code> 2개 메서드로 좁혀졌다.</p></div>
+    <div class="card span-4"><h3>확인한 사실과 추측의 구분</h3><p>보고서의 모든 항목에 [확인] / [추측] 을 붙이게 했다. 나중에 "스테이지 로드 실패는 CORS"라는 추측이 틀린 것(실제는 500)으로 드러났을 때, 추측이라고 표기돼 있어 바로 정정할 수 있었다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>MagicOnion 은 가져가지 않기로 했다.</b> MagicOnion 은 Unity WebGL 을 실험적으로 지원하며 GrpcWebSocketBridge 를 클라이언트와 서버 양쪽에 넣어야 한다. 체험판이 서버에서 얻는 것은 게스트 ID 와 진행도 저장뿐이라, 실험적 경로에 서버 인스턴스까지 운영하는 비용이 맞지 않았다. 진행도는 PlayerPrefs(WebGL 에서는 IndexedDB)에, 지표는 GA4 에 두기로 했다.</div>
+</section>
+
+<section id="isolate">
+  <h2>빌드가 돌아가는 상태를 먼저 만들고, 그 상태를 유지하며 깎는다</h2>
+  <p class="muted">기능 제거부터 시작하면 뭘 빼야 하는지 모른 채 삽질하게 된다. 그래서 심볼만 넣고 batchmode 빌드를 한 번 돌려 실제 오류 목록부터 받았다. 28초 만에 에디터 컴파일에서 막혔고, 그 뒤로는 "빌드 → 오류 → 격리 → 빌드"를 Claude Code 가 혼자 돌렸다.</p>
+  <div class="flow">
+    <div class="node"><div class="mini-title">01 · Editor compile</div><h3>심볼 분기 누락</h3><p class="muted"><code>#if UNITY_ANDROID / #elif UNITY_IOS</code> 안에서만 선언된 변수. <code>#else</code> 한 줄로 통과.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">02 · Player compile</div><h3>Firebase 참조</h3><p class="muted">서비스 클래스 전체를 <code>#if !UNITY_WEBGL</code> 로 감싸고 <code>#else</code> 에 빈 구현. 서드파티 asmdef 는 WebGL 제외.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">03 · wasm-ld</div><h3>네이티브 심볼 19종</h3><p class="muted">GoogleSignIn 의 <code>DllImport("__Internal")</code>. 서드파티 소스 대신 <code>.jslib</code> 빈 함수로 링크 통과.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">04 · Runtime</div><h3>첫 빌드 성공</h3><p class="muted">3분 6초. 브라우저에서 인트로의 null 채널 접근이 메모리 오류로 나타났다. 여기서부터 런타임 단계.</p></div>
+  </div>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>두 개의 심볼</h3><p>플랫폼 격리는 Unity 가 자동 정의하는 <code>UNITY_WEBGL</code> 로, 체험판 범위(스테이지 상한, 버튼 숨김, 인트로 우회)는 기존 <code>PRODUCTION_BUILD / STAGE_BUILD</code> 관례에 맞춘 <code>DEMO_BUILD</code> 로 나눴다. 전자는 빠뜨릴 수 없고, 후자는 나중에 다른 타깃에도 적용할 수 있다.</p></div>
+    <div class="card span-6"><h3>서드파티 폴더는 건드리지 않는다</h3><p>Firebase, GoogleSignIn, Spine 폴더 안의 소스는 수정 금지로 두고 asmdef 제외와 jslib 스텁만 허용했다. 업데이트 때 변경이 덮어씌워지는 것을 막기 위해서다. 이 규칙은 CLAUDE.md 의 절대 규칙에 들어갔다.</p></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>예상과 달랐던 것.</b> 감사는 Firebase 참조 오류가 가장 먼저 나올 것으로 봤지만, batchmode 는 플레이어 컴파일 전에 에디터 컴파일에서 먼저 걸린다. 또 플레이어 스크립트 컴파일은 Addressables 콘텐츠 빌드 안에서 일어나서, 컴파일이 깨지면 Addressables 실패로 보고되고 <code>link.xml</code> 이 삭제된다. 작업 시작 때 작업 트리에 있던 "삭제된 link.xml"의 정체가 이것이었다.</div>
+</section>
+
+<section id="stub">
+  <h2>채널 생성부 세 곳만 바꾼다</h2>
+  <p class="muted">서버 스텁의 위치는 <code>MagicOnionClient.Create&lt;T&gt;()</code> 를 부르는 세 곳이다. 그 위 계층(UserAuthService, UserAccountService)은 시그니처를 그대로 두어 콘텐츠 코드는 자기가 스텁과 대화하는지 모른다. 스텁은 <code>IAuthService</code>, <code>IAccountService</code> 를 그대로 구현하고 <code>UnaryResult.FromResult</code> 로 값을 돌려준다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>체험판 경제</h3><p>하트는 항상 최대치에 감소 없음, 플레이 · 건너뛰기 · 되돌리기 비용은 0, 클리어 보상은 고정 8개. 서버가 권위적으로 하던 추첨과 재화 로직은 재현할 이유가 없었다. 체험판은 "막힘 없이 10판"이면 된다.</p></div>
+    <div class="card span-4"><h3>보상 0 이면 진행이 멈춘다</h3><p>처음 스텁은 재화를 그대로 돌려줘 보상이 0개였다. 클라이언트는 보상 상자를 눌러 남은 개수가 정확히 0이 되는 순간에만 다음 스테이지로 넘어가서, 0개면 빈 목록에서 꺼내려다 예외가 났다. 빌드 전에 코드에서 찾아 고쳤다.</p></div>
+    <div class="card span-4"><h3>챕터 보상이 한 칸 밀린 이유</h3><p>직접 플레이하니 5스테이지 목걸이가 안 나오고 10스테이지에서 안경 팝업에 목걸이가 지급됐다. 스텁의 StagePerChapter 추측값(10)이 운영 값(5)과 달라 서버 스텁과 클라이언트의 챕터 계산이 어긋난 것이었다. 운영 설정값은 초기에 확보해야 한다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>스테이지 데이터는 Resources 로.</b> 스테이지 JSON 은 원격 Addressables 그룹에 있었고 50개가 한 번들이었다. Addressables 설정을 건드리는 대신 1~10 의 JSON 20개(80KB)를 <code>WebGLDemo/Resources/</code> 에 복사하고 로드 함수 두 개를 <code>#if DEMO_BUILD</code> 로 분기했다. 그 뒤로는 Addressables API 호출이 하나도 남지 않아 초기화 자체가 일어나지 않는다.</div>
+</section>
+
+<section id="smoke">
+  <h2>브라우저가 매 빌드를 10판씩 깬다</h2>
+  <p class="muted">런타임 단계부터는 "빌드 → 브라우저 확인" 루프에 사람이 끼면 느려진다. Playwright 로 headless Chromium 을 띄워 콘솔을 수집하는 smoke 스크립트를 먼저 만들고, Development 빌드 전용 디버그 브리지를 두어 JS 에서 <code>unityInstance.SendMessage</code> 로 게임을 조작하게 했다.</p>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>부팅 확인</h3><span class="tag">2-4</span></div><p>SwiftShader 소프트웨어 렌더링으로 WebGL 2.0 컨텍스트를 만들고, 씬 로드 마커가 찍히거나 60초가 지나면 스크린샷과 콘솔을 저장한다. 첫 실행에서 사람이 붙여준 것과 같은 메모리 오류를 5.7초 만에 잡아 자동 확인이 동작함을 증명했다. 예외 지원을 Full With Stacktrace 로 올려 메모리 오류 대신 C# 예외와 메서드 이름이 나오게 했다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>playthrough</h3><span class="tag">2-5</span></div><p>브리지의 <code>ClearCurrentStage</code> 는 점수를 클리어 조건으로 올린 뒤 실제 결과 처리를 탄다. 클리어 팝업 확인, 보상 상자 클릭, 다음 스테이지 로드까지 실제 코드 경로다. 10회 반복해 최대 레벨 도달을 확인하고, 3스테이지 클리어 → 새로고침 → 진행도 유지도 검사한다. 한 회차 4.2초.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>실제 UI 클릭</h3><span class="tag">2-7 · 2-8</span></div><p>건너뛰기는 "정답보기" 버튼부터 실제 UI 를 1.2초 간격으로 눌러 블록이 8번에 걸쳐 하나씩 터지는 연출까지 통과시킨다. 실패는 점수 0으로 결과 처리를 태워 실패 팝업과 재시작을 본다. 완주 팝업과 홈의 스토어 버튼은 실제 클릭으로 열린 창 수(정확히 1개)와 URL 을 확인한다.</p></div></div>
+  </div>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>FAIL 조건</h3><ul><li>C# 예외 1건 이상 (의도적 <code>[WebGLDemo]</code> 로그 제외)</li><li>원격 요청이 1건이라도 남아 있음 (RemoteProviderException)</li><li>스토어가 2개 이상 열림</li><li>GA 요청은 차단하고 URL 만 기록 (테스트가 통계에 섞이지 않게)</li></ul></div>
+    <div class="card span-6"><h3>브라우저는 번들 Chromium 이 아니라 설치된 Chrome</h3><p>Playwright 번들 Chromium 은 AAC/MP3 코덱이 없어 오디오 디코딩 오류가 페이지 오류로 잡혀 대기를 끊었다. 게임 문제가 아니라 브라우저 문제라, 기본 브라우저를 설치된 Google Chrome(headless)으로 바꿨다. 언어 3종과 Android UA 는 옵션으로 돌린다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>자동화가 잡은 것:</b> 보상 0 교착(코드 단계에서), 힌트 튜토리얼 오버레이가 스테이지 전환 뒤 남는 현상(브리지가 버튼 핸들러를 직접 불러 생긴 것으로, 실제 UI 에서는 재현되지 않음을 사람이 확인), 그리고 매 빌드의 회귀. 사람이 브라우저를 연 것은 결정이 필요한 순간뿐이었다.</div>
+</section>
+
+<section id="deploy">
+  <h2>Cloudflare 가 Brotli 를 한 번 더 압축했다</h2>
+  <p class="muted">Release 프로파일은 Development 끔, 예외 지원 최소, Brotli, 스트리핑 Low 다. 가장 큰 파일이 16MB 라 Cloudflare 의 25MiB 단일 파일 제한 안에 들었다. 배포는 wrangler 직접 업로드로 했다. Git 연동은 Cloudflare 가 리포를 받아 빌드하는 방식이라 Unity 빌드를 할 수 없다.</p>
+  <table class="cases">
+    <tr><th>순서</th><th>일어난 일</th></tr>
+    <tr><td>Pages 프로젝트 생성</td><td>최신 wrangler 가 <code>pages project create</code> 를 Workers 정적 에셋으로 넘겨 빌드 폴더를 통째로 Worker 에 올렸다. 승인 범위 밖의 배포였지만 workers.dev 서브도메인이 없어 외부에서 열리지 않았다. Pages 는 유지보수 모드라 Workers 로 전환하기로 했다.</td></tr>
+    <tr><td>깨끗한 재배포 + 도메인</td><td><code>wrangler.jsonc</code> 에 커스텀 도메인을 적으니 같은 계정의 존이라 DNS 레코드와 인증서가 자동으로 생겼다. 그러나 <code>.br</code> 세 파일이 이중 압축돼 부팅 실패. 받은 파일을 한 번 풀면 아직 Brotli 였다.</td></tr>
+    <tr><td><code>Cache-Control: no-transform</code></td><td>헤더는 붙었지만 여전히 이중 압축. Workers 정적 에셋에서는 통하지 않았다.</td></tr>
+    <tr><td>압축 해제 폴백</td><td>파일을 <code>.unityweb</code> 으로 바꿔 중간 프록시가 압축 파일인 줄 모르게 하고 Unity 로더가 JS 로 푼다. 로컬 기준 +0.3~0.5초. 어떤 호스팅에서든 동작한다. 재빌드 · 재배포 후 부팅 성공.</td></tr>
+  </table>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><div class="metric ok">6.8 ~ 7.1초</div><div class="label">play.yesitworks.io 부팅</div><p>캐시 없는 첫 방문, 25.8MiB 다운로드 포함. 로컬에서는 4.9~5.1초였다.</p></div>
+    <div class="card span-4"><h3>배포 한 명령</h3><p><code>scripts/deploy.sh</code> 가 Release 빌드부터 업로드까지 한다. <code>--skip-build</code>, <code>--dry-run</code> 옵션. 체험판에 불필요한 StreamingAssets 설정 파일은 빌드 결과에서 지운다.</p></div>
+    <div class="card span-4"><h3>스토어 링크</h3><p>App Store 는 App Store Connect 캠페인 링크(<code>ct=webdemo</code>), Play 는 <code>referrer=utm_source%3Dwebdemo</code>. 완주 팝업과 홈 하단 버튼 둘 다 OS 판별 후 손을 떼는 브라우저 이벤트 안에서 <code>window.open</code> 을 불러 팝업 차단을 피한다.</p></div>
+  </div>
+</section>
+
+<section id="lessons">
+  <h2>해보고 알게 된 것</h2>
+  <p class="muted">문서로는 알 수 없고 빌드와 배포를 돌려 봐야 아는 것들이다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>빌드 루프는 생각보다 싸다</h3><p>Unity 6 WebGL Development 빌드가 M5 Pro 에서 2분 45초, Release 가 5분이었다. 걱정했던 전체 에셋 재임포트는 없었다. 루프가 싸면 "일단 빌드해서 오류 목록을 받는다"가 가장 빠른 조사 방법이 된다.</p></div>
+    <div class="card span-4"><h3>WebGL 의 null 은 메모리 오류다</h3><p>예외 지원이 기본값이면 null 검사가 생략돼 <code>NullReferenceException</code> 대신 <code>memory access out of bounds</code> 가 나온다. Development 빌드에서는 Full With Stacktrace 를 켜야 메서드 이름이 보인다. wasm 이 152MB 에서 279MB 로 커지지만 디버깅 시간이 훨씬 줄었다.</p></div>
+    <div class="card span-4"><h3>브라우저는 HTTP+LAN 에서 Brotli 를 거부한다</h3><p>폰 테스트용 LAN 서버에서 <code>.br</code> 이 <code>ERR_CONTENT_DECODING_FAILED</code> 로 깨졌다. Brotli 는 HTTPS 나 localhost 에서만 받는다. 로컬 서버가 브라우저의 Accept-Encoding 을 보고 압축 푼 사본을 내려주게 했다.</p></div>
+    <div class="card span-4"><h3>첫 터치 전에는 소리가 안 난다</h3><p>브라우저 자동재생 정책이다. 인트로 BGM 이 첫 터치 전에 안 들리는 것은 감수하기로 했다. 홈에서 어차피 터치해야 게임이 시작된다.</p></div>
+    <div class="card span-4"><h3>씬은 모바일과 공유된다</h3><p>체험판용으로 씬에서 상점 버튼을 끄면 모바일에서도 사라진다. 체험판 UI 변경은 코드의 <code>SetActive(false)</code> 를 <code>#if DEMO_BUILD</code> 로 두는 쪽이 안전하고, 프리팹 레이아웃은 Vertical Layout Group 으로 비활성 항목이 빠지게 하면 양쪽에 맞는다.</p></div>
+    <div class="card span-4"><h3>텍스처 4장이 12MB 절감을 지웠다</h3><p>체험판에 안 쓰는 챕터 보상 이미지 두 장을 빌드에서 뺐는데 <code>.data</code> 가 오히려 늘었다. 그 사이 UI 다듬기로 넣은 2048×2048 장식 그림 4장이 각 4.2MB 였다. 임포트 설정 한 줄의 영향이 코드 작업보다 크다.</p></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>외부 공개 명령은 먼저 <code>--dry-run</code>.</b> <code>wrangler pages project create</code> 가 프로젝트 생성에 그치지 않고 배포까지 해버렸다. 접속되지 않는 주소라 피해는 없었지만, 승인 흐름이 명령 이름의 의미에 기대고 있었다는 뜻이다. 공개 범위를 바꾸는 명령은 "무엇을 올릴지"를 먼저 보여주는 옵션으로 확인한 뒤 실행하도록 지시문을 바꿨다.</div>
+</section>
+
+<section id="process">
+  <h2>지시문과 보고서 사이에서</h2>
+  <p class="muted">작업은 두 세션으로 나뉘었다. 이 대화는 단계마다 지시문을 쓰고, <code>---- REPORT START ----</code> 와 <code>---- REPORT END ----</code> 사이의 보고서를 받아 다음 지시문을 썼다. 로컬 Claude Code 는 지시문을 받아 빌드, smoke, 수정을 반복했다. 허용된 수정 패턴과 멈춤 조건을 지시문에 명시해 자율 루프를 주되, 게임 로직이나 씬에 닿는 수정은 멈추고 보고하게 했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3 class="ok">AI 에이전트가 맡은 일</h3><ul><li>리포 감사와 의존성 지도, 단계별 공수 추정</li><li>batchmode 빌드 스크립트와 Release 프로파일, 빌드 부산물 복원</li><li>플랫폼 SDK 격리, 서버 스텁, 인트로 우회, 스테이지 로컬화</li><li>Playwright smoke 와 디버그 브리지, 10스테이지 자동 완주</li><li>세로 캔버스 템플릿, 완주 팝업, 스토어 링크 jslib, GA4 이벤트</li><li>Cloudflare 배포, 이중 압축 진단과 폴백 전환</li><li>CLAUDE.md 에 알게 된 사실을 누적</li></ul></div>
+    <div class="card span-6"><h3 class="warn">사람이 직접 한 일</h3><ul><li>MagicOnion 제외, 체험판 경제, 호스팅, 애널리틱스 등 제품 결정</li><li>운영 설정값(StagePerChapter 5) 제공</li><li>10스테이지 직접 플레이, 챕터 보상 버그 발견</li><li>설정 팝업 정리, 설정 버튼 이동, 하단 스토어 버튼과 장식 그림 (에디터)</li><li>GA4 웹 스트림, App Store Connect 캠페인 링크 발급</li><li>폰에서 터치 · 오디오 · 스토어 링크 확인</li><li>wrangler 로그인 승인, 배포 전 확인</li></ul></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>CLAUDE.md 는 감사 뒤에 썼다.</b> 처음엔 건드리면 안 되는 디렉터리도, DI 방식도, 스텁 위치도 몰랐다. 감사 보고서를 받은 뒤 그 사실들로 절대 규칙을 채웠고, 이후 단계마다 "플레이어 컴파일은 Addressables 빌드 안에서 일어난다", "<code>Logger.Log</code> 는 WebGL 에서 컴파일되지 않는다" 같은 발견을 한 줄씩 더했다. 세션이 바뀌어도 같은 실수를 반복하지 않는 장치다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>지우지 않고 격리하면 포팅은 되돌릴 수 있다</h2>
+  <p class="muted">체험판 브랜치의 모든 변경은 조건부 컴파일 안이거나 새 파일이다. 심볼을 빼면 모바일 코드가 그대로 돌고, 씬 변경 두 건만 머지 전에 정리하면 된다. 서버 스텁은 인터페이스를 그대로 구현해서, 나중에 실제 서버를 붙이고 싶으면 채널 생성부 세 곳의 분기만 되돌리면 된다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>이번 작업의 진행 순서</h3>
+      <pre><code>감사 (수정 없이 조사만, 확인 / 추측 구분)
+        ↓
+심볼 + batchmode 빌드로 실제 오류 목록 확보
+        ↓
+플랫폼 SDK 격리 (#if, asmdef 제외, jslib 스텁) → 첫 빌드 성공
+        ↓
+smoke 자동화 → 서버 스텁 → HomeScene 진입
+        ↓
+스테이지 로컬화 → 디버그 브리지 → 10스테이지 자동 완주
+        ↓
+체험판 UI · 완주 팝업 · 스토어 링크 · GA4
+        ↓
+Release 프로파일 → Cloudflare Workers → play.yesitworks.io</code></pre>
+      <p class="muted" style="margin-top:14px">배포 과정에서 바뀐 코드는 압축 설정 한 줄과 헤더 파일뿐이었다. 게임 코드는 배포 단계에서 한 줄도 바뀌지 않았다.</p>
+    </div>
+    <div class="card span-4"><div class="metric ok">25.8 MB · 7초</div><div class="label">전송량 · 첫 로딩</div><p>313MB 개발 빌드에서 시작해 Brotli 와 스트리핑으로 줄였다. 모바일 회선에서의 체감은 GA4 로 보게 된다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 서비스 중인 모바일 게임의 웹 체험판은 기능을 지우는 작업이 아니라 격리하는 작업이다. 격리가 되면 빌드 루프는 싸고, 빌드 루프가 싸면 브라우저가 대신 완주할 수 있고, 그러면 사람은 결정과 다듬기에만 시간을 쓴다. <b>이제 트래픽을 넣고 어디서 이탈하는지 볼 차례다.</b></div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>로그인 · 결제 · 푸시 · 광고 · 게임 서버가 다 들어 있는 Unity 프로젝트에서 기존 코드 경로를 바꾸지 않고 <code>#if</code> 격리와 jslib 스텁만으로 WebGL 빌드를 통과시켰고, 서버는 인터페이스를 그대로 구현한 PlayerPrefs 스텁으로 대체했다.</li>
+      <li>headless Chromium 이 매 빌드마다 10스테이지를 자동 완주하며 예외 · 원격 요청 · 스토어 창 수를 검사하게 해, 사람은 결정과 UI 다듬기와 실기기 확인만 했다.</li>
+      <li>313MB 개발 빌드를 25.8MB 로 줄여 Cloudflare Workers 에 올렸다. 이중 압축 문제는 Unity 압축 해제 폴백으로 풀었고, play.yesitworks.io 에서 7초에 뜬다.</li>
+    </ol>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">흰둥이는 퐁퐁퐁 · Public Work Log · 2026-10-14</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
