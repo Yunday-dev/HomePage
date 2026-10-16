@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="worklog-date" content="2026-10-14" />
-  <meta name="worklog-title" content="서비스 중인 모바일 퍼즐게임을 이틀 만에 웹 체험판으로: 플랫폼 SDK 격리, 서버 스텁, 자동 완주 검증, Cloudflare 배포" />
+  <meta name="worklog-title" content="서비스 중인 모바일 퍼즐게임을 웹 체험판으로: 플랫폼 SDK 격리, 서버 스텁, 자동 완주 검증, Cloudflare 배포" />
   <meta name="worklog-project" content="Unity WebGL" />
   <meta name="worklog-tags" content="Unity WebGL, Unity 6, URP, MagicOnion, IL2CPP, Emscripten, Playwright, Cloudflare Workers, Brotli, GA4, Spine, Claude Code, AI Native Development" />
   <meta name="worklog-summary" content="출시 중인 모바일 퍼즐게임 「흰둥이는 퐁퐁퐁」을 10스테이지 웹 체험판으로 포팅해 play.yesitworks.io 에 배포했다. 로그인, 결제, 푸시, 광고, MagicOnion 서버 연동이 모두 들어 있는 프로젝트에서 기존 코드 경로를 한 줄도 바꾸지 않고 조건부 컴파일로 격리했고 서버는 PlayerPrefs 기반 로컬 스텁으로 대체했다. Claude Code로 코드 감사, 빌드 오류 격리, smoke 테스트, 배포까지를 자율 루프로 돌렸다. 부팅부터 스테이지 클리어, 완주, 스토어 클릭까지 8종의 이벤트를 GA4 로 수집하고 App Store 캠페인 링크와 Play referrer 로 설치 전환을 추적한다. 313MB 개발 빌드는 25.8MB 배포 빌드가 됐고 첫 로딩은 약 7초다. Cloudflare 가 Brotli 를 이중 압축하는 문제는 Unity 의 압축 해제 폴백으로 풀었다." />
   <meta name="worklog-visibility" content="public" />
-  <title>서비스 중인 모바일 퍼즐게임을 이틀 만에 웹 체험판으로 · 2026-10-14</title>
+  <title>서비스 중인 모바일 퍼즐게임을 웹 체험판으로 · 2026-10-14</title>
   <style>
     :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
     *{box-sizing:border-box}html{scroll-behavior:smooth}
@@ -61,7 +61,7 @@
   <div class="wrap">
     <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
     <div class="eyebrow">Unity WebGL</div>
-    <h1>서비스 중인 모바일 퍼즐게임을<br>이틀 만에 웹 체험판으로</h1>
+    <h1>서비스 중인 모바일 퍼즐게임을<br>웹 체험판으로</h1>
     <p class="lead">
       출시 중인 모바일 게임에는 로그인, 소셜 연동, 결제, 푸시, 광고, 게임 서버까지 다 들어 있다. 그 프로젝트에서
       <b>모바일 빌드를 한 줄도 깨지 않고</b> 10스테이지짜리 웹 체험판을 잘라내려면 기능을 지우는 것이 아니라

@@ -215,41 +215,6 @@
       text-transform: uppercase;
     }
 
-    .search-wrap {
-      position: relative;
-      min-width: 0;
-    }
-
-    .search-wrap svg {
-      position: absolute;
-      top: 50%;
-      left: 18px;
-      width: 19px;
-      height: 19px;
-      transform: translateY(-50%);
-      color: var(--muted);
-      pointer-events: none;
-    }
-
-    #search {
-      width: 100%;
-      height: 52px;
-      padding: 0 18px 0 50px;
-      background: #0b1219;
-      border: 1px solid transparent;
-      border-radius: 12px;
-      color: var(--ink);
-      outline: none;
-    }
-
-    #search::placeholder { color: #667b8f; }
-
-    #search:focus-visible {
-      background: #0a1118;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(105, 237, 179, 0.08);
-    }
-
     .project-filters {
       display: flex;
       flex-wrap: wrap;
@@ -258,17 +223,7 @@
       overflow: visible;
     }
 
-    .tag-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      width: 100%;
-      padding: 2px 0 0;
-      overflow: visible;
-    }
-
-    .filter-button,
-    .tag-filter-button {
+    .filter-button {
       flex: 0 0 auto;
       background: transparent;
       border: 1px solid var(--line-bright);
@@ -292,27 +247,6 @@
       background: var(--accent);
       border-color: var(--accent);
       color: #07110d;
-    }
-
-    /* 태그: 프로젝트보다 작고 가볍게 */
-    .tag-filter-button {
-      min-height: 28px;
-      padding: 0 10px;
-      border-color: #26394d;
-      color: #7890a6;
-      font-size: 0.64rem;
-      font-weight: 700;
-    }
-
-    .tag-filter-button:hover {
-      border-color: #45627e;
-      color: var(--muted-strong);
-    }
-
-    .tag-filter-button[aria-pressed="true"] {
-      background: var(--accent-soft);
-      border-color: rgba(105, 237, 179, 0.58);
-      color: var(--accent);
     }
 
     .results-meta {
@@ -453,25 +387,6 @@
       word-break: keep-all;
     }
 
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin: 20px 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .tag {
-      padding: 6px 9px;
-      background: var(--accent-soft);
-      border: 1px solid rgba(105, 237, 179, 0.18);
-      border-radius: 999px;
-      color: #99d7bc;
-      font-size: 0.69rem;
-      font-weight: 700;
-    }
-
     .card-arrow {
       display: grid;
       width: 42px;
@@ -567,8 +482,7 @@
         padding: 12px;
       }
 
-      .project-filters,
-      .tag-filters {
+      .project-filters {
         width: 100%;
         max-width: 100%;
       }
@@ -640,24 +554,11 @@
       </article>
     </section>
 
-    <section aria-label="업무일지 검색 및 필터">
+    <section aria-label="업무일지 프로젝트 필터">
       <div class="controls">
-        <label class="search-wrap" for="search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="m20 20-4-4"></path>
-          </svg>
-          <input id="search" type="search" placeholder="제목, 프로젝트, 태그로 검색" autocomplete="off">
-        </label>
-
         <div class="filter-section">
           <p class="filter-section-title">프로젝트</p>
           <div id="project-filters" class="project-filters" aria-label="프로젝트 필터"></div>
-        </div>
-
-        <div class="filter-section">
-          <p class="filter-section-title">태그</p>
-          <div id="tag-filters" class="tag-filters" aria-label="태그 필터"></div>
         </div>
       </div>
       <p id="load-error" class="error-message" role="alert"></p>
@@ -680,30 +581,20 @@
   <script>
     (() => {
       const PROJECT_PARAM = "project";
-      const TAG_PARAM = "tag";
 
       function projectFromUrl() {
         const params = new URLSearchParams(window.location.search);
         return params.get(PROJECT_PARAM) || "ALL";
       }
 
-      function tagsFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        return params.getAll(TAG_PARAM).filter(Boolean);
-      }
-
       const state = {
         reports: [],
-        query: "",
-        project: projectFromUrl(),
-        tags: new Set(tagsFromUrl())
+        project: projectFromUrl()
       };
 
       const list = document.querySelector("#journal-list");
       const count = document.querySelector("#result-count");
       const filters = document.querySelector("#project-filters");
-      const tagFilters = document.querySelector("#tag-filters");
-      const search = document.querySelector("#search");
       const error = document.querySelector("#load-error");
       const statusReports = document.querySelector("#status-reports");
       const statusProjects = document.querySelector("#status-projects");
@@ -734,22 +625,6 @@
           .sort((a, b) => a.localeCompare(b, "ko"));
       }
 
-      function getTags() {
-        const tagMap = new Map();
-
-        state.reports.forEach((report) => {
-          if (!Array.isArray(report.tags)) return;
-
-          report.tags.forEach((tag) => {
-            const clean = String(tag ?? "").trim();
-            const key = normalize(clean);
-            if (key && !tagMap.has(key)) tagMap.set(key, clean);
-          });
-        });
-
-        return [...tagMap.values()].sort((a, b) => a.localeCompare(b, "ko"));
-      }
-
       function resolveProject(value) {
         if (!value || value === "ALL") return "ALL";
 
@@ -761,23 +636,9 @@
         return projects.find((project) => normalize(project) === wanted) || "ALL";
       }
 
-      function resolveTags(values) {
-        const available = new Map(getTags().map((tag) => [normalize(tag), tag]));
-
-        return values
-          .map((value) => available.get(normalize(value)))
-          .filter(Boolean);
-      }
-
       function updateProjectButtons() {
         filters.querySelectorAll("button").forEach((item) => {
           item.setAttribute("aria-pressed", String(item.dataset.project === state.project));
-        });
-      }
-
-      function updateTagButtons() {
-        tagFilters.querySelectorAll("button").forEach((item) => {
-          item.setAttribute("aria-pressed", String(state.tags.has(item.dataset.tag)));
         });
       }
 
@@ -790,12 +651,9 @@
           url.searchParams.set(PROJECT_PARAM, state.project);
         }
 
-        url.searchParams.delete(TAG_PARAM);
-        state.tags.forEach((tag) => url.searchParams.append(TAG_PARAM, tag));
-
         const method = replace ? "replaceState" : "pushState";
         window.history[method](
-          { project: state.project, tags: [...state.tags] },
+          { project: state.project },
           "",
           url
         );
@@ -804,19 +662,6 @@
       function setProject(value, { updateUrl = true } = {}) {
         state.project = resolveProject(value);
         updateProjectButtons();
-        render();
-
-        if (updateUrl) writeFilterStateToUrl();
-      }
-
-      function toggleTag(value, { updateUrl = true } = {}) {
-        const next = new Set(state.tags);
-
-        if (next.has(value)) next.delete(value);
-        else next.add(value);
-
-        state.tags = new Set(resolveTags([...next]));
-        updateTagButtons();
         render();
 
         if (updateUrl) writeFilterStateToUrl();
@@ -831,15 +676,6 @@
         return button;
       }
 
-      function createTagFilter(tag) {
-        const button = makeElement("button", "tag-filter-button", tag);
-        button.type = "button";
-        button.dataset.tag = tag;
-        button.setAttribute("aria-pressed", String(state.tags.has(tag)));
-        button.addEventListener("click", () => toggleTag(tag));
-        return button;
-      }
-
       function renderFilters() {
         filters.replaceChildren();
         filters.append(createProjectFilter("ALL", "ALL"));
@@ -847,26 +683,10 @@
           filters.append(createProjectFilter(project, project));
         });
 
-        tagFilters.replaceChildren();
-        getTags().forEach((tag) => {
-          tagFilters.append(createTagFilter(tag));
-        });
-
         const requestedProject = state.project;
-        const requestedTags = [...state.tags];
-
         state.project = resolveProject(requestedProject);
-        state.tags = new Set(resolveTags(requestedTags));
-
         updateProjectButtons();
-        updateTagButtons();
-
-        const projectChanged = requestedProject !== state.project;
-        const tagsChanged =
-          requestedTags.length !== state.tags.size ||
-          requestedTags.some((tag) => ![...state.tags].some((resolved) => normalize(resolved) === normalize(tag)));
-
-        if (projectChanged || tagsChanged) {
+        if (requestedProject !== state.project) {
           writeFilterStateToUrl({ replace: true });
         }
       }
@@ -880,28 +700,9 @@
       }
 
       function getVisibleReports() {
-        return state.reports.filter((report) => {
-          const inProject = state.project === "ALL" || report.project === state.project;
-
-          const reportTags = new Set(
-            (Array.isArray(report.tags) ? report.tags : [])
-              .filter(Boolean)
-              .map(normalize)
-          );
-
-          // 여러 태그를 선택하면 선택한 태그를 모두 가진 기록만 표시한다. (AND)
-          const inTags = [...state.tags]
-            .every((tag) => reportTags.has(normalize(tag)));
-
-          const haystack = normalize([
-            report.title,
-            report.project,
-            report.summary,
-            ...(Array.isArray(report.tags) ? report.tags : [])
-          ].join(" "));
-
-          return inProject && inTags && (!state.query || haystack.includes(state.query));
-        });
+        return state.reports.filter((report) =>
+          state.project === "ALL" || report.project === state.project
+        );
       }
 
       function createCard(report) {
@@ -923,15 +724,6 @@
         );
         if (report.summary) content.append(makeElement("p", "card-summary", report.summary));
 
-        if (Array.isArray(report.tags) && report.tags.length) {
-          const tagList = makeElement("ul", "tag-list");
-          report.tags.forEach((tag) => {
-            const item = makeElement("li", "tag", `#${tag}`);
-            tagList.append(item);
-          });
-          content.append(tagList);
-        }
-
         const arrow = makeElement("span", "card-arrow", "↗");
         arrow.setAttribute("aria-hidden", "true");
         link.append(dateBlock, content, arrow);
@@ -941,12 +733,12 @@
       function createEmptyState(hasReports) {
         const wrapper = makeElement("div", "empty-state");
         wrapper.append(
-          makeElement("h2", "", hasReports ? "검색 결과가 없습니다." : "첫 번째 Work Log를 기다리고 있습니다."),
+          makeElement("h2", "", hasReports ? "선택한 프로젝트의 기록이 없습니다." : "첫 번째 Work Log를 기다리고 있습니다."),
           makeElement(
             "p",
             "",
             hasReports
-              ? "검색어나 프로젝트·태그 필터를 변경해 보세요."
+              ? "다른 프로젝트를 선택해 보세요."
               : "reports 폴더에 HTML을 추가하고 인덱스를 생성하면 이곳에 표시됩니다."
           )
         );
@@ -982,16 +774,9 @@
         });
       }
 
-      search.addEventListener("input", (event) => {
-        state.query = normalize(event.target.value);
-        render();
-      });
-
       window.addEventListener("popstate", () => {
         state.project = resolveProject(projectFromUrl());
-        state.tags = new Set(resolveTags(tagsFromUrl()));
         updateProjectButtons();
-        updateTagButtons();
         render();
       });
 
