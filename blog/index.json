@@ -1,6 +1,29 @@
 {
-  "generated_at": "2026-10-10T00:44:23+00:00",
+  "generated_at": "2026-10-14T08:18:06+00:00",
   "reports": [
+    {
+      "date": "2026-10-14",
+      "title": "서비스 중인 모바일 퍼즐게임을 이틀 만에 웹 체험판으로: 플랫폼 SDK 격리, 서버 스텁, 자동 완주 검증, Cloudflare 배포",
+      "project": "Unity WebGL",
+      "tags": [
+        "Unity WebGL",
+        "Unity 6",
+        "URP",
+        "MagicOnion",
+        "IL2CPP",
+        "Emscripten",
+        "Playwright",
+        "Cloudflare Workers",
+        "Brotli",
+        "GA4",
+        "Spine",
+        "Claude Code",
+        "AI Native Development"
+      ],
+      "summary": "출시 중인 모바일 퍼즐게임 「흰둥이는 퐁퐁퐁」을 10스테이지 웹 체험판으로 포팅해 play.yesitworks.io 에 배포했다. 로그인, 결제, 푸시, 광고, MagicOnion 서버 연동이 모두 들어 있는 프로젝트에서 기존 코드 경로를 한 줄도 바꾸지 않고 조건부 컴파일로 격리했고 서버는 PlayerPrefs 기반 로컬 스텁으로 대체했다. headless Chromium 이 빌드마다 10스테이지를 자동 완주하며 예외를 세는 smoke 테스트를 만들어 사람은 결정과 UI 다듬기와 실기기 확인만 했다. 313MB 개발 빌드는 25.8MB 배포 빌드가 됐고 첫 로딩은 약 7초다. Cloudflare 가 Brotli 를 이중 압축하는 문제는 Unity 의 압축 해제 폴백으로 풀었다.",
+      "file": "reports/2026/10/2026-10-14_unity-webgl-demo-port-and-cloudflare-deploy.html",
+      "visibility": "public"
+    },
     {
       "date": "2026-10-10",
       "title": "인앱 결제 서버 검증과 두 스토어 실기기 테스트: 응답이 끊겨도 한 번만 지급하기",
