@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-14T08:18:06+00:00",
+  "generated_at": "2026-10-16T07:51:19+00:00",
   "reports": [
     {
       "date": "2026-10-14",
-      "title": "서비스 중인 모바일 퍼즐게임을 이틀 만에 웹 체험판으로: 플랫폼 SDK 격리, 서버 스텁, 자동 완주 검증, Cloudflare 배포",
+      "title": "서비스 중인 모바일 퍼즐게임을 웹 체험판으로: 플랫폼 SDK 격리, 서버 스텁, 자동 완주 검증, Cloudflare 배포",
       "project": "Unity WebGL",
       "tags": [
         "Unity WebGL",
