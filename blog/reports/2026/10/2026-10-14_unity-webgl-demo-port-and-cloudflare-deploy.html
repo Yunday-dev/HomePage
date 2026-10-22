@@ -4,10 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="worklog-date" content="2026-10-14" />
-  <meta name="worklog-title" content="서비스 중인 모바일 퍼즐게임을 웹 체험판으로: 플랫폼 SDK 격리, 서버 스텁, 자동 완주 검증, Cloudflare 배포" />
+  <meta name="worklog-title" content="서비스 중인 모바일 퍼즐게임을 웹 체험판으로: 플랫폼 SDK 격리, 서버 스텁, 자동 완주 검증, Cloudflare 배포, GA4 이벤트 수집" />
   <meta name="worklog-project" content="Unity WebGL" />
   <meta name="worklog-tags" content="Unity WebGL, Unity 6, URP, MagicOnion, IL2CPP, Emscripten, Playwright, Cloudflare Workers, Brotli, GA4, Spine, Claude Code, AI Native Development" />
-  <meta name="worklog-summary" content="출시 중인 모바일 퍼즐게임 「흰둥이는 퐁퐁퐁」을 10스테이지 웹 체험판으로 포팅해 play.yesitworks.io 에 배포했다. 로그인, 결제, 푸시, 광고, MagicOnion 서버 연동이 모두 들어 있는 프로젝트에서 기존 코드 경로를 한 줄도 바꾸지 않고 조건부 컴파일로 격리했고 서버는 PlayerPrefs 기반 로컬 스텁으로 대체했다. headless Chromium 이 빌드마다 10스테이지를 자동 완주하며 예외를 세는 smoke 테스트를 만들어 사람은 결정과 UI 다듬기와 실기기 확인만 했다. 313MB 개발 빌드는 25.8MB 배포 빌드가 됐고 첫 로딩은 약 7초다. Cloudflare 가 Brotli 를 이중 압축하는 문제는 Unity 의 압축 해제 폴백으로 풀었다." />
+  <meta name="worklog-summary" content="출시 중인 모바일 퍼즐게임 「흰둥이는 퐁퐁퐁」을 10스테이지 웹 체험판으로 포팅해 play.yesitworks.io 에 배포했다. 로그인, 결제, 푸시, 광고, MagicOnion 서버 연동이 모두 들어 있는 프로젝트에서 기존 코드 경로를 한 줄도 바꾸지 않고 조건부 컴파일로 격리했고 서버는 PlayerPrefs 기반 로컬 스텁으로 대체했다. Claude Code로 코드 감사, 빌드 오류 격리, smoke 테스트, 배포까지를 자율 루프로 돌렸다. 부팅부터 스테이지 클리어, 완주, 스토어 클릭까지 8종의 이벤트를 GA4 로 수집하고 App Store 캠페인 링크와 Play referrer 로 설치 전환을 추적한다. 313MB 개발 빌드는 25.8MB 배포 빌드가 됐고 첫 로딩은 약 7초다. Cloudflare 가 Brotli 를 이중 압축하는 문제는 Unity 의 압축 해제 폴백으로 풀었다." />
   <meta name="worklog-visibility" content="public" />
   <title>서비스 중인 모바일 퍼즐게임을 웹 체험판으로 · 2026-10-14</title>
   <style>
@@ -87,7 +87,7 @@
 
 <section id="result" class="result-preview">
   <h2>작업 결과</h2>
-  <p class="muted">감사 → 빌드 관통 → 서버 스텁 → 스테이지 로컬화 → 체험판 UI → 애널리틱스와 Release 프로파일 → 배포의 순서로 진행했다. 단계마다 지시문을 보내고 정해진 형식의 보고서를 받아 다음 지시문을 썼다. 빌드와 브라우저 확인은 Claude Code 가 혼자 반복했고 사람은 결정과 UI 작업과 실기기 확인을 맡았다.</p>
+  <p class="muted">감사 → 빌드 관통 → 서버 스텁 → 스테이지 로컬화 → 체험판 UI → 애널리틱스와 Release 프로파일 → 배포의 순서로 진행했다. 단계마다 지시문을 보내고 정해진 형식의 보고서를 받아 다음 지시문을 썼다. 빌드, 브라우저 확인, 수정 반복을 Claude Code 자율 루프로 돌렸다.</p>
   <div class="result-preview-grid pair">
     <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
     <!-- 후보: src/Blast21.Client/Builds/smoke-stage1.png, smoke-complete.png -->
@@ -169,7 +169,7 @@
     <div class="card span-6"><h3>FAIL 조건</h3><ul><li>C# 예외 1건 이상 (의도적 <code>[WebGLDemo]</code> 로그 제외)</li><li>원격 요청이 1건이라도 남아 있음 (RemoteProviderException)</li><li>스토어가 2개 이상 열림</li><li>GA 요청은 차단하고 URL 만 기록 (테스트가 통계에 섞이지 않게)</li></ul></div>
     <div class="card span-6"><h3>브라우저는 번들 Chromium 이 아니라 설치된 Chrome</h3><p>Playwright 번들 Chromium 은 AAC/MP3 코덱이 없어 오디오 디코딩 오류가 페이지 오류로 잡혀 대기를 끊었다. 게임 문제가 아니라 브라우저 문제라, 기본 브라우저를 설치된 Google Chrome(headless)으로 바꿨다. 언어 3종과 Android UA 는 옵션으로 돌린다.</p></div>
   </div>
-  <div class="callout okbox" style="margin-top:18px"><b>자동화가 잡은 것:</b> 보상 0 교착(코드 단계에서), 힌트 튜토리얼 오버레이가 스테이지 전환 뒤 남는 현상(브리지가 버튼 핸들러를 직접 불러 생긴 것으로, 실제 UI 에서는 재현되지 않음을 사람이 확인), 그리고 매 빌드의 회귀. 사람이 브라우저를 연 것은 결정이 필요한 순간뿐이었다.</div>
+  <div class="callout okbox" style="margin-top:18px"><b>자동화가 잡은 것:</b> 보상 0 교착(코드 단계에서), 힌트 튜토리얼 오버레이가 스테이지 전환 뒤 남는 현상(브리지가 버튼 핸들러를 직접 불러 생긴 것으로, 실제 UI 에서는 재현되지 않음을 직접 확인), 그리고 매 빌드의 회귀. 브라우저 확인은 결정이 필요한 순간에만 열었다.</div>
 </section>
 
 <section id="deploy">
