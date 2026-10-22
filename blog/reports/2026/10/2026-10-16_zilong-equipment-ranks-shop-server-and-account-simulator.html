@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-10-16" />
+  <meta name="worklog-title" content="장비 · 승급 · 상점 서버를 만들고, 1,000명을 시뮬레이션해 난이도를 정했다" />
+  <meta name="worklog-project" content="조자룡이 간다!" />
+  <meta name="worklog-tags" content="Unity 6.6, MagicOnion, .NET 10, EF Core 10, MariaDB, Game Server, Inventory, Equipment, Progression, Shop, Simulation, Localization, Docker, Claude Code, AI Native Development" />
+  <meta name="worklog-summary" content="로그라이크 모바일 게임 「조자룡이 간다!」의 출정 바깥 성장 시스템을 서버부터 만들었다. 장비 네 등급과 강화 · 돌파 · 합성, 40단계 승급과 특성 다섯 가지, 상점 여섯 품목을 데이터 테이블로 정의하고, 모든 보상이 한 함수를 거쳐 지급 기록에 남는 인벤토리 · 승급 · 상점 서버를 올렸다. 게임 텍스트는 한국어 · 일본어 · 영어 파일로 분리했다. 코드를 손대기 전에 1,000개 계정을 시뮬레이션해 첫 스테이지를 평균 네 번째 출정에 넘도록 난이도를 확인했고, 튜닝 없이 목표 안에 들어왔다. 17개 커밋을 모두 빌드 · 테스트 통과 상태로 쌓아 개발 서버에 배포했다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>장비 · 승급 · 상점 서버를 만들고, 1,000명을 시뮬레이션해 난이도를 정했다 · 2026-10-16</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    justify-content:center;
+    gap:16px;
+    margin-top:20px;}
+    .result-preview-grid.single .result-preview-card{
+    width:536px;
+    max-width:100%;
+    justify-self:center;}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+    table.plain{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+    table.plain th,table.plain td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top}
+    table.plain th{color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.04em}
+    table.plain td.num{text-align:right;font-variant-numeric:tabular-nums}
+    table.sim{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+    table.sim th,table.sim td{padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+    table.sim th{color:var(--text);font-weight:800;font-size:15px;text-align:left;border-bottom:2px solid var(--line)}
+    table.sim th.c,table.sim td.c{text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+    table.sim tr.hl td{color:var(--accent2);font-weight:700}
+    table.sim tr.group td{padding-top:14px;color:var(--accent);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border-bottom:none}
+    table.smoke{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+    table.smoke th,table.smoke td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+    table.smoke th{color:var(--text);font-weight:800;font-size:15px;border-bottom:2px solid var(--line)}
+    table.smoke td.k{white-space:nowrap;color:var(--accent2);font-weight:700;width:120px}
+    table.smoke tr.hl td{background:rgba(124,227,177,.06)}
+    .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+    .kpi-row div{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px}
+    .kpi-row b{display:block;font-size:24px;font-weight:800;letter-spacing:-.03em;color:var(--accent2)}
+    .kpi-row span{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">조자룡이 간다!</div>
+    <h1>장비 · 승급 · 상점 서버를 만들고,<br>1,000명을 시뮬레이션해 난이도를 정했다</h1>
+    <p class="lead">
+      지난 단계에서 「조자룡이 간다!」는 전투 엔진부터 첫 출정까지 실기기에서 돌아가게 됐다. 하지만 출정이 끝나면 남는 것이 없었다.
+      이번 단계에서는 출정 바깥의 <b>성장 시스템</b>, 곧 장비 · 승급 · 상점을 데이터와 서버로 먼저 만들었다.
+      화면을 그리기 전에 1,000개 계정으로 성장 속도를 시뮬레이션해, 첫 스테이지가 몇 번째 출정에 뚫리는지부터 확인했다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">.NET 10</span><span class="pill">MagicOnion</span><span class="pill">EF Core 10</span><span class="pill">MariaDB 11.8</span><span class="pill">Unity 6.6</span><span class="pill">Docker</span><span class="pill">1,000계정 시뮬레이션</span><span class="pill">한국어 · 일본어 · 영어</span><span class="pill">Claude Code</span><span class="pill">AI Native Development</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#growth">성장 시스템</a><a href="#server">서버와 지급 기록</a><a href="#sim">1,000계정 시뮬레이션</a><a href="#text">세 언어 텍스트</a><a href="#deploy">배포</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">「조자룡이 간다!」는 출정 한 번이 5분 안팎인 로그라이크다. 출정 안에서는 스킬을 고르며 강해지지만, 출정이 끝나면 모두 사라진다. 플레이어가 다음 날 다시 돌아오려면 <b>출정 바깥에 남는 성장</b>이 있어야 한다. 이번 단계의 목표는 그 성장 시스템을 서버와 데이터 수준에서 완성하고, 화면을 만들기 전에 난이도가 맞는지 숫자로 확인하는 것이었다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 장비를 모으고 승급하면 첫 스테이지는 몇 번째 출정에 뚫려야 할까? 그리고 그 답을 Unity 화면을 하나도 그리지 않은 상태에서 미리 알 수 있을까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">장비 · 승급 · 상점의 규칙을 데이터 테이블로 정의하고, 인벤토리 · 승급 · 상점 서버를 올렸다. 1,000개 계정 시뮬레이션에서 첫 스테이지는 중앙값 네 번째 출정에 뚫렸고, 숫자를 하나도 고치지 않고 목표 안에 들어왔다. 개발 서버 배포까지 하루 안에 마쳤다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <div class="mini-title">1,000계정 시뮬레이션</div>
+      <h3>1,000계정 중 절반이 네 번째 출정에<br>첫 스테이지를 처음 클리어했다</h3>
+      <p class="muted" style="font-size:12.5px">가상 플레이어 1,000명 · 계정당 최대 200회 출정 · 자동 플레이 정책 · 튜닝 없음</p>
+      <div class="kpi-row">
+        <div><b>4 / 5</b><span>1-1 첫 클리어 출정 수<br>10명 중 5명 / 10명 중 9명</span></div>
+        <div><b>1,426</b><span>출정당 골드</span></div>
+        <div><b>2.7</b><span>출정당 상자 개봉</span></div>
+      </div>
+      <table class="sim">
+        <thead><tr><th>지표</th><th class="c">1-1</th><th class="c">1-2</th><th class="c">1-3</th></tr></thead>
+        <tbody>
+          <tr class="group"><td colspan="4">첫 클리어까지의 출정 수</td></tr>
+          <tr class="hl"><td>10명 중 5명이 깬 시점 (중앙값)</td><td class="c">4</td><td class="c">5</td><td class="c">6</td></tr>
+          <tr><td>4명 중 3명이 깬 시점</td><td class="c">5</td><td class="c">6</td><td class="c">7</td></tr>
+          <tr><td>10명 중 9명이 깬 시점</td><td class="c">5</td><td class="c">7</td><td class="c">8</td></tr>
+          <tr><td>이전 스테이지 클리어 뒤 추가 출정<br>(10명 중 5명 / 10명 중 9명)</td><td class="c">—</td><td class="c">1 / 3</td><td class="c">1 / 1</td></tr>
+          <tr class="group"><td colspan="4">그때의 성장 상태 (10명 중 5명 / 10명 중 9명)</td></tr>
+          <tr><td>승급 단계</td><td class="c">7 / 9</td><td class="c">9 / 11</td><td class="c">11 / 13</td></tr>
+          <tr><td>누적 골드</td><td class="c">4,420 / 6,590</td><td class="c">7,085 / 9,519</td><td class="c">9,204 / 11,723</td></tr>
+          <tr><td>연 상자</td><td class="c">4 / 7</td><td class="c">9 / 12</td><td class="c">13 / 16</td></tr>
+          <tr class="group"><td colspan="4">계정당 장착 장비 (등급별 평균)</td></tr>
+          <tr><td>일반</td><td class="c">1.1</td><td class="c">0.9</td><td class="c">0.5</td></tr>
+          <tr><td>희귀</td><td class="c">0.9</td><td class="c">1.7</td><td class="c">1.5</td></tr>
+          <tr><td>전설</td><td class="c">0.4</td><td class="c">1.0</td><td class="c">1.7</td></tr>
+          <tr><td>신화</td><td class="c">0.0</td><td class="c">0.1</td><td class="c">0.2</td></tr>
+          <tr><td>채운 슬롯 (4개 중)</td><td class="c">2.5</td><td class="c">3.7</td><td class="c">3.9</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="font-size:12.5px;margin-top:12px">세 스테이지 모두 1,000계정 전원이 첫날에 클리어. 하루 출정은 에너지 회복 48회 + 첫날 가득 찬 10회.</p>
+    </div>
+    <div class="card span-6">
+      <div class="mini-title">스모크 테스트 · 38줄 전부 통과</div>
+      <h3>새 게스트 계정이 플레이 전 과정을<br>실제 서버에서 확인한다</h3>
+      <p class="muted" style="font-size:12.5px">확인 패턴은 세 가지다. 정상 경로(된다), 중복 요청(같은 요청은 한 번만 적용), 거부(잘못된 요청은 막히고 상태는 그대로).</p>
+      <table class="smoke">
+        <thead><tr><th>시나리오</th><th>확인한 것</th></tr></thead>
+        <tbody>
+          <tr><td class="k">테이블 버전</td><td>서버가 combat v5 · run v2를 서빙</td></tr>
+          <tr><td class="k">출정</td><td>새 플레이어 상태(에너지 10/10, 3스테이지) → 1-1 출정 → 자동 플레이로 끝까지(38걸음, 25지점 패배) → 기록 · 최고 지점 · 골드 330이 지갑에 반영</td></tr>
+          <tr><td class="k">응답 유실</td><td>같은 요청을 다시 보내면 저장된 답을 받고, 이어하기는 걸음을 한 번만 보여주며, 지난 걸음에 새 요청은 거부</td></tr>
+          <tr><td class="k">조작 보고</td><td>다른 전투 로그 해시는 거부되고 상태는 그대로, 대결 재검증은 같은 결과</td></tr>
+          <tr><td class="k">에너지</td><td>10번 출정하면 소진 → 옥 50으로 충전 → 같은 충전 요청은 한 번만 → 다시 출정 가능</td></tr>
+          <tr class="hl"><td class="k">상자 경로</td><td>새 게스트로 반복 출정해 3번째에 중간보스 상자 획득 → 열어서 장비와 돌파석 지급 확인</td></tr>
+          <tr><td class="k">승급</td><td>0단계 시작 → 1단계 승급으로 전투력 1710→1734 → 같은 요청 한 번만 → 오래된 단계로 요청은 거부 → 다음 출정이 승급 반영</td></tr>
+          <tr><td class="k">상점</td><td>6품목과 충전가 조회 → 희귀 장비 선택권 구매(옥 300→150) → 같은 구매 한 번만 → 다른 등급 선택은 거부</td></tr>
+          <tr><td class="k">인벤토리</td><td>장착으로 전투력 1710→1808 → 골드 강화 3레벨 → 없는 상자 개봉 거부 → 재료 없는 일괄 합성 거부</td></tr>
+          <tr><td class="k">계정 삭제</td><td>출정 중 게임 데이터 삭제 → 이후 모든 호출이 "삭제된 사용자" → 계정 삭제</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="font-size:12.5px;margin-top:12px">이 밖에 17개 커밋 모두 빌드 경고 0 · 테스트 통과(1,374 → 1,445개), 텍스트 키 712개 분리, 튜닝한 숫자 0개.</p>
+    </div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 성장 시스템의 규칙과 서버가 끝났고, 개발 서버에서 실제로 출정 → 상자 획득 → 개봉 → 장비 지급까지 지나간다. <b>남은 것은 Unity 화면뿐이다.</b></div>
+</section>
+
+<section id="growth">
+  <h2>장비 네 등급, 승급 40단계, 상점 여섯 품목</h2>
+  <p class="muted">성장 시스템은 세 축으로 설계했다. 출정에서 얻는 장비, 골드로 올리는 승급, 그리고 유료 재화로 사는 상점이다. 모든 숫자는 코드가 아니라 데이터 테이블에 두고, 서버와 클라이언트가 같은 테이블을 해시로 검증한다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><div class="mini-title">장비</div><h3>상자에서 나오고, 강화 · 돌파 · 합성으로 키운다</h3><p>일반 · 희귀 · 전설 · 신화 네 등급이고, 등급이 오를수록 기본 능력치 배율이 커진다. 중간보스와 보스를 쓰러뜨리면 상자를 받고, 상자마다 등급 확률이 다르다. 같은 슬롯 · 같은 등급 장비 둘을 합치면 한 단계 위 등급이 되며, 이때 들였던 강화 골드는 돌려준다.</p></div>
+    <div class="card span-4"><div class="mini-title">승급</div><h3>40단계, 다섯 지점에서 특성이 열린다</h3><p>보졸 · 기병 · 교위 · 장군 네 계급을 40단계로 나눴다. 단계마다 능력치가 조금씩 오르고, 10 · 20 · 25 · 30 · 40단계에서는 전투 골드 보너스, 레벨업 회복, 시작 스킬 선택, 스킬 후보 다시 뽑기 같은 특성이 하나씩 열린다.</p></div>
+    <div class="card span-4"><div class="mini-title">상점</div><h3>여섯 품목, 유료 랜덤은 없다</h3><p>골드 두 종, 돌파석 두 종, 희귀 · 전설 장비 선택권으로 구성했다. 유료 재화로는 확률 상자를 팔지 않는다. 일본 출시를 염두에 두고 상자 확률은 처음부터 데이터로 공개할 수 있게 뒀다.</p></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>출정 안의 규칙도 하나 바꿨다.</b> 레벨업 때 등급이 섞인 카드 세 장을 보여주던 것을, 등급을 먼저 뽑고 그 등급 안에서 세 장을 보여주는 방식으로 바꿨다. 이 변경만으로 성장 없는 출정의 첫 스테이지 클리어율이 13.5%에서 1.4%로 떨어졌다. 즉 <b>성장이 없으면 못 깨는 게임</b>이 됐고, 그 간격을 장비와 승급이 메워야 한다. 그래서 시뮬레이션이 필요했다.</div>
+</section>
+
+<section id="server">
+  <h2>모든 보상은 한 함수를 지나 기록에 남는다</h2>
+  <p class="muted">인벤토리, 승급, 상점 세 서비스를 게임 서버에 추가했다. 상자 개봉(한 번에 최대 10개), 장착 · 해제 · 자동 장착, 강화, 합성, 돌파, 승급, 구매까지 12개 엔드포인트다. 설계에서 가장 신경 쓴 것은 지급 경로를 하나로 모으는 것이었다.</p>
+  <div class="flow">
+    <div class="node"><div class="mini-title">01 · 원인</div><h3>출정 · 상자 · 상점 · 승급</h3><p class="muted">보상이 생기는 곳은 여러 군데다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">02 · 지급 함수</div><h3>단 하나의 입구</h3><p class="muted">장비, 상자, 재료, 골드가 모두 같은 함수로 들어온다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">03 · 기록</div><h3>지급 기록 테이블</h3><p class="muted">무엇을 왜 받았는지 한 줄씩 남는다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">04 · 응답</div><h3>인벤토리 전체</h3><p class="muted">모든 쓰기 요청은 인벤토리 · 지갑 · 지급 목록을 함께 돌려준다.</p></div>
+  </div>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>요청 ID로 한 번만</h3><p>네트워크가 끊겨 같은 요청이 두 번 와도 지급은 한 번만 된다. 모든 쓰기 엔드포인트가 요청 ID를 받고, 이미 처리한 요청이면 저장해 둔 답을 다시 돌려준다. 결제 검증에서 쓰던 방식을 성장 시스템 전체로 넓혔다.</p></div>
+    <div class="card span-6"><h3>출정 골드는 끝날 때 한 줄로</h3><p>처음엔 골드를 얻는 걸음마다 기록을 남겼는데, 출정 하나에 20줄 가까이 쌓였다. 하루 1만 명이 10번씩 출정하면 하루 200만 줄이다. 출정 중에는 메모리에 모았다가 끝날 때 한 줄로 쓰도록 바꿨다. 지금 고치면 코드 몇 줄, 나중에 고치면 마이그레이션이다.</p></div>
+  </div>
+</section>
+
+<section id="sim">
+  <h2>화면 없이 1,000명을 플레이시켰다</h2>
+  <p class="muted">전투 시뮬레이터에 계정 모드를 붙였다. 가상 플레이어 1,000명이 출정 → 상자 개봉 → 자동 장착 → 합성 → 승급 → 강화를 반복하며 며칠 치를 플레이한다. 서버 코드와 같은 규칙 라이브러리를 쓰므로 결과는 실제 서버와 같다. 목표는 "첫 스테이지 첫 클리어가 10명 중 5명 기준 3~5회, 10명 중 9명 기준 8회 이하"였다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><div class="metric ok">4 / 5</div><div class="label">1-1 첫 클리어 · 10명 중 5명 / 10명 중 9명</div><p>목표 3~5회 안에 들어왔다. 시드를 바꿔도 결과는 한 출정 안에서 같았다.</p></div>
+    <div class="card span-4"><div class="metric warn">7 / 9</div><div class="label">상자를 끄면</div><p>장비를 주지 않으면 첫 클리어가 7회로 밀린다. 승급만 끄면 4회 그대로다. <b>초반 성장은 상자가 끌고 간다.</b></p></div>
+    <div class="card span-4"><div class="metric ok">1.4%</div><div class="label">성장 없이 출정만 반복할 때</div><p>장비도 승급도 없으면 첫 스테이지는 사실상 못 깬다. 성장 시스템이 난이도의 일부라는 뜻이다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>발견한 것 하나:</b> 승급은 첫 특성이 열리는 10단계 전까지는 골드만 먹는 구조라, 초반엔 "왜 올리지?"가 될 수 있다. 1장 전체가 첫날 한두 시간에 끝나는 점도 함께 확인했다. 둘 다 지금 고치지 않고 2장 · 3장 설계와 함께 장별 페이싱 목표를 정할 때 다룬다. 시뮬레이션은 최적 플레이라 실제 플레이어는 더 느리다.</div>
+</section>
+
+<section id="text">
+  <h2>이름과 설명을 세 언어 파일로 떼어냈다</h2>
+  <p class="muted">한국 · 일본 동시 출시를 목표로 하므로 게임에 보이는 문구는 처음부터 분리해야 했다. 장수 이름, 스킬 이름과 설명 71종, 상자 · 재료 · 특성 · 계급 · 상점 품목까지 712개 키를 한국어 · 일본어 · 영어 CSV 파일로 뺐다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>텍스트는 해시 밖, 서버는 읽지 않는다</h3><p>게임 규칙 테이블은 서버와 클라이언트가 해시로 맞추지만, 텍스트는 그 검증 밖에 뒀다. 오타 하나를 고쳐도 서버 배포가 필요 없고, 서버는 텍스트를 아예 읽지 않는다. 한국어는 필수, 일본어와 영어는 빠지면 한국어로 대체되며 빌드 검사가 키 누락을 잡는다.</p></div>
+    <div class="card span-6"><h3>한국어 71종은 사람이 읽었다</h3><p>AI 에이전트가 쓴 스킬 설명은 대체로 좋았지만, 용어 일관성은 사람이 봐야 했다. 투창 숙련 · 용담창 숙련 옆에 "반격 마스터리"가 있거나, 스킬 이름이 상태명("빈사")인 경우를 고쳤다. 상점 품목도 골드 주머니 · 골드 궤짝과 같은 쌍으로 돌파석 주머니 · 돌파석 궤짝으로 맞췄다.</p></div>
+  </div>
+</section>
+
+<section id="deploy">
+  <h2>개발 서버 배포는 명령 다섯 묶음</h2>
+  <p class="muted">검증 커밋을 개발 서버에 올렸다. 이미지 빌드, 마이그레이션(테이블 5개 추가), 플레이어 초기화, 원격 설정 적용, 스모크 테스트 순서다. 운영 명령은 AI 에이전트가 만들고 사람이 한 단계씩 실행하며, 마지막 스모크는 다시 에이전트가 돌린다.</p>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>이미지 빌드와 마이그레이션</h3><span class="tag">Server</span></div><p>인증 서버와 게임 서버 이미지를 커밋 해시로 태그해 빌드하고, 컨테이너가 뜨면서 마이그레이션 한 개를 적용했다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>플레이어 초기화와 원격 설정</h3><span class="tag">Data</span></div><p>이전 단계의 테스트 계정을 모두 지우고, 새 원격 설정 키 하나를 적용했다. 원격 설정 도구는 적용 전에 바뀔 내용을 먼저 보여주고, 적용 뒤 서버가 새 버전을 서빙하는지까지 확인한다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>스모크 테스트가 상자를 열었다</h3><span class="tag">Smoke</span></div><p>실제 서버에서 새 게스트로 출정해 중간보스 상자를 따고, 인벤토리에서 확인하고, 열어서 장비와 재료가 들어왔는지 본다. 서버는 출정의 난수 시드를 비밀로 지키기 때문에 결과를 지정할 수 없고, 대신 상자를 딸 때까지 최대 8번 출정을 반복한다. 8번 모두 실패할 확률은 0.00005%다.</p></div></div>
+    <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>로그 점검</h3><span class="tag">Security</span></div><p>서버 로그 전체에서 토큰 모양 문자열 0건, 비밀 값 0건, 호출 로그 255건을 확인했다.</p></div></div>
+  </div>
+</section>
+
+<section id="lessons">
+  <h2>알게 된 것</h2>
+  <p class="muted">모든 커밋이 테스트를 통과했어도, 통과하지 않은 곳에서 문제가 나왔다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>테스트가 통과해도 이미지는 안 떴다</h3><p>새 데이터 폴더를 Docker 이미지에 복사하는 줄이 빠졌는데, 빌드는 "빈 패턴은 아무것도 안 넣는다"로 조용히 성공했다. 서버는 시작할 때 "테이블이 없다"로 멈췄다. 이미지를 실제로 띄우는 스모크 테스트에서야 드러났고, 이제는 테이블 폴더가 빠지면 빌드 자체가 실패한다.</p></div>
+    <div class="card span-4"><h3>규칙 변경의 영향은 숫자로 봐야 했다</h3><p>레벨업 카드 규칙을 바꾼 커밋은 테스트를 모두 통과했지만, 클리어율이 13.5%에서 1.4%로 떨어졌다는 사실은 시뮬레이션을 돌려야 보였다. 규칙을 바꾸는 커밋에는 시뮬레이션 전후 비교를 보고서에 넣기로 했다.</p></div>
+    <div class="card span-4"><h3>구버전 앱은 멈추지 않고 안내 화면을 띄웠다</h3><p>새 서버에 이전 빌드로 접속하자 테이블 버전 불일치를 오류 화면으로 받아냈다. 다만 문구가 "다시 시도" 안내라서, 재시도로 해결되지 않는 이 경우는 "앱 업데이트"로 갈라야 한다. 다음 단계 항목으로 넘겼다.</p></div>
+    <div class="card span-4"><h3>지난 배포에서 빠뜨린 설정이 이번에 드러났다</h3><p>상품 카탈로그 적용 계획이 "변경 없음"이어야 했는데 설명 수정 세 건이 나왔다. 두 단계 전 커밋에서 바뀐 파일을 그 뒤 배포들이 적용하지 않은 것이었다. 배포 절차에 "카탈로그는 계획을 보고 적용한 뒤 다시 계획이 비는지 확인"을 넣었다.</p></div>
+    <div class="card span-4"><h3>커밋 역사를 고칠지는 비용으로 정했다</h3><p>중간 커밋 두 개에서 Unity 에디터 테스트가 깨진 건 그대로 두고 PR에 한 줄 적었다. 수정이 뒤 커밋에 의존해 되돌리면 세 커밋을 재검증해야 했기 때문이다. 반대로 Docker 복사 줄은 한 줄짜리 독립 수정이라 원래 커밋에 합쳤다.</p></div>
+    <div class="card span-4"><h3>시뮬레이션의 한계도 적어 뒀다</h3><p>첫 클리어 상자와 지급 기록은 단위 테스트만 덮는다. 서버가 난수 시드를 비밀로 지키는 설계 덕에 재현 공격은 막히지만, 그만큼 스모크 테스트가 특정 결과를 강제할 수 없다. 개발 전용 시드 주입은 관리 대상이 늘어 넣지 않았다.</p></div>
+  </div>
+</section>
+
+<section id="process">
+  <h2>보고서 다섯 번, 판정 열두 개</h2>
+  <p class="muted">작업은 다섯 묶음으로 나눠 진행했다. 문서와 데이터, 출정 규칙, 서버, 시뮬레이션과 튜닝, 배포 준비다. 묶음마다 AI 에이전트가 보고서를 올리고, 사람이 판정과 다음 묶음의 지시를 내렸다. 하루 안에 다섯 번 왕복했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3 class="ok">AI 에이전트가 맡은 일</h3><ul><li>데이터 테이블 설계와 생성, 로더, 해시 검증</li><li>서버 세 서비스와 마이그레이션, 지급 함수</li><li>계정 시뮬레이터와 1,000계정 측정</li><li>한국어 · 일본어 · 영어 텍스트 초안 712개</li><li>스모크 시나리오와 배포 명령 작성</li><li>PR 생성과 CI 감시</li></ul></div>
+    <div class="card span-6"><h3 class="warn">사람이 직접 한 일</h3><ul><li>성장 시스템의 방향과 열 개의 결정</li><li>보고서마다 판정: 난이도 노브 추가, 지급 기록 집계, 커밋 역사 처리</li><li>한국어 텍스트 71종 검수와 용어 통일</li><li>개발 서버 배포 명령 실행</li><li>구버전 앱으로 실기기 접속 확인</li><li>PR 병합</li></ul></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>선택지는 에이전트가, 선택은 사람이.</b> 스모크 테스트가 상자를 못 여는 문제에서 에이전트는 "재시도 워크", "개발 전용 시드 주입", "둘 다" 세 가지를 비용과 함께 제시했다. 서버 설계를 바꾸지 않는 첫 번째를 골랐다. 이런 질문이 올 때 답하기 쉬우려면 "관리 대상을 늘리지 않는다" 같은 기준이 먼저 서 있어야 했다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>화면보다 숫자를 먼저 맞췄다</h2>
+  <p class="muted">이번 단계에서 Unity 화면은 하나도 만들지 않았다. 대신 성장 규칙, 서버, 지급 기록, 세 언어 텍스트, 그리고 "첫 스테이지는 네 번째 출정에 뚫린다"는 숫자를 확보했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>이번 단계의 진행 순서</h3>
+      <pre><code>성장 시스템 설계 결정
+        ↓
+데이터 테이블 · 세 언어 텍스트 분리
+        ↓
+출정 규칙 변경 → 클리어율 급락 확인
+        ↓
+인벤토리 · 승급 · 상점 서버, 지급 함수
+        ↓
+1,000계정 시뮬레이션 → 튜닝 없이 목표 안
+        ↓
+개발 서버 배포, 스모크가 상자를 개봉</code></pre>
+      <p class="muted" style="margin-top:14px">화면을 먼저 만들었다면 난이도 문제를 기기에서 손으로 플레이하며 찾아야 했을 것이다. 시뮬레이터 덕에 그 과정이 1,000명 × 며칠 치를 몇 초에 돌리는 일이 됐다.</p>
+    </div>
+    <div class="card span-4"><div class="metric ok">1,445</div><div class="label">테스트</div><p>71개가 늘었다. 지급 한 번만, 출정 골드 한 줄, 상자 확률 합 1000 검증 같은 규칙이 모두 테스트로 남았다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 출정 바깥의 성장이 서버에서 돌아가고, 난이도는 숫자로 확인됐다. <b>다음은 이 서버에 화면을 붙여 두 기기에서 성장 루프를 직접 돌려 보는 일이다.</b></div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>장비 네 등급 · 승급 40단계 · 상점 여섯 품목을 데이터로 정의하고, 모든 보상이 한 함수를 지나 기록에 남는 인벤토리 · 승급 · 상점 서버를 만들었다.</li>
+      <li>화면 없이 1,000개 계정을 시뮬레이션해 첫 스테이지가 중앙값 네 번째 출정에 뚫리는 것을 확인했고, 숫자를 하나도 고치지 않고 목표 안에 들어왔다.</li>
+      <li>17개 커밋을 모두 빌드 · 테스트 통과 상태로 쌓아 개발 서버에 배포했고, 테스트가 못 잡은 문제는 이미지를 실제로 띄우는 스모크 테스트가 잡았다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>성장 화면과 실기기 세션</h3><span class="tag">Part D2</span></div><p>인벤토리 · 장비 · 상자 개봉 · 승급 · 상점 화면과 확률 공개 화면을 Unity에 붙인다. 기기 언어에 따라 세 언어가 바뀌는지, 구버전 앱에 "업데이트" 안내가 뜨는지 Android와 iOS에서 확인한다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>보상형 광고</h3><span class="tag">Part D'</span></div><p>광고 SDK를 붙이고 보상은 서버가 검증한 뒤 같은 지급 함수로 준다. 광고 자리는 세 곳이다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>2장 · 3장과 장별 페이싱</h3><span class="tag">Part E</span></div><p>2장 · 3장 기획과 함께 장마다 며칠에 뚫리는지 목표를 정한다. 초반 승급이 골드만 먹는 구간을 어떻게 줄일지도 이때 다룬다.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">모바일 게임 서비스 플랫폼 · Public Work Log · 2026-10-16</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
