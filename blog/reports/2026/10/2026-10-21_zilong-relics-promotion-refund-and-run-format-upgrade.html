@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-10-21" />
+  <meta name="worklog-title" content="유물 시스템: 중복은 승급으로, 상한은 환급으로. 런 저장 형식 업그레이드까지" />
+  <meta name="worklog-project" content="조자룡이 간다" />
+  <meta name="worklog-tags" content="Unity 6.6, MagicOnion, .NET 10, EF Core 10, MariaDB, Roguelike, Game Design, Gacha, Monetization, Data-driven, Claude Code, AI Native Development, Device Test" />
+  <meta name="worklog-summary" content="로그라이크 RPG 「조자룡이 간다」에 ‘유물’을 넣었다. 장비와 별개로 전투 효과만 가진 장착 아이템이며 같은 유물이 또 나오면 +3까지 승급하고 그 뒤로는 등급별 재화로 환급한다. 주인공의 고유 특성이던 ‘용의 심장’을 유물로 옮겨 1-3 클리어 보상으로 주고, 유물 상자를 첫 유료 랜덤 상품으로 팔기로 했다. 전투 엔진은 한 줄도 바꾸지 않고 데이터만으로 24종 × 4단계를 만들었고, 런 저장 형식을 올리면서 진행 중이던 런이 무한 루프에 빠지는 문제를 조사 단계에서 미리 찾아 막았다. 18개 커밋, 테스트 1,580개, 실기기 세션을 거쳐 하루 만에 병합했다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>유물 시스템: 중복은 승급으로 상한은 환급으로, 런 저장 형식 업그레이드까지 · 2026-10-21</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{display:grid;grid-template-columns:1fr;justify-content:center;gap:16px;margin-top:20px}
+    .result-preview-grid.single .result-preview-card{width:536px;max-width:100%;justify-self:center}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">조자룡이 간다</div>
+    <h1>유물 시스템: 중복은 승급으로, 상한은 환급으로<br> 런 저장 형식 업그레이드까지</h1>
+    <p class="lead">
+      로그라이크 RPG 「조자룡이 간다」의 성장 요소는 지금까지 장비와 계급 두 가지였다. 여기에 <b>유물</b>을 더했다.
+      스탯 없이 전투 효과만 가진 장착 아이템으로, 같은 유물이 또 나오면 승급하고 상한에 닿으면 재화로 돌려받는다.
+      주인공의 고유 특성이던 ‘용의 심장’을 유물로 옮겨 첫 장을 깬 보상으로 주고, 유물 상자를 이 게임의 첫 유료 랜덤 상품으로 정했다.
+      기획에서 병합까지 하루, 전투 엔진 코드는 한 줄도 바꾸지 않았다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">유물 24종 × 승급 4단계</span><span class="pill">효과 행 96개</span><span class="pill">런 저장 형식 3 → 4</span><span class="pill">앱 1.3.0</span><span class="pill">테스트 1,580</span><span class="pill">Galaxy A16 실기기</span><span class="pill">Claude Code</span><span class="pill">AI Native Development</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#design">유물의 규칙</a><a href="#data">데이터로만 만들기</a><a href="#survey">조사에서 찾은 함정</a><a href="#device">배포와 실기기</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">조자룡에게는 체력이 30% 아래로 떨어지면 한 번 회복하는 ‘용의 심장’이라는 고유 특성이 있었다. 장수 정의에 박혀 있는 이 특성을 <b>플레이어가 모으고 장착하는 콘텐츠</b>로 꺼내는 것이 출발점이었다. 그러려면 장비와는 다른 아이템 종류, 뽑기와 중복 처리 규칙, 전투에 들어가는 경로, 그리고 수익 모델까지 함께 정해야 했다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 전투 엔진을 바꾸지 않고 ‘효과만 있는 아이템’ 100종을 수용할 수 있는 구조는 무엇인가? 그리고 1인 스튜디오가 운영 부담 없이 팔 수 있는 랜덤 상품의 가장 작은 형태는 무엇인가?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">유물 24종(희귀 12 · 전설 8 · 신화 4)과 승급 단계별 효과 96개를 데이터로 만들고, 유물 상자 · 승급 · 환급 · 전리품 지급 · 장착 화면 · 확률 공개까지 서버와 클라이언트에 붙였다. 개발 서버에 배포하고 Galaxy A16에서 전 항목을 확인한 뒤 병합했다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
+    <!-- 게시 전에 스크린샷의 사용자 ID 등은 가려 주세요. -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">유물 패널과 슬롯</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/10/21/relic-panel.png" alt="가방의 유물 패널: 슬롯 1에 용의 심장, 슬롯 2는 잠김, 아래에 유물 목록" />
+      </div>
+      <div class="result-preview-tail">슬롯 1에 용의 심장 · 슬롯 2는 2장에서 해금</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">1-3 클리어 후 유물 획득 팝업</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/10/21/trophy-popup.png" alt="승리 뒤 뜨는 유물 획득 팝업: 용의 심장 +0, 유물 슬롯 1 해금, 첫 클리어 상자" />
+      </div>
+      <div class="result-preview-tail">Galaxy A16 · 개발 서버 · 앱 1.3.0</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">24 × 4</div><div class="label">유물 × 승급 단계</div><p>유물마다 +0부터 +3까지 네 단계의 효과 행을 따로 두었다. 전투 엔진은 그대로다.</p></div>
+    <div class="card span-3"><div class="metric ok">0</div><div class="label">엔진 코드 변경</div><p>유물은 이미 있는 효과 어휘(발동 시점 · 동작 · 수치)의 조합이라 전투 계산 코드는 손대지 않았다.</p></div>
+    <div class="card span-3"><div class="metric ok">18</div><div class="label">커밋</div><p>커밋마다 깨끗한 작업 트리에서 빌드 · 테스트 1,580개 · Unity 에디터 테스트 328개를 통과시켰다.</p></div>
+    <div class="card span-3"><div class="metric ok">1일</div><div class="label">기획 → 병합</div><p>오전 기획, 오후 조사와 계획, 밤에 구현 · 배포 · 실기기 확인, 새벽에 병합.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 유물이 들어가도 첫 장 1-1의 첫 클리어 시점(평균 3번째 도전)은 그대로였고, 1,000계정 시뮬레이션의 모든 목표가 유지됐다. <b>진행 중이던 런이 새 저장 형식 때문에 갇히는 문제는 조사 단계에서 찾아 같은 배포에 고쳤다.</b></div>
+</section>
+
+<section id="design">
+  <h2>유물의 규칙: 레벨 대신 승급, 상한 뒤엔 환급</h2>
+  <p class="muted">장비는 강화 · 합성 · 돌파로 키우는 스탯 아이템이다. 유물은 그 어느 것도 하지 않는다. 종류마다 하나만 가질 수 있고, 성장은 오직 <b>같은 유물을 다시 얻었을 때의 승급</b>뿐이다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><div class="mini-title">What</div><h3>효과만 있는 장착 아이템</h3><p>체력 · 공격 · 방어 같은 스탯이 없다. “전투 시작 시 공격력 +6%”, “적을 쓰러뜨리면 5% 회복”처럼 전투 효과 한두 개를 가진다. 출정을 시작할 때 장착한 유물이 런 전체에 적용된다.</p></div>
+    <div class="card span-4"><div class="mini-title">Grow</div><h3>중복 → 승급 +0 ~ +3</h3><p>뽑기에서 이미 가진 유물이 나오면 한 단계 승급한다. 단계마다 수치가 오르는데, 확률로 발동하는 유물은 수치 대신 발동 확률이 오른다. 승급마다 반드시 더 강해지도록 데이터 검사 규칙을 두었다.</p></div>
+    <div class="card span-4"><div class="mini-title">Cap</div><h3>+3 중복 → 재화 환급</h3><p>+3인 유물이 또 나오면 등급에 따라 군자금 · 돌파석 · 보옥으로 돌려준다. 원신이나 FGO처럼 플레이어가 이미 아는 방식이라 설명이 필요 없고, 확률 공개 화면에도 한 줄이면 된다.</p></div>
+  </div>
+  <div class="grid" style="margin-top:16px">
+    <div class="card span-6"><h3>어디서 얻나</h3><ul><li><b>전리품:</b> 1장 마지막 스테이지(1-3)를 처음 깨면 ‘용의 심장’을 상자 없이 바로 준다. 승리 버튼 뒤에 별도 팝업이 뜨고, 같은 순간 유물 슬롯 1이 열린다.</li><li><b>유물 상자:</b> 1-3을 깬 플레이어에게만 상점에서 판다. 등급을 먼저 뽑고(희귀 60% · 전설 32% · 신화 8%), 그 등급 안에서 균등하게 하나를 뽑는다.</li><li><b>적 장수도 든다:</b> 장수 데이터에 유물 칸을 두어, 2장 이후 조조의 청강검이나 관우의 적토마 같은 물건을 적이 들고 나올 수 있게 했다. 이번 버전에서는 자리만 만들었다.</li></ul></div>
+    <div class="card span-6"><h3>왜 유료 상자로 팔기로 했나</h3><p>이 게임은 지금까지 “보옥으로 사는 것은 전부 확정 상품”이라는 원칙이었다. 하지만 보상형 광고와 확정 상품만으로 목표 매출에 닿으려면 1인 개발 신작이 도달하기 어려운 일일 활성 사용자가 필요하다. 장르 매출의 대부분은 반복 뽑기에서 나온다.</p><p>그래서 원칙을 바꾸되 가장 작게 바꿨다. <b>상자 1종, 고정 가격, 환급 규칙 고정, 판매 이벤트 없음.</b> 열쇠 같은 중간 재화도 두지 않았다. 한국 · 일본 모두 뽑기 규칙을 바꾸면 사전 고지가 필요하므로, 처음 공개한 규칙으로 오래 갈 형태를 골랐다.</p></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>버린 안:</b> 처음에는 +3 유물을 뽑기 후보에서 빼는 ‘제외 방식’을 생각했다. 헛뽑기가 없어 보이지만, 플레이어마다 실제 확률이 달라져 공개가 복잡해지고 뽑기 수요가 96회에서 끝난다. 환급 방식은 코드도 더 적었다.</div>
+</section>
+
+<section id="data">
+  <h2>전투 엔진은 그대로, 데이터만 늘렸다</h2>
+  <p class="muted">이 게임의 전투는 서버와 클라이언트가 같은 정수 연산 코드로 돌리는 결정적 시뮬레이션이다. 스킬과 장수 특성은 모두 ‘효과 행’의 목록이고, 엔진은 효과가 어디서 왔는지 모른다. 유물도 그 목록에 효과 행을 더 얹는 것으로 끝냈다.</p>
+  <div class="flow">
+    <div class="node"><div class="mini-title">01 · Table</div><h3>유물 정의</h3><p class="muted">전투 테이블에 유물 24행. 승급 단계마다 효과 행 id를 가리킨다. 적 장수도 참조해야 해서 전투 테이블에 두었다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">02 · Snapshot</div><h3>출정 시작 스냅샷</h3><p class="muted">서버가 장착 유물의 현재 승급 효과 id를 런 상태에 기록한다. 런 도중 장착을 바꿔도 그 런에는 영향이 없다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">03 · Compose</div><h3>효과 합성 순서</h3><p class="muted">시작 스탯 → 런 보정 → 장수 특성 → <b>유물</b> → 스킬. 순서를 고정해야 서버와 클라이언트의 결과가 같다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">04 · Account</div><h3>계정 테이블</h3><p class="muted">가격, 환급량, 전투력 수치는 계정 테이블에. 가격을 바꿔도 전투 로그 해시가 바뀌지 않게 분리했다.</p></div>
+  </div>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>승급을 효과 행 네 개로 푼 이유</h3><p>“+1마다 수치 ×1.2”를 런 시작 시 계산해 엔진에 넘기는 방법도 있었다. 그러면 전투 입력 형식과 골든 벡터, 클라이언트 전투 코드가 모두 바뀐다. 효과 행 네 개는 데이터만 늘고, 로더 테스트로 누락을 잡을 수 있다. 100종 × 4단계 = 400행은 CSV로 충분히 관리된다.</p></div>
+    <div class="card span-6"><h3>유물 테이블을 전투 쪽에 둔 이유</h3><p>처음 설계는 계정 테이블에 두는 것이었는데, 적 장수가 유물을 들려면 장수 테이블(전투 쪽)이 유물을 가리켜야 한다. 전투 라이브러리는 아무것도 참조하지 않는다는 규칙이 있어서 유물 정의를 전투 테이블로 옮겼고, 덕분에 “계정 로더가 전투 테이블을 참조”해야 하는 역방향 의존도 사라졌다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>저장 형식 업그레이드:</b> 런 상태에 유물 스냅샷 필드가 하나 늘어나므로 저장 형식 번호를 3에서 4로 올렸다. 형식이 다른 저장 런은 서버가 읽을 수 없고, 옛 앱은 최소 지원 버전 설정으로 업데이트 화면을 보게 된다. 앱은 1.3.0이 됐다.</div>
+</section>
+
+<section id="survey">
+  <h2>코드를 쓰기 전 읽기 전용 조사에서 찾은 함정 일곱 개</h2>
+  <p class="muted">기획서를 넘기고 바로 구현하지 않았다. 먼저 AI 에이전트에게 저장소를 읽기만 하게 해 기획이 코드와 어긋나는 곳을 찾게 했다. 10개 질문에 918줄의 조사 보고서가 돌아왔고, 그중 일곱 개는 계획을 바꿨다.</p>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>저장 형식이 바뀌면 진행 중인 런이 무한 루프에 빠진다</h3><span class="tag">Critical</span></div><p>옛 형식의 런을 이어 가려 하면 서버가 ‘지원하지 않음’을 답하지만 런을 끝내지는 않았다. 클라이언트는 종료 안내를 띄우고 로비로 가는데, 런이 남아 있으니 출정을 누르면 다시 같은 답. 서버가 읽을 수 없는 런을 그 자리에서 종료하도록 고쳐 같은 배포에 넣었다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>가방은 상자를 세 종류까지만 그렸다</h3><span class="tag">Client</span></div><p>유물 상자는 네 번째 종류라 보이지 않았을 것이다. 상자 행을 가로 스크롤로 바꿨다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>런 응답이 군자금 지급을 버리고 있었다</h3><span class="tag">Server</span></div><p>환급으로 군자금이 들어와도 화면에 안 보이고 지갑도 갱신되지 않았을 것이다. 지갑 변동이 있으면 항상 다시 읽도록 했다.</p></div></div>
+    <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>첫 클리어 보상이 ‘클리어 횟수’를 올리기 전에 지급됐다</h3><span class="tag">Order</span></div><p>슬롯 해금은 클리어 횟수로 판정하므로 그대로면 용의 심장이 슬롯에 들어가지 않고 가방에 떨어진다. 지급 순서를 바꿨다.</p></div></div>
+    <div class="step"><div class="dot">5</div><div class="card"><div class="step-head"><h3>“장착 안 됨 = 슬롯 0”은 유니크 인덱스와 충돌한다</h3><span class="tag">DB</span></div><p>MariaDB는 NULL만 중복을 허용한다. 장착 슬롯 컬럼을 nullable로 설계했다.</p></div></div>
+    <div class="step"><div class="dot">6</div><div class="card"><div class="step-head"><h3>상점 로더는 모르는 상품 종류를 조용히 ‘선택권’으로 취급했다</h3><span class="tag">Loader</span></div><p>상자를 파는 새 종류를 더하면서, 모르는 종류는 로드 실패로 바꿨다. 노출 조건도 하드코딩 대신 행마다 “어느 스테이지를 깬 뒤”로 두어 다음 상품이 데이터만으로 들어가게 했다.</p></div></div>
+    <div class="step"><div class="dot">7</div><div class="card"><div class="step-head"><h3>슬롯 해금 테이블은 전투 쪽에 둘 수 없다</h3><span class="tag">Table</span></div><p>해금 조건이 스테이지인데 전투 라이브러리는 스테이지를 모른다. 런 테이블로 옮겨, 슬롯을 바꿔도 전투 벡터 108개가 다시 생성되지 않게 했다.</p></div></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>조사의 값:</b> 조사는 20분이 걸렸고, 구현 중에 발견했다면 각각 되돌리는 커밋이 필요했을 것들이다. 특히 1번은 실서비스였다면 활성 런을 가진 모든 플레이어를 가두는 문제였다.</div>
+</section>
+
+<section id="device">
+  <h2>개발 서버 배포와 실기기 세션</h2>
+  <p class="muted">구현은 여덟 그룹, 18개 커밋으로 나눠 AI 에이전트가 자리 비운 사이에 진행했다. 배포와 실기기 확인은 사람이 한 단계씩 했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>저장 형식 변경을 실기기로 증명한 방법</h3><ol class="summary-list"><li>배포 전, 옛 앱으로 출정을 시작해 탭을 기다리는 화면에서 앱을 껐다. 서버에 옛 형식의 런이 남는다.</li><li>이미지 빌드 → 마이그레이션 1개 적용 → 최소 지원 버전 1.3.0 반영. <b>플레이어 초기화는 하지 않았다.</b></li><li>옛 앱을 열자 업데이트 화면. 새 앱을 덮어 설치하고 로그인하자 옛 런은 조용히 종료되고 새 출정이 열렸다.</li><li>서버 로그에 종료 경고 1건, 런 이력 테이블에 ‘포기’ 행 1개.</li></ol></div>
+    <div class="card span-6"><h3>세션에서 확인한 것</h3><ul><li>1-3을 깨기 전: 상점에 유물 상자 없음, 슬롯 두 개 잠김</li><li>1-3 첫 클리어: 용의 심장이 슬롯 1에 장착, 상점에 유물 상자 등장</li><li>유물 상자 구매 · 열기, 디버그로 10개 열어 승급 카드 확인</li><li>모든 유물을 +3으로 올린 뒤 열어 등급별 환급과 지갑 증가 확인</li><li>해제 · 재장착 뒤 다음 런의 전투 로그에 유물 발동(옥룡패)</li><li>확률 공개 화면의 유물 상자 탭과 환급 안내 줄</li></ul></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>한 번은 안 떴다.</b> 1-3을 처음 깼을 때 유물 획득 팝업이 뜨지 않았다. 서버 지급은 정상이었고 로그에 예외도 없었다. 에디터에서 서버가 보내는 응답을 그대로 재현하면 팝업은 떴다. 데이터베이스에서 첫 클리어 기록만 되돌려 다시 깨자 이번엔 떴다. 원인은 못 찾았고, 대신 종료 응답의 내용과 팝업이 보여 준 것을 기기 로그에 남기게 해 다음에 재발하면 어느 쪽이 빠뜨렸는지 바로 알 수 있게 했다.</div>
+</section>
+
+<section id="lessons">
+  <h2>알게 된 것</h2>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>승급 수치는 공식이 아니라 값으로</h3><p>“×1.2 내림” 규칙을 작은 수치에 적용하면 2 → 2 → 2 → 3처럼 승급해도 변화가 없는 단계가 생긴다. 유료 상자에서 +1이 아무것도 아니면 플레이어가 바로 알아차린다. 승급마다 반드시 더 강해야 한다는 로더 규칙을 두고, 걸린 유물 세 개는 값을 직접 정했다.</p></div>
+    <div class="card span-4"><h3>테스트한 빌드와 병합 코드는 같아야 한다</h3><p>세션 뒤 환급 카드에 유물 이름이 없는 것을 발견했다. 작은 수정이지만 넣으면 폰에서 본 빌드와 병합 코드가 달라진다. 다음 파트의 첫 항목으로 넘기고 병합했다.</p></div>
+    <div class="card span-4"><h3>첫 클리어 재확인에 새 계정은 필요 없다</h3><p>스테이지 진행 기록과 유물 행을 데이터베이스에서 지우면 같은 계정으로 첫 클리어를 다시 만들 수 있다. 디버그 버튼(서버 변경 · 재배포 필요)보다 SQL 두 줄이 쌌다.</p></div>
+    <div class="card span-4"><h3>동결한 id는 남기고 새 행을 쓴다</h3><p>용의 심장의 옛 효과 행은 저장된 전투 로그가 번호로 참조한다. 장수에서 떼어 내되 행 자체는 남기고, 유물은 새 번호 블록에 네 행을 두었다.</p></div>
+    <div class="card span-4"><h3>스크래치 작업 트리가 디스크를 채운다</h3><p>커밋마다 깨끗한 트리에서 검증하다 보니 작업 트리와 테스트용 DB 볼륨이 쌓여 디스크가 찼고 Docker가 읽기 전용으로 빠졌다. 검증이 끝난 트리는 바로 지우고, 77 GB의 볼륨을 정리했다.</p></div>
+    <div class="card span-4"><h3>보고서는 파일로만</h3><p>AI 에이전트가 긴 보고서를 콘솔에도 찍고 있었다. 파일을 열어 복사하는 흐름이라 콘솔 출력은 토큰만 쓴다. 파일 경로와 결과 한 줄만 찍도록 규칙을 바꿨다.</p></div>
+  </div>
+</section>
+
+<section id="process">
+  <h2>기획은 대화로, 조사와 구현은 에이전트가, 확인은 기기로</h2>
+  <p class="muted">이번 파트는 기획 대화 → 읽기 전용 조사 → 계획 → 승인 → 구현 → 배포 → 실기기 → 병합의 순서로 하루 만에 끝났다. 사람이 자리를 비운 사이 구현이 진행됐고, 돌아와서는 보고서 파일을 열어 다음 단계로 넘겼다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3 class="ok">AI 에이전트가 맡은 일</h3><ul><li>병렬 하위 에이전트 네 개로 저장소 조사, 918줄 보고서</li><li>구현 계획과 커밋 그룹 분할, 열린 질문 정리</li><li>테이블 · 효과 행 96개 · 로더 규칙 · 마이그레이션 · 계약 · 화면</li><li>커밋마다 깨끗한 트리 검증, Unity 배치 테스트, APK 빌드</li><li>1,000계정 시뮬레이션 재측정</li><li>개발 서버 스모크, PR 생성과 CI 확인</li></ul></div>
+    <div class="card span-6"><h3 class="warn">사람이 직접 한 일</h3><ul><li>유물의 규칙과 수익 모델 결정, 조사 보고서의 열린 질문에 답</li><li>옛 형식 런을 남겨 두고 배포, 명령을 한 단계씩 실행</li><li>Galaxy A16 세션 전 항목 확인, 팝업 미표시 보고</li><li>데이터베이스에서 첫 클리어 되돌리기</li><li>push와 병합</li></ul></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>계획 단계의 열린 질문 일곱 개</b>(파트 이름, 기기 빌드 범위, 슬롯 2 데이터, 점유 슬롯 처리, 장착 버튼 동작, 디버그 지급, 가격)는 전부 작고 되돌릴 수 있어서 에이전트의 추천을 그대로 승인했다. 결정이 필요한 것과 그냥 정해도 되는 것을 가르는 일이 사람의 몫이었다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>정리 및 결론</h2>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>이번 파트의 진행 순서</h3>
+      <pre><code>유물 기획 (5차 개정)
+        ↓
+읽기 전용 조사 → 함정 7개
+        ↓
+계획 · 승인 (열린 질문 7개는 추천대로)
+        ↓
+구현 18커밋 (자리 비운 사이)
+        ↓
+개발 서버 배포 · 옛 런 종료 증명
+        ↓
+실기기 세션 · 병합</code></pre>
+      <p class="muted" style="margin-top:14px">유물은 이 게임에서 처음으로 ‘돈을 받는 랜덤’이다. 그래서 규칙을 가장 단순하고 오래 갈 형태로 두는 데 시간을 썼고, 구현은 엔진을 건드리지 않는 데이터 작업으로 끝냈다.</p>
+    </div>
+    <div class="card span-4"><div class="metric ok">3 → 3</div><div class="label">1-1 첫 클리어 중앙값(도전 횟수)</div><p>고유 특성을 유물로 옮겨도 첫 장의 난이도는 변하지 않았다. 1-3 이후는 용의 심장을 얻으므로 이전과 같다.</p></div>
+  </div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>「조자룡이 간다」에 효과만 가진 장착 아이템 ‘유물’을 넣었다. 중복은 +3까지 승급, 그 뒤는 등급별 환급이며, 주인공의 고유 특성을 유물로 옮겨 1장 클리어 보상으로 준다.</li>
+      <li>전투 엔진은 바꾸지 않고 효과 행 96개와 테이블로 만들었고, 런 저장 형식을 올리면서 진행 중인 런이 갇히는 문제를 조사 단계에서 찾아 같은 배포에 고쳤다.</li>
+      <li>유물 상자를 첫 유료 랜덤 상품으로 정하되 상자 1종 · 고정 가격 · 이벤트 없음으로 운영 부담을 묶었다. 18커밋, 테스트 1,580개, 실기기 세션을 거쳐 하루 만에 병합했다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>본편과 순찰로 런 모드 분리</h3><span class="tag">Part S</span></div><p>스토리 스테이지는 한 번만, 그 사이에 반복 파밍용 순찰 스테이지를 둔다. 무료 상자는 양으로, 유료 상자는 질로 나누고 유료 장비 상자를 추가한다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>계급 성장 재조정</h3><span class="tag">Part T</span></div><p>계급 단계를 늘리고 체력 · 공격 · 방어를 골라 올리는 방식으로 바꿔, 군자금으로 꾸준히 강해지는 축을 주축으로 만든다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>2 · 3장과 출시 준비</h3><span class="tag">Part F</span></div><p>적 장수의 유물(청강검 · 적토마), 전리품 배치, 유물 아트, 일본어 · 영어 텍스트, 스토어 설정과 스테이징 서버.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">조자룡이 간다 · Public Work Log · 2026-10-21</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>

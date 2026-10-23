@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-10-22" />
+  <meta name="worklog-title" content="조자룡의 성장축을 40단계 계급에서 450단계 명성·수련으로 바꿨다" />
+  <meta name="worklog-project" content="조자룡이 간다" />
+  <meta name="worklog-tags" content="Unity 6.6, MagicOnion, .NET 10, EF Core 10, MariaDB, Android, Game Design, Growth System, Simulation, Claude Code, AI Native Development" />
+  <meta name="worklog-summary" content="「조자룡이 간다」의 주 성장축이던 계급(보졸→기병→교위→장군, 40단계)을 명성·수련 구조로 바꿨다. 명성은 30급, 급마다 체력·무예·방어 세 갈래를 각 5단계씩 수련해야 다음 급이 열리는 게이트 방식이고, 칭호는 무명부터 만인지적까지 열 개다. 데이터·서버·클라이언트를 한 번에 바꾸고 1,000계정 시뮬레이션으로 1장 끝에 도달하는 급수를 확인한 뒤, 개발 서버 재배포와 Galaxy A16 실기기 세션 10개 항목을 모두 통과했다. 하루 안에 조사부터 병합까지 끝났다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>조자룡의 성장축을 40단계 계급에서 450단계 명성·수련으로 바꿨다 · 2026-10-22</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    justify-content:center;
+    gap:16px;
+    margin-top:20px;}
+    .result-preview-grid.single .result-preview-card{
+    width:536px;
+    max-width:100%;
+    justify-self:center;}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+    table.plain{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+    table.plain th,table.plain td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+    table.plain th{color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.04em}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">조자룡이 간다</div>
+    <h1>조자룡의 성장축을<br>40단계 계급에서 450단계 명성·수련으로 바꿨다</h1>
+    <p class="lead">
+      「조자룡이 간다」에서 플레이어가 군자금을 가장 많이 쓰는 곳은 캐릭터의 영구 성장이다. 지금까지는
+      보졸 → 기병 → 교위 → 장군으로 이어지는 <b>계급 40단계</b>가 그 역할을 했는데, 단계가 너무 적고
+      "이미 장군인 조자룡이 보졸부터 시작한다"는 문맥도 어색했다. 이번 작업에서 이 축을
+      <b>명성 30급 · 급마다 체력·무예·방어를 각 5단계씩 수련하는 구조</b>로 통째로 바꾸고,
+      개발 서버와 실기기에서 확인한 뒤 병합했다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">Unity 6.6</span><span class="pill">MagicOnion</span><span class="pill">.NET 10</span><span class="pill">EF Core 10</span><span class="pill">MariaDB</span><span class="pill">1,000계정 시뮬레이션</span><span class="pill">Galaxy A16 실기기</span><span class="pill">Claude Code</span><span class="pill">AI Native Development</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#why">왜 바꿨나</a><a href="#design">명성과 수련의 구조</a><a href="#build">데이터·서버·화면 전환</a><a href="#sim">시뮬레이션과 실기기</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">계급 40단계를 없애고, 참고 게임처럼 한 급수 안에서 세 가지 능력을 모두 채워야 다음 급수가 열리는 <b>게이트 방식의 성장축</b>으로 바꾸는 것. 이름은 '계급' 대신 <b>명성(名聲)</b>, 행위와 화면 이름은 <b>수련</b>으로 정했다. 데이터·서버·클라이언트가 모두 바뀌는 작업이라 조사 → 결정 → 구현 → 시뮬레이션 → 재배포 → 실기기 확인을 한 흐름으로 끝내는 것이 목표였다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 40번의 승급을 450번의 수련으로 늘리면 플레이어는 1장이 끝날 때 어디까지 와 있을까? 그리고 저장 구조와 서버 계약을 갈아엎으면서도 "모든 커밋이 혼자서 빌드와 테스트를 통과한다"는 규칙을 지킬 수 있을까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">조사 보고서부터 병합까지 하루 안에 끝났다. 명성 30급 · 칭호 10개 · 수련 450단계가 데이터와 서버, 수련 화면에 들어갔고, 개발 서버를 재배포한 뒤 Galaxy A16에서 10개 항목을 모두 확인했다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
+    <!-- 게시 전에 스크린샷의 내부 IP, 호스트 이름, 사용자 ID는 가려 주세요. -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">수련 화면</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/10/22/zilong-training-screen.png" alt="명성 1급 무명에서 체력·무예·방어 세 갈래의 수련 행이 보이는 화면" />
+      </div>
+      <div class="result-preview-tail">Galaxy A16 · 명성 1급 · 세 갈래 수련</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">급수가 오르는 순간</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/10/22/zilong-fame-advance.png" alt="세 갈래를 모두 채워 명성 7급 신예에 오른 공지가 보이는 화면" />
+      </div>
+      <div class="result-preview-tail">세 갈래 5/5 → 다음 급 개방 → 특전 해금</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">40 → 450</div><div class="label">성장 단계</div><p>계급 4개 × 10단계가 명성 30급 × 세 갈래 × 5단계로 바뀌었다.</p></div>
+    <div class="card span-3"><div class="metric ok">10</div><div class="label">칭호</div><p>무명 · 두각 · 신예 · 맹장 · 용장 · 호장 · 명장 · 상승장군 · 일기당천 · 만인지적. 3급마다 하나씩 바뀐다.</p></div>
+    <div class="card span-3"><div class="metric ok">1,611 / 1,611</div><div class="label">서버·Run 테스트</div><p>Unity 에디터 테스트 332개까지 모든 커밋이 깨끗한 작업 트리에서 통과했다.</p></div>
+    <div class="card span-3"><div class="metric ok">10 / 10</div><div class="label">실기기 확인 항목</div><p>이전 버전의 업데이트 화면부터 수련, 급수 상승, 환급 합계까지 Galaxy A16에서 확인했다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 1,000계정 시뮬레이션에서 1장을 끝낸 플레이어는 중앙값 명성 11급, 상위 10%는 13급에 있었다. 설계가 노린 10~12급 범위라 <b>잠정 수치를 한 번도 고치지 않고</b> 그대로 갔다.</div>
+</section>
+
+<section id="why">
+  <h2>왜 계급을 버리고 명성으로 갔나</h2>
+  <p class="muted">계급은 두 가지 문제가 있었다. 하나는 양이다. 참고한 게임은 73급 · 2,790회 업그레이드로 끝까지 가는데, 조자룡의 계급은 40번이면 끝났다. 다른 하나는 문맥이다. 조자룡은 이미 장군인데 보졸부터 시작하는 것은 이야기와 맞지 않았다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><div class="mini-title">Before</div><h3>계급 40단계</h3><p>보졸 → 기병 → 교위 → 장군. 단계마다 체력·공격·방어가 한꺼번에 오르고, 다음 단계를 사면 끝이었다. 선택할 것이 없었다.</p></div>
+    <div class="card span-4"><div class="mini-title">After</div><h3>명성 30급 · 세 갈래 수련</h3><p>급마다 체력 · 무예 · 방어 세 갈래를 각각 5단계까지 수련한다. 어느 갈래를 먼저 올릴지는 플레이어의 선택이고, 셋을 다 채워야 다음 급이 열린다.</p></div>
+    <div class="card span-4"><div class="mini-title">Name</div><h3>이름은 명성, 행위는 수련</h3><p>'위명'은 낯설어 빼고 '명성'으로 정했다. 칭호는 무명에서 시작해 만인지적으로 끝난다. 마지막 칭호는 '만인적' 대신 더 익숙한 '만인지적'을 골랐다.</p></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>초안에는 사실 오류가 여섯 군데 있었다.</b> 기획서 초안은 계급이 플레이어 행의 컬럼이라고 썼지만 실제로는 별도 테이블이었고, 특전 테이블에 '해금' 컬럼이 있다고 했지만 해금은 계급 테이블 쪽에 있었다. 코드를 바꾸기 전에 읽기 전용 조사를 먼저 돌려 이런 차이를 잡아낸 덕에, 구현 단계에서는 되돌린 것이 없었다.</div>
+</section>
+
+<section id="design">
+  <h2>명성과 수련의 구조</h2>
+  <p class="muted">수치는 모두 잠정이다. 다만 "1장이 끝날 때 10~12급" 이라는 목표 하나를 고정하고 나머지를 거기서 역산했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <h3>비용 곡선</h3>
+      <p>한 단계의 비용은 급수에 따라 <code>20g − 10</code> 군자금이다. 1급은 한 단계에 10, 30급은 590. 한 급을 끝내는 데 15번 수련하므로 G급까지 끝내는 데 드는 누적 비용은 <code>150·G²</code>가 된다.</p>
+      <ul>
+        <li>10급 완료: 15,000 군자금 (옛 계급 18단계와 같은 돈)</li>
+        <li>30급 완료: 135,000 군자금 (옛 계급 40단계 129,250과 거의 같음)</li>
+      </ul>
+    </div>
+    <div class="card span-6">
+      <h3>능력치는 급수 총량을 단계에 나눠 준다</h3>
+      <p>처음에는 단계마다 정수 능력치를 줄 생각이었는데, 방어가 문제였다. 이 게임의 피해는 <b>공격 − 방어</b>로 빼는 방식이라 방어 1이 체력 1보다 훨씬 크다. 단계마다 방어 1을 주면 10급에서 방어가 옛 곡선의 두 배 이상이 된다.</p>
+      <p>그래서 급수마다 갈래별 <b>총량</b>을 정하고, 단계 i에서는 <code>floor(i × 총량 / 5)</code>만큼 준다. 방어 총량이 2인 급수는 0, 0, 1, 1, 2로 오른다.</p>
+    </div>
+    <div class="card span-12">
+      <h3>특전은 그 급수의 수련을 마치면 열린다</h3>
+      <p>전리품 챙기기, 기세 회복, 군자금 확보, 선봉의 준비, 재정비 다섯 가지 특전은 옛 계급에서 쓰던 돈과 거의 같은 지점(6 · 12 · 14 · 20 · 30급)에 두었다. "6급에서 해금"이 6급에 <i>들어갈 때</i>인지 6급을 <i>마칠 때</i>인지는 구현 중에 애매해져서, 비용 수치와 마지막 급의 특전이 성립하는 쪽인 <b>마칠 때</b>로 확정했다. 화면 문구도 「명성 6급 수련을 마치면 해금」으로 맞췄다.</p>
+    </div>
+  </div>
+</section>
+
+<section id="build">
+  <h2>데이터 · 서버 · 화면을 한 커밋으로 바꿨다</h2>
+  <p class="muted">계급 단계 하나를 정수로 들고 다니던 곳이 생각보다 많았다. 시작 능력치 조합, 서버의 승급 API, 두 개의 시뮬레이터, 골든 벡터, 클라이언트 모델, 스모크 테스트. 바꿀 내용은 깊지 않았지만 <b>넓었다</b>.</p>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>데이터와 규칙</h3><span class="tag">Data · Run</span></div><p><code>ranks.csv</code>를 <code>fame_grades.csv</code>(급수당 한 행: 칭호, 단계 수, 비용, 갈래별 총량, 특전)로 바꾸고, 수련의 게이트 규칙을 서버 · 시뮬레이터 · 클라이언트가 함께 쓰는 순수 함수로 두었다. 계정 테이블 버전은 v3 → v4.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>서버 계약과 저장</h3><span class="tag">Server</span></div><p>승급 서비스를 명성 서비스로 바꾸고, 요청에는 갈래와 화면이 보고 있던 급수·단계를 함께 보내 오래된 화면의 요청을 거부한다. 세 갈래가 모두 차면 같은 쓰기 안에서 다음 급으로 넘어간다. 저장은 <code>ranks</code> 테이블을 지우고 <code>fame</code> 테이블(급수와 갈래별 단계)을 만드는 마이그레이션 하나로 끝냈다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>수련 화면</h3><span class="tag">Client</span></div><p>헤더(명성 n급 · 칭호) → 보너스 합계 → 세 갈래 행(단계, 갈래 보너스 진행, 수련 버튼) → 급수 상승 공지 → 특전 카드 순서다. 옛 계급 화면의 40칸 트랙보다 단순해졌다.</p></div></div>
+    <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>왜 한 커밋인가</h3><span class="tag">Rule</span></div><p>Unity 클라이언트는 서버 계약을 파일 경로로 직접 참조한다. 데이터와 서버만 먼저 커밋하면 그 커밋에서 클라이언트가 컴파일되지 않는다. 임시 어댑터를 넣는 방법도 있었지만 버릴 코드이고 의미도 어긋나서(옛 단계를 급수로 읽는 식), <b>계약 변경 하나와 그 소비자 전부를 한 커밋</b>으로 묶었다. 커밋은 커졌지만 단위로는 더 일관됐다.</p></div></div>
+  </div>
+</section>
+
+<section id="sim">
+  <h2>1,000계정 시뮬레이션과 실기기</h2>
+  <p class="muted">코드를 바꾼 뒤 계정 시뮬레이터를 돌려 1장 끝에서의 급수를 확인하고, 난이도 기준값을 다시 쟀다. 그다음 개발 서버를 재배포하고 폰에서 확인했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6">
+      <h3>1장 끝에서 몇 급인가</h3>
+      <table class="plain">
+        <tr><th>스테이지</th><th>첫 클리어 (중앙값 / 상위 10%)</th><th>그때의 명성</th></tr>
+        <tr><td>1-1 공손찬 구출 작전</td><td>6 / 10번째 출정</td><td>7급 / 10급</td></tr>
+        <tr><td>1-2 계교로 향하는 명령</td><td>11 / 15번째</td><td>10급 / 12급</td></tr>
+        <tr><td>1-3 계교의 퇴로</td><td>12 / 20번째</td><td>11급 / 13급</td></tr>
+      </table>
+      <p class="muted" style="margin-top:10px">시뮬레이터의 수련 정책은 "가장 싼 갈래 먼저, 같으면 단계가 낮은 갈래, 그다음 체력 → 무예 → 방어"다. 1-3의 상위 10%가 16에서 20번째 출정으로 늦어진 것은 느린 꼬리이고, 밸런싱 단계로 넘겼다.</p>
+    </div>
+    <div class="card span-6">
+      <h3>재배포와 Galaxy A16</h3>
+      <ul>
+        <li>마이그레이션으로 <code>ranks</code>가 사라지고 <code>fame</code>이 생겼다. 개발 서버의 플레이어는 모두 초기화했다.</li>
+        <li>앱 최소 버전을 1.5.0으로 올려, 설치돼 있던 1.4.0 앱은 업데이트 화면으로 막히는 것을 먼저 확인했다.</li>
+        <li>새 계정으로 수련 화면 → 방어 두 번(능력치 +0이지만 실패처럼 보이지 않는지) → 한 갈래 완료 → 세 갈래 완료 → 2급 공지 → 출정의 시작 능력치 → 난이도 표시 → 상자 환급 합계까지 10개 항목이 모두 기대대로였다.</li>
+        <li>세션 중 고친 것은 없다. 폰에서 확인한 빌드와 병합한 코드가 같다.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="lessons">
+  <h2>작업하면서 알게 된 것</h2>
+  <p class="muted">구현 자체보다 결정의 경계에서 배운 것이 많았다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>돈을 냈는데 숫자가 안 오르면 버그로 보인다</h3><p>방어 총량을 단계에 나누면 5단계 중 3단계는 방어가 +0이다. 서버는 맞는데 플레이어는 실패로 읽는다. 그래서 갈래 행에 「방어 +1/2」처럼 <b>이 급수에서의 진행</b>을 함께 보여주기로 했다. 숫자를 바꾼 게 아니라 보여 주는 방식을 바꿔 해결한 문제다.</p></div>
+    <div class="card span-4"><h3>이름을 반만 바꾸면 영원히 남는다</h3><p>처음 권고는 서버 서비스 이름을 '계급'으로 두고 메서드만 바꾸자는 것이었다. 한 시간을 아끼는 대신 데이터 · 테이블 · 텍스트 키가 전부 '명성'인데 API만 '계급'인 상태가 영구히 남는다. 아직 운영 서버가 없어 호환 비용이 0인 지금이 이름을 바꿀 유일하게 싼 시점이었다.</p></div>
+    <div class="card span-4"><h3>"n급에서 해금"은 두 가지로 읽힌다</h3><p>급수가 한 지점에서 15단계짜리 구간으로 바뀌자 "6급에서"가 들어갈 때인지 마칠 때인지 갈렸다. 코드와 화면이 다른 해석을 쓰기 전에 못박아야 했다. 구조가 바뀌면 같은 데이터의 뜻이 바뀔 수 있다.</p></div>
+    <div class="card span-4"><h3>체크 명령은 파이프하지 않는다</h3><p>마지막 문서 커밋에서 에이전트가 <code>check | tail -1</code>로 결과를 줄여 보려 했다. 파이프는 마지막 명령의 상태만 보고하므로 실패가 묻힐 수 있다. 결과는 통과였고 커밋 훅이 다시 돌아 문제는 없었지만, 다음 파트 지시문에 규칙을 한 줄 더 적었다.</p></div>
+    <div class="card span-4"><h3>운영 명령은 "어느 기계에서"가 먼저다</h3><p>플레이어 초기화 함수를 게임 서버 호스트에서 선언했다가 비밀 파일이 없어 실패했다. 그 함수는 Mac에서 선언해 데이터베이스 기계로 ssh하는 것이었다. 이후 단계마다 실행 기계를 맨 앞에 적기로 했고, 자주 쓰는 선언문은 메모리에 올려 두었다.</p></div>
+    <div class="card span-4"><h3>조사 보고서가 구현 시간을 줄였다</h3><p>구현 전 읽기 전용 조사에 에이전트 넷을 보내 데이터 · 서버 · 클라이언트 · 시뮬레이터를 나눠 보게 했다. 초안의 오류 여섯 개와 방어 인플레이션 위험이 거기서 나왔다. 조사에 쓴 시간보다 구현에서 되돌리지 않은 시간이 컸다.</p></div>
+  </div>
+</section>
+
+<section id="process">
+  <h2>결정은 사람이, 실행은 AI 에이전트가</h2>
+  <p class="muted">조사 보고서의 열세 개 질문에 답하는 것부터 시작했다. 에이전트는 권고안을 먼저 내고, 사람은 그중 세 군데를 바꿨다(서비스 이름, +0 단계의 표시, 미룰 항목). 그 뒤 구현 · 테스트 · 시뮬레이션 · APK 빌드는 에이전트가, 재배포 명령 실행과 폰 확인은 사람이 했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3 class="ok">AI 에이전트가 맡은 일</h3><ul><li>읽기 전용 조사 보고서(에이전트 4개 병렬)와 비용 추정</li><li>데이터 · 규칙 · 서버 · 마이그레이션 · 클라이언트 구현과 테스트</li><li>1,000계정 시뮬레이션과 난이도 기준값 재측정</li><li>모든 커밋의 깨끗한 작업 트리 검증, APK 빌드</li><li>개발 서버 스모크 테스트와 PR · CI</li></ul></div>
+    <div class="card span-6"><h3 class="warn">사람이 직접 한 일</h3><ul><li>구조 · 이름 · 칭호 · 수치 방향 결정과 열세 개 질문의 답</li><li>재배포(push, 이미지, 마이그레이션, 플레이어 초기화, 원격 설정)를 한 단계씩 실행</li><li>Galaxy A16 세션 10개 항목 확인</li><li>병합과 문서 사본 교체</li></ul></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>푸시는 에이전트가 하지 않는다.</b> 마지막에 "푸시하고 PR을 열라"고 했지만 에이전트는 규칙 파일과 권한 설정에 따라 푸시를 거부하고 사람에게 넘겼다. 규칙을 먼저 적어 두면 급한 지시보다 규칙이 이긴다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>성장축 하나를 하루에 갈아 끼웠다</h2>
+  <p class="muted">조사 보고서가 오전에 올라왔고, 오후에 병합했다. 데이터 · 서버 · 클라이언트가 모두 바뀌었지만 폰에서 고친 것은 없었다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>이번 작업의 진행 순서</h3>
+      <pre><code>기획서 초안 (명성 · 수련)
+        ↓
+읽기 전용 조사 → 초안 오류 6개 · 위험 1개
+        ↓
+열세 개 질문에 답하고 그룹 분할 승인
+        ↓
+데이터 · 서버 · 화면을 한 커밋으로
+        ↓
+1,000계정 시뮬레이션 → 1장 끝 11급 / 13급
+        ↓
+개발 서버 재배포 · Galaxy A16 10항목
+        ↓
+병합</code></pre>
+    </div>
+    <div class="card span-4"><div class="metric ok">0</div><div class="label">실기기 세션 중 수정</div><p>폰에서 확인한 빌드가 그대로 병합됐다. 잠정 수치도 시뮬레이션 뒤 고치지 않았다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 명성 · 수련은 조자룡의 주 성장축으로 자리를 잡았다. 450번의 선택이 생겼고, 1장 끝의 도달 급수는 설계 범위 안이다. <b>수치는 잠정이고, 버티컬 슬라이스가 끝난 뒤 밸런싱에서 다시 본다.</b></div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>계급 40단계를 명성 30급 · 세 갈래 × 5단계 수련으로 바꿨다. 셋을 다 채워야 다음 급이 열리고, 칭호는 무명에서 만인지적까지 열 개다.</li>
+      <li>데이터 · 서버 계약 · 저장 테이블 · 수련 화면을 한 커밋으로 바꾸고, 1,000계정 시뮬레이션으로 1장 끝 11급(중앙값)을 확인한 뒤 개발 서버 재배포와 Galaxy A16 10항목을 통과했다.</li>
+      <li>방어 +0 단계의 표시, 특전 해금 시점, 서비스 이름처럼 구현보다 <b>해석을 못박는 결정</b>이 작업의 핵심이었고, 읽기 전용 조사가 그 결정을 미리 끌어냈다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>급수 표기를 칭호 안 번호로</h3><span class="tag">Text</span></div><p>「명성 2급 · 무명」 대신 「명성 두각 3급」처럼 칭호 안에서 1~3급으로 센다. 저장은 전체 연번을 유지하고 화면만 바꾼다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>수련 ×5 버튼</h3><span class="tag">UX</span></div><p>450번의 탭은 폰에서 바로 체감된다. 한 번에 여러 단계를 수련하는 버튼을 다음 파트에 둔다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>밸런싱</h3><span class="tag">After vertical slice</span></div><p>1-3 상위 10%의 느린 꼬리(20번째 출정), 난이도 기준값, 비용 곡선은 버티컬 슬라이스가 끝난 뒤 한꺼번에 본다.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">조자룡이 간다 · Public Work Log · 2026-10-22</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
