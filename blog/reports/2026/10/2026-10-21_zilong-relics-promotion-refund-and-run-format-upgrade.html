@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="worklog-date" content="2026-10-21" />
   <meta name="worklog-title" content="유물 시스템: 중복은 승급으로, 상한은 환급으로. 런 저장 형식 업그레이드까지" />
-  <meta name="worklog-project" content="조자룡이 간다" />
+  <meta name="worklog-project" content="조자룡이 간다!" />
   <meta name="worklog-tags" content="Unity 6.6, MagicOnion, .NET 10, EF Core 10, MariaDB, Roguelike, Game Design, Gacha, Monetization, Data-driven, Claude Code, AI Native Development, Device Test" />
-  <meta name="worklog-summary" content="로그라이크 RPG 「조자룡이 간다」에 ‘유물’을 넣었다. 장비와 별개로 전투 효과만 가진 장착 아이템이며 같은 유물이 또 나오면 +3까지 승급하고 그 뒤로는 등급별 재화로 환급한다. 주인공의 고유 특성이던 ‘용의 심장’을 유물로 옮겨 1-3 클리어 보상으로 주고, 유물 상자를 첫 유료 랜덤 상품으로 팔기로 했다. 전투 엔진은 한 줄도 바꾸지 않고 데이터만으로 24종 × 4단계를 만들었고, 런 저장 형식을 올리면서 진행 중이던 런이 무한 루프에 빠지는 문제를 조사 단계에서 미리 찾아 막았다. 18개 커밋, 테스트 1,580개, 실기기 세션을 거쳐 하루 만에 병합했다." />
+  <meta name="worklog-summary" content="로그라이크 RPG 「조자룡이 간다!」에 ‘유물’을 넣었다. 장비와 별개로 전투 효과만 가진 장착 아이템이며 같은 유물이 또 나오면 +3까지 승급하고 그 뒤로는 등급별 재화로 환급한다. 주인공의 고유 특성이던 ‘용의 심장’을 유물로 옮겨 1-3 클리어 보상으로 주고, 유물 상자를 첫 유료 랜덤 상품으로 팔기로 했다. 전투 엔진은 한 줄도 바꾸지 않고 데이터만으로 24종 × 4단계를 만들었고, 런 저장 형식을 올리면서 진행 중이던 런이 무한 루프에 빠지는 문제를 조사 단계에서 미리 찾아 막았다. 18개 커밋, 테스트 1,580개, 실기기 세션을 거쳐 하루 만에 병합했다." />
   <meta name="worklog-visibility" content="public" />
   <title>유물 시스템: 중복은 승급으로 상한은 환급으로, 런 저장 형식 업그레이드까지 · 2026-10-21</title>
   <style>
@@ -50,10 +50,10 @@
 <header>
   <div class="wrap">
     <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
-    <div class="eyebrow">조자룡이 간다</div>
+    <div class="eyebrow">조자룡이 간다!</div>
     <h1>유물 시스템: 중복은 승급으로, 상한은 환급으로<br> 런 저장 형식 업그레이드까지</h1>
     <p class="lead">
-      로그라이크 RPG 「조자룡이 간다」의 성장 요소는 지금까지 장비와 계급 두 가지였다. 여기에 <b>유물</b>을 더했다.
+      로그라이크 RPG 「조자룡이 간다!」의 성장 요소는 지금까지 장비와 계급 두 가지였다. 여기에 <b>유물</b>을 더했다.
       스탯 없이 전투 효과만 가진 장착 아이템으로, 같은 유물이 또 나오면 승급하고 상한에 닿으면 재화로 돌려받는다.
       주인공의 고유 특성이던 ‘용의 심장’을 유물로 옮겨 첫 장을 깬 보상으로 주고, 유물 상자를 이 게임의 첫 유료 랜덤 상품으로 정했다.
       기획에서 병합까지 하루, 전투 엔진 코드는 한 줄도 바꾸지 않았다.
@@ -210,7 +210,7 @@
   <div class="card span-12" style="margin-top:18px">
     <h3>3줄 요약</h3>
     <ol class="summary-list">
-      <li>「조자룡이 간다」에 효과만 가진 장착 아이템 ‘유물’을 넣었다. 중복은 +3까지 승급, 그 뒤는 등급별 환급이며, 주인공의 고유 특성을 유물로 옮겨 1장 클리어 보상으로 준다.</li>
+      <li>「조자룡이 간다!」에 효과만 가진 장착 아이템 ‘유물’을 넣었다. 중복은 +3까지 승급, 그 뒤는 등급별 환급이며, 주인공의 고유 특성을 유물로 옮겨 1장 클리어 보상으로 준다.</li>
       <li>전투 엔진은 바꾸지 않고 효과 행 96개와 테이블로 만들었고, 런 저장 형식을 올리면서 진행 중인 런이 갇히는 문제를 조사 단계에서 찾아 같은 배포에 고쳤다.</li>
       <li>유물 상자를 첫 유료 랜덤 상품으로 정하되 상자 1종 · 고정 가격 · 이벤트 없음으로 운영 부담을 묶었다. 18커밋, 테스트 1,580개, 실기기 세션을 거쳐 하루 만에 병합했다.</li>
     </ol>
@@ -227,7 +227,7 @@
 </section>
 </main>
 
-<footer><div class="wrap">조자룡이 간다 · Public Work Log · 2026-10-21</div></footer>
+<footer><div class="wrap">조자룡이 간다! · Public Work Log · 2026-10-21</div></footer>
 <script>
   // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
   // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
