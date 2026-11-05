@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="worklog-date" content="2026-10-22" />
-  <meta name="worklog-title" content="시나리오 모드는 한 번, 순찰 모드는 반복: 「조자룡이 간다!」의 출정을 두 모드로 나눴다" />
+  <meta name="worklog-title" content="이야기 모드는 한 번, 순찰 모드는 반복: 「조자룡이 간다!」의 출정을 두 모드로 나눴다" />
   <meta name="worklog-project" content="조자룡이 간다!" />
   <meta name="worklog-tags" content="조자룡이 간다!, Zilong Go, Roguelite, Game Design, Run Modes, Unity 6.6, MagicOnion, .NET 10, Game Server, Simulator, Android, Claude Code, AI Native Development" />
-  <meta name="worklog-summary" content="텍스트 로그라이트 「조자룡이 간다!」의 출정을 시나리오 모드와 순찰 모드로 나눴다. 시나리오 모드는 유명 장수를 상대하는 한 번뿐인 도전이고, 순찰은 군자금과 장비를 모으는 반복 런이다. 상자 공급을 “무료는 양, 유료는 질”로 재편하고, 중간보스 보상을 상자 대신 군자금·돌파석 추첨으로 바꾸고, 다음 시나리오 스테이지가 지금 전력으로 가능한지 서버가 쉬움·가능·어려움으로 알려 주게 했다. 설계는 대화로 정하고 구현은 AI 코딩 에이전트에 맡겨 약 4시간 만에 16개 커밋을 끝냈으며, Galaxy A16에서 10개 항목을 모두 확인하고 같은 날 병합했다." />
+  <meta name="worklog-summary" content="로그라이트 RPG 「조자룡이 간다!」의 출정을 이야기 모드와 순찰 모드로 나눴다. 이야기 모드는 유명 장수를 상대하는 한 번뿐인 도전이고, 순찰은 군자금과 장비를 모으는 반복 런이다. 상자 공급을 “무료는 양, 유료는 질”로 재편하고, 중간보스 보상을 상자 대신 군자금·돌파석 추첨으로 바꾸고, 다음 시나리오 스테이지가 지금 전력으로 가능한지 서버가 쉬움·가능·어려움으로 알려 주게 했다. 설계는 대화로 정하고 구현은 AI 코딩 에이전트에 맡겨 약 4시간 만에 16개 커밋을 끝냈으며, Galaxy A16에서 10개 항목을 모두 확인하고 같은 날 병합했다." />
   <meta name="worklog-visibility" content="public" />
-  <title>시나리오 모드는 한 번, 순찰 모드는 반복: 「조자룡이 간다!」의 출정을 두 모드로 나눴다 · 2026-10-22</title>
+  <title>이야기 모드는 한 번, 순찰 모드는 반복: 「조자룡이 간다!」의 출정을 두 모드로 나눴다 · 2026-10-22</title>
   <style>
     :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
     *{box-sizing:border-box}html{scroll-behavior:smooth}
@@ -51,11 +51,11 @@
   <div class="wrap">
     <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
     <div class="eyebrow">조자룡이 간다!</div>
-    <h1>시나리오 모드는 한 번, 순찰 모드는 반복:<br>출정을 두 모드로 나눴다</h1>
+    <h1>이야기 모드는 한 번, 순찰 모드는 반복:<br>출정을 두 모드로 나눴다</h1>
     <p class="lead">
       텍스트 로그라이트 「조자룡이 간다!」는 지금까지 출정 하나로 성장과 이야기를 모두 떠안고 있었다.
       같은 스테이지를 돌며 상자를 모으다 보면 유명 장수와의 대결이 평범한 파밍으로 식어 버렸다.
-      그래서 출정을 <b>시나리오 모드</b>와 <b>순찰 모드</b>로 나눴다. 시나리오 모드는 한 번뿐인 도전, 순찰은 군자금과 장비를 모으는 반복 런이다.
+      그래서 출정을 <b>이야기 모드</b>와 <b>순찰 모드</b>로 나눴다. 이야기 모드는 한 번뿐인 도전, 순찰은 군자금과 장비를 모으는 반복 런이다.
       상자와 보상을 그에 맞춰 재편하고, 다음 시나리오 스테이지가 지금 전력으로 가능한지 서버가 미리 알려 주게 했다.
     </p>
     <div class="hero-meta">
@@ -65,7 +65,7 @@
 </header>
 
 <nav><div class="wrap">
-  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#modes">시나리오 모드와 순찰 모드</a><a href="#rewards">상자와 보상</a><a href="#rating">난이도 표시</a><a href="#build">구현</a><a href="#device">실기기 검증</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#modes">이야기 모드와 순찰 모드</a><a href="#rewards">상자와 보상</a><a href="#rating">난이도 표시</a><a href="#build">구현</a><a href="#device">실기기 검증</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
 </div></nav>
 
 <main class="wrap">
@@ -77,14 +77,14 @@
 
 <section id="result" class="result-preview">
   <h2>작업 결과</h2>
-  <p class="muted">출정 목록이 시나리오 모드와 순찰 모드가 번갈아 나오는 8개 행으로 바뀌었다. 시나리오 스테이지를 한 번 깨면 그 자리는 「클리어 완료」로 닫히고 짝이 되는 순찰이 열린다. 순찰은 몇 번이든 다시 나갈 수 있다.</p>
+  <p class="muted">출정 목록이 이야기 모드와 순찰 모드가 번갈아 나오는 8개 행으로 바뀌었다. 시나리오 스테이지를 한 번 깨면 그 자리는 「클리어 완료」로 닫히고 짝이 되는 순찰이 열린다. 순찰은 몇 번이든 다시 나갈 수 있다.</p>
   <div class="result-preview-grid pair">
     <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
     <!-- 게시 전에 스크린샷의 사용자 ID 등은 가려 주세요. -->
     <div class="result-preview-card">
       <div class="result-preview-head">시나리오 · 순찰이 번갈아 놓인 출정 목록</div>
       <div class="result-preview-media portrait">
-        <img src="../../../assets/2026/10/22/zilong-run-modes-lobby.png" alt="1-1, 반하 나루, 1-2 순으로 시나리오 모드와 순찰 모드가 번갈아 놓인 출정 목록. 시나리오 행에는 난이도 라벨이 보인다" />
+        <img src="../../../assets/2026/10/22/zilong-run-modes-lobby.png" alt="1-1, 반하 나루, 1-2 순으로 이야기 모드와 순찰 모드가 번갈아 놓인 출정 목록. 시나리오 행에는 난이도 라벨이 보인다" />
       </div>
       <div class="result-preview-tail">Galaxy A16 · 앱 1.4.0 · 개발 서버</div>
     </div>
@@ -98,7 +98,7 @@
   </div>
 
   <div class="grid" style="margin-top:22px">
-    <div class="card span-3"><div class="metric ok">2</div><div class="label">출정 모드</div><p>시나리오 모드는 첫 클리어까지 한 번, 순찰은 무제한. 같은 목록에 번갈아 놓인다.</p></div>
+    <div class="card span-3"><div class="metric ok">2</div><div class="label">출정 모드</div><p>이야기 모드는 첫 클리어까지 한 번, 순찰은 무제한. 같은 목록에 번갈아 놓인다.</p></div>
     <div class="card span-3"><div class="metric ok">4</div><div class="label">새 순찰 스테이지</div><p>반하 강변 · 반하 나루 · 계교 길목 · 계교 들판. 각 40지점, 중간보스 하나와 군후 보스.</p></div>
     <div class="card span-3"><div class="metric ok">16</div><div class="label">커밋</div><p>조사 → 계획 → 구현까지 AI 에이전트 작업 약 4시간. 테스트 1,606개, 에디터 테스트 331개 통과.</p></div>
     <div class="card span-3"><div class="metric ok">10 / 10</div><div class="label">실기기 확인 항목</div><p>Galaxy A16에서 업데이트 화면부터 전리품 팝업까지 모두 확인했다. 세션 뒤 수정은 없었다.</p></div>
@@ -107,10 +107,10 @@
 </section>
 
 <section id="modes">
-  <h2>시나리오 모드는 이야기, 순찰 모드는 전력</h2>
-  <p class="muted">출정 목록은 「서장 → 반하 강변 → 1-1 → 반하 나루 → 1-2 → 계교 길목 → 1-3 → 계교 들판」처럼 시나리오 모드와 순찰 모드가 짝을 지어 번갈아 놓인다. 순찰은 짝이 되는 시나리오 스테이지를 깨야 열리고, 순찰에서 모은 군자금·돌파석·장비로 다음 시나리오 스테이지에 도전하는 흐름이다.</p>
+  <h2>이야기 모드는 이야기, 순찰 모드는 전력</h2>
+  <p class="muted">출정 목록은 「서장 → 반하 강변 → 1-1 → 반하 나루 → 1-2 → 계교 길목 → 1-3 → 계교 들판」처럼 이야기 모드와 순찰 모드가 짝을 지어 번갈아 놓인다. 순찰은 짝이 되는 시나리오 스테이지를 깨야 열리고, 순찰에서 모은 군자금·돌파석·장비로 다음 시나리오 스테이지에 도전하는 흐름이다.</p>
   <div class="grid" style="margin-top:20px">
-    <div class="card span-6"><div class="mini-title">시나리오 모드</div><h3>유명 장수와의 한 번뿐인 대결</h3><ul><li>60지점(서장은 30지점). 중간보스 둘과 마지막에 문추, 안량 같은 유명 장수.</li><li>첫 클리어로 끝난다. 다시 출발하려 하면 서버가 거부하고, 기력도 쓰지 않는다.</li><li>보스를 이기면 희귀 이상이 보장되는 <b>장수 상자</b> 하나. 특정 장수를 처음 이기면 전리품 유물과 유물 슬롯이 따라온다.</li></ul></div>
+    <div class="card span-6"><div class="mini-title">이야기 모드</div><h3>유명 장수와의 한 번뿐인 대결</h3><ul><li>60지점(서장은 30지점). 중간보스 둘과 마지막에 문추, 안량 같은 유명 장수.</li><li>첫 클리어로 끝난다. 다시 출발하려 하면 서버가 거부하고, 기력도 쓰지 않는다.</li><li>보스를 이기면 희귀 이상이 보장되는 <b>장수 상자</b> 하나. 특정 장수를 처음 이기면 전리품 유물과 유물 슬롯이 따라온다.</li></ul></div>
     <div class="card span-6"><div class="mini-title">순찰 모드</div><h3>군자금과 장비를 모으는 반복 런</h3><ul><li>40지점. 20지점에 중간보스, 40지점에는 유명 장수가 아니라 「원소군 군후」 같은 직책으로 불리는 템플릿 적.</li><li>적의 강도는 다음 시나리오 스테이지의 일반 적과 중간보스를 그대로 빌려 쓴다. 순찰이 곧 다음 시나리오 스테이지의 예행연습이다.</li><li>마지막 보스가 <b>군후 상자</b>를 주고, 광고를 보면 2배. 광고 2배는 순찰에서만 제공한다.</li></ul></div>
   </div>
   <div class="callout warnbox" style="margin-top:18px"><b>“보스 없음”은 그대로 구현할 수 없었다.</b> 처음 설계는 순찰에 보스를 두지 않는 것이었다. 그런데 이 게임의 런은 보스 승리로만 “끝”과 “클리어”가 정해져서, 보스가 없으면 런이 영원히 끝나지 않는다. 서장이 이미 「십장」이라는 템플릿 적을 보스로 쓰고 있었기 때문에, 순찰도 같은 방식으로 40지점을 군후 보스 이벤트로 만들었다. 의도(유명 장수 없음)는 지키고 규칙은 바꾸지 않은 셈이다.</div>
@@ -118,14 +118,14 @@
 
 <section id="rewards">
   <h2>무료는 양, 유료는 질</h2>
-  <p class="muted">모드를 나누자 상자 공급도 다시 짜야 했다. 지금까지는 중간보스마다 상자를 주고 첫 클리어 상자까지 따로 있어서 한 런에 상자가 셋씩 쏟아졌다. 시나리오 모드가 한 번뿐이 되면 그 상자들은 사라지고, 순찰은 희귀 장비가 너무 쉽게 나오면 안 된다.</p>
+  <p class="muted">모드를 나누자 상자 공급도 다시 짜야 했다. 지금까지는 중간보스마다 상자를 주고 첫 클리어 상자까지 따로 있어서 한 런에 상자가 셋씩 쏟아졌다. 이야기 모드가 한 번뿐이 되면 그 상자들은 사라지고, 순찰은 희귀 장비가 너무 쉽게 나오면 안 된다.</p>
   <table>
     <thead><tr><th>상자</th><th>어디서</th><th>등급 확률(일반 / 고급 / 희귀 / 전설)</th><th>역할</th></tr></thead>
     <tbody>
       <tr><td>장수 상자</td><td>시나리오 보스, 한 번</td><td>0 / 60 / 32 / 8%</td><td>이야기의 보상. 희귀 이상 보장</td></tr>
       <tr><td>군후 상자</td><td>순찰 보스, 반복 · 광고 2배</td><td>75 / 22 / 2.8 / 0.2%</td><td>양으로 밀어 주는 무료 공급</td></tr>
       <tr><td>유료 장비 상자</td><td>상점, 1개 80 · 10개 720 보옥</td><td>30 / 45 / 20 / 5%</td><td>질로 차별화하는 유료 공급. 1-1을 깬 뒤에만 판매</td></tr>
-      <tr><td class="muted">첫 클리어 상자</td><td class="muted">—</td><td class="muted">폐지</td><td class="muted">시나리오 모드가 한 번뿐이 되어 역할이 장수 상자로 흡수됨</td></tr>
+      <tr><td class="muted">첫 클리어 상자</td><td class="muted">—</td><td class="muted">폐지</td><td class="muted">이야기 모드가 한 번뿐이 되어 역할이 장수 상자로 흡수됨</td></tr>
     </tbody>
   </table>
   <div class="grid" style="margin-top:20px">
@@ -136,7 +136,7 @@
 
 <section id="rating">
   <h2>다음 시나리오 스테이지가 가능한지 서버가 먼저 알려 준다</h2>
-  <p class="muted">시나리오 모드가 한 번뿐이 되면 “지금 도전해도 될까”가 중요해진다. 실패해도 잃는 건 기력뿐이지만, 순찰을 몇 번 더 돌고 와야 하는지는 알고 싶다. 그래서 시나리오 행마다 <b>쉬움 · 가능 · 어려움</b> 라벨을 달았다.</p>
+  <p class="muted">이야기 모드가 한 번뿐이 되면 “지금 도전해도 될까”가 중요해진다. 실패해도 잃는 건 기력뿐이지만, 순찰을 몇 번 더 돌고 와야 하는지는 알고 싶다. 그래서 시나리오 행마다 <b>쉬움 · 가능 · 어려움</b> 라벨을 달았다.</p>
   <div class="flow">
     <div class="node"><div class="mini-title">01 · 데이터</div><h3>스테이지별 기준 전투력</h3><p class="muted">스테이지 표에 “가능” 기준과 “쉬움” 기준 두 열을 둔다.</p></div>
     <div class="arrow">→</div>
@@ -164,7 +164,7 @@
 
 <section id="device">
   <h2>Galaxy A16에서 10개 항목을 차례로 확인했다</h2>
-  <p class="muted">개발 서버에 새 빌드를 배포하고 플레이어 데이터를 초기화한 뒤, 사람이 폰으로 한 항목씩 확인하고 로그를 함께 남겼다. 시나리오 모드가 한 번뿐이라 순서가 중요했다. 놓친 항목은 서버 로그의 지급 기록으로 대신 증명했다.</p>
+  <p class="muted">개발 서버에 새 빌드를 배포하고 플레이어 데이터를 초기화한 뒤, 사람이 폰으로 한 항목씩 확인하고 로그를 함께 남겼다. 이야기 모드가 한 번뿐이라 순서가 중요했다. 놓친 항목은 서버 로그의 지급 기록으로 대신 증명했다.</p>
   <table>
     <thead><tr><th>#</th><th>확인한 것</th><th>결과</th></tr></thead>
     <tbody>
@@ -205,7 +205,7 @@
 
 <section id="conclusion">
   <h2>이야기는 한 번, 성장은 반복으로</h2>
-  <p class="muted">출정을 둘로 나누자 각 모드가 할 일이 분명해졌다. 시나리오 모드는 유명 장수와의 사건이고, 순찰은 그 사건을 준비하는 시간이다. 상자는 “무료는 양, 유료는 질”로 정리됐고, 플레이어는 출정 목록만 보고도 다음에 무엇을 할지 안다.</p>
+  <p class="muted">출정을 둘로 나누자 각 모드가 할 일이 분명해졌다. 이야기 모드는 유명 장수와의 사건이고, 순찰은 그 사건을 준비하는 시간이다. 상자는 “무료는 양, 유료는 질”로 정리됐고, 플레이어는 출정 목록만 보고도 다음에 무엇을 할지 안다.</p>
   <div class="grid" style="margin-top:20px">
     <div class="card span-8">
       <h3>이번 파트의 진행 순서</h3>
@@ -227,7 +227,7 @@ Galaxy A16 세션 10항목 → 같은 날 병합</code></pre>
   <div class="card span-12" style="margin-top:18px">
     <h3>3줄 요약</h3>
     <ol class="summary-list">
-      <li>출정을 한 번뿐인 시나리오 모드와 반복하는 순찰 모드로 나누고, 순찰은 다음 시나리오 스테이지의 적을 빌려 쓰는 예행연습으로 설계했다.</li>
+      <li>출정을 한 번뿐인 이야기 모드와 반복하는 순찰 모드로 나누고, 순찰은 다음 시나리오 스테이지의 적을 빌려 쓰는 예행연습으로 설계했다.</li>
       <li>상자를 장수 상자(질 보장) · 군후 상자(양) · 유료 장비 상자(질)로 재편하고, 중간보스 보상은 군자금·돌파석 추첨으로, 시나리오 행에는 쉬움·가능·어려움 라벨을 달았다.</li>
       <li>읽기 전용 조사로 설계의 충돌을 먼저 찾은 덕에 AI 에이전트 구현이 약 4시간에 끝났고, 실기기 10개 항목을 확인해 같은 날 병합했다.</li>
     </ol>
