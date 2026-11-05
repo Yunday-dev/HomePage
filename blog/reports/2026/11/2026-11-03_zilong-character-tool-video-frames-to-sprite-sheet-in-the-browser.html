@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-11-03" />
+  <meta name="worklog-title" content="영상에서 뽑은 프레임을 게임 시트로, 브라우저 캐릭터 툴을 만들었다" />
+  <meta name="worklog-project" content="조자룡이 간다!" />
+  <meta name="worklog-tags" content="Zilong Go, Sprite Sheet, Pixel Art, Chroma Key, Web Tool, TypeScript, Vite, File System Access API, Unity, Claude Code" />
+  <meta name="worklog-summary" content="「조자룡이 간다!」의 전투 유닛 스프라이트를 영상에서 뽑은 프레임으로 받기 시작하면서, 마젠타 배경을 지우고 크기를 맞추고 박스에 배치해 시트로 묶는 작업을 브라우저 툴로 옮겼다. 자동 키 색 추정, 포켓·잔색·스필 처리, 자로 재는 축척, 몸통 기준 자동 배치, 클립 순서 편집, 검사를 거친 내보내기까지 한 화면에서 끝나며, 기존 Python 후처리와 픽셀 단위로 같은 결과를 낸다. 조자룡 기마 24장·7클립 시트를 이 툴로 뽑았고, 이후 장수는 코드 변경 없이 같은 흐름으로 추가한다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>영상에서 뽑은 프레임을 게임 시트로, 브라우저 캐릭터 툴을 만들었다 · 2026-11-03</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{display:grid;grid-template-columns:1fr;justify-content:center;gap:16px;margin-top:20px;}
+    .result-preview-grid.single .result-preview-card{width:536px;max-width:100%;justify-self:center;}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,536px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,536px)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">조자룡이 간다!</div>
+    <h1>영상에서 뽑은 프레임을 게임 시트로,<br>브라우저 캐릭터 툴을 만들었다</h1>
+    <p class="lead">
+      전투 유닛의 그림을 이미지 생성 대신 <b>영상에서 뽑은 프레임</b>으로 받기 시작했다. 장면은 더 자연스러워졌지만
+      배경은 흐트러진 마젠타가 됐고, 외곽선은 번졌고, 기존 후처리 스크립트는 프레임마다 좌표를 손으로 재야 했다.
+      마젠타 제거 · 크기 맞추기 · 박스 배치 · 재생 확인 · 시트 내보내기를 한 화면에서 끝내는 웹 툴을 만들고,
+      조자룡 기마 24장 시트를 이 툴로 뽑았다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">TypeScript · Vite</span><span class="pill">File System Access API</span><span class="pill">Canvas 2D · Web Worker</span><span class="pill">Python 참조 비교</span><span class="pill">Unity 6.6</span><span class="pill">Claude Code</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#why">왜 툴인가</a><a href="#keying">마젠타 제거</a><a href="#scale">축척과 팔레트</a><a href="#place">배치와 재생</a><a href="#export">내보내기</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">조자룡의 기마 전투 프레임 17장(대기 3 · 달리기 5 · 공격 4 · 피격 2 · 쓰러짐 3)이 1280×720 영상 프레임으로 들어왔다. 게임은 이 그림을 224×160 박스가 한 줄로 이어진 시트로 읽는다. 목표는 두 가지였다. 영상 프레임 특유의 지저분한 배경을 깨끗하게 지우는 것, 그리고 프레임마다 그림을 박스 안 어디에 둘지 눈으로 보면서 정하고 그대로 시트로 내보내는 것이다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 지금까지는 Python 스크립트가 후처리를 맡고 사람이 좌표를 적어 주는 식이었다. 프레임이 17장에서 24장으로 늘고 장수가 11명이 되어도 같은 방식으로 버틸 수 있을까? 눈으로 봐야 하는 구간만 툴로 옮기면 어디까지 빨라질까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">기획부터 병합까지 하루가 걸렸다. 툴은 저장소의 <code>art/</code> 폴더를 브라우저에서 직접 열어 읽고 쓰며, 결과는 기존 Python 후처리와 픽셀 단위로 같다. 조자룡 기마 시트는 중간에 클립 두 종(명령 · 분노 공격)이 더해져 24장, 7클립으로 완성됐다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">조자룡 애니메이션 재생</div>
+      <div class="result-preview-media">
+        <img src="../../../assets/2026/11/03/chartool-zhao-yun-play.gif" alt="캐릭터 툴의 재생 보기. 224×160 박스 안에서 조자룡 기마가 대기 · 달리기 · 공격 · 피격 · 쓰러짐 클립으로 움직인다" />
+      </div>
+      <div class="result-preview-tail">재생 보기 · 7클립 순차 · 박스 · 기준선 · 몸통 열</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">안량 리소스 클립별 썸네일</div>
+      <div class="result-preview-media">
+        <img src="../../../assets/2026/11/03/chartool-yan-liang.png" alt="캐릭터 툴에서 보는 안량 리소스. 클립별 썸네일이 묶음으로 나열되어 있다" />
+      </div>
+      <div class="result-preview-tail">안량 · 클립별 썸네일 · 코드 변경 없이 추가</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">24 · 7</div><div class="label">프레임 · 클립</div><p>대기, 달리기, 공격, 피격, 쓰러짐에 명령과 분노 공격을 더했다.</p></div>
+    <div class="card span-3"><div class="metric ok">0 px</div><div class="label">Python 후처리와의 차이</div><p>마스크, 축소 결과, 시트 조립이 기존 스크립트와 픽셀 단위로 같다.</p></div>
+    <div class="card span-3"><div class="metric ok">0</div><div class="label">새 장수 추가 때 코드 변경</div><p>프레임을 폴더에 넣고 툴에서 내보내면 끝이다. 설정도 바꿀 필요가 없다.</p></div>
+    <div class="card span-3"><div class="metric ok">1일</div><div class="label">기획에서 병합까지</div><p>기획 → 조사 → 단계별 구현 → 브라우저 확인 → 병합.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 영상 프레임의 흐트러진 배경과 번진 외곽선을 툴 안에서 처리하고, 프레임을 박스에 놓고 움직여 본 뒤, 검사를 통과한 시트와 클립 정의 파일을 한 번에 내보낸다. <b>이후 장수는 같은 흐름으로, 코딩 에이전트 없이 추가한다.</b></div>
+</section>
+
+<section id="why">
+  <h2>스크립트로는 안 되는 구간이 생겼다</h2>
+  <p class="muted">지금까지 유닛 그림은 이미지 생성으로 받아 Python 스크립트로 후처리했다. 단색 마젠타 배경을 지우고, 굵은 도트의 격자 간격을 재서 네이티브 해상도로 줄이고, 손으로 잰 말 몸통 길이로 크기를 맞춘 뒤, 32색으로 줄여 한 줄 시트로 묶는 흐름이다. 영상에서 뽑은 프레임은 이 전제 세 가지가 모두 깨졌다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>배경이 단색이 아니다</h3><p>영상을 256색으로 거쳐 오면서 마젠타가 여러 색으로 흐트러졌다. 순수한 <code>#FF00FF</code> 픽셀은 한 장에도 없었고, 키 색을 고정하면 장마다 수천 픽셀이 남았다.</p></div>
+    <div class="card span-4"><h3>외곽선이 번져 있다</h3><p>인물 가장자리 1~2 픽셀 띠의 90% 이상이 마젠타 색조로 물들어 있었다. 거리 기준만으로는 안 잡히고, 색조로 잡으면 검은 외곽선까지 먹는다.</p></div>
+    <div class="card span-4"><h3>도트 격자가 없다</h3><p>압축과 디더링으로 블록 경계가 사라져, 격자 간격을 재서 한 점씩 뽑는 축소를 쓸 수 없었다. 면적 평균으로 줄이고 색을 다시 정리해야 했다.</p></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>그리고 눈으로 봐야 하는 일이 남았다.</b> 프레임을 박스 안 어디에 둘지, 달리기 다섯 장이 흔들리지 않는지, 쓰러지는 장면이 박스 밖으로 나가지 않는지는 숫자로 미리 정할 수 없다. 이 구간만 브라우저로 옮기고, 수학은 기존 스크립트 규칙을 그대로 옮겨 심었다.</div>
+</section>
+
+<section id="keying">
+  <h2>마젠타를 지우되 외곽선은 남긴다</h2>
+  <p class="muted">배경 제거는 원본 해상도에서, 브라우저의 Web Worker 안에서 돌린다. 규칙은 모두 설정값이고, 유닛마다 덮어쓸 수 있다.</p>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>키 색은 자동으로 잰다</h3><span class="tag">auto key</span></div><p>네 가장자리 픽셀의 중앙값을 키 색으로 쓴다. 평면 마젠타든 흐트러진 마젠타든 파란 배경이든 같은 코드로 처리된다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>가장자리에서 흘러들어 가고, 갇힌 틈은 따로 찾는다</h3><span class="tag">flood · pocket</span></div><p>바깥에서 플러드필로 배경을 지운 뒤, 꼬리털 사이나 고삐 안쪽처럼 사방이 막힌 틈은 키 색과의 거리 또는 색조로 찾아 지운다. 색조 기준은 인물의 옷을 지울 수 있어 성분 크기에 상한을 두었다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>번진 테두리는 지우고, 물든 외곽선은 색만 뺀다</h3><span class="tag">fringe · despill</span></div><p>배경에 닿은 마젠타 색조 픽셀은 바깥부터 안쪽으로 자라며 제거한다. 단, 어두운 픽셀은 외곽선이므로 지우지 않고 마젠타 성분만 빼서 검정으로 되돌린다. 이 구분이 없으면 외곽선이 1~2 픽셀씩 얇아진다.</p></div></div>
+    <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>남은 건 눈으로 지운다</h3><span class="tag">eraser</span></div><p>그래도 남은 점은 프레임 보기에서 클릭 한 번으로 그 자리의 연결된 영역을 지운다. 클릭 좌표는 저장돼 다음에 열어도 같은 결과가 재현된다. 남은 마젠타 픽셀 수는 표에 나와 0인지 바로 확인한다.</p></div></div>
+  </div>
+</section>
+
+<section id="scale">
+  <h2>자로 재서 줄이고, 32색으로 정리한다</h2>
+  <p class="muted">게임의 네이티브 규격은 기마 224×160, 보병 112×160이고 화면에는 2배로 그린다. 모든 유닛이 같은 비율로 보이려면 그림마다 같은 기준으로 줄여야 한다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>자 도구</h3><p>원본 위에 두 점을 찍어 말 몸통이나 머리 길이를 재면, 등급별 목표 길이(기마는 말 몸통 38픽셀 · 머리 29픽셀, 보병은 머리 15.5픽셀)로 배율이 나온다. 유닛 공통 배율 하나에 프레임별 덮어쓰기를 둔다.</p></div>
+    <div class="card span-4"><h3>면적 평균 축소</h3><p>격자가 없는 원본은 분수 배율로 면적 평균을 내서 줄인다. 디더링을 평균 내는 효과가 있어 오히려 깨끗하다. 투명도는 반 이상 덮인 픽셀만 불투명으로 이진화한다.</p></div>
+    <div class="card span-4"><h3>유닛 공유 32색</h3><p>모든 프레임의 불투명 픽셀로 팔레트 하나를 만들어 32색으로 줄인다. 디더는 쓰지 않는다. 축소 뒤 남는 1~3픽셀 섬도 이 단계에서 지운다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>높이로 배율을 정하면 안 된다.</b> 질주 자세는 낮고 넓고, 서 있는 자세는 높다. 프레임마다 높이를 맞추면 말 크기가 자세마다 달라진다. 서 있는 프레임끼리 높이가 같으면 배율 하나로 가는 것이 맞고, 피격 두 번째 장이 박스보다 높아 보였던 것도 창을 치켜든 자세 때문이지 크기 차이가 아니었다.</div>
+</section>
+
+<section id="place">
+  <h2>몸통 기준으로 놓고, 움직여 보고, 순서를 짠다</h2>
+  <p class="muted">배치 보기에서는 박스, 바닥 기준선, 몸통 열이 가이드로 보이고 앞 프레임이 반투명으로 겹친다. 자동 배치가 먼저 놓고, 손으로 드래그하거나 방향키로 1픽셀씩 옮긴다. 되돌리기가 된다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>다리가 아니라 몸통을 고정한다</h3><p>처음에는 다리의 무게중심을 몸통 열에 맞췄더니 달리기 다섯 장에서 말 몸통이 12픽셀씩 좌우로 출렁였다. 기준을 인물 가운데 띠의 무게중심으로 바꾸자 몸통은 1픽셀 안에서 고정되고 다리만 움직였다. 질주하는 말은 그래야 자연스럽다.</p></div>
+    <div class="card span-6"><h3>몸통 열은 유닛마다 바꿀 수 있다</h3><p>박스 안에서 몸이 서는 x 위치다. 쓰러지는 장면을 뒤로 더 밀고 싶을 때 몸통 열을 10픽셀 올리면 모든 프레임이 함께 움직여 쓰러진 말이 박스 안에 들어온다. 이 값은 내보내는 파일에 실려 게임의 피벗이 된다.</p></div>
+    <div class="card span-6"><h3>잘라도 되는 프레임은 잘라서 낸다</h3><p>기수가 말 앞에 눕는 쓰러짐 장면은 말발굽을 바닥에 두면 기수 아랫부분이 박스 밖으로 나간다. 박스 밖 픽셀은 빨갛게 표시되고 기본은 내보내기 거부지만, 눈으로 보고 괜찮으면 프레임별로 잘림을 허용한다.</p></div>
+    <div class="card span-6"><h3>재생과 순서 편집</h3><p>클립별로 fps와 루프를 두고 재생하거나 한 프레임씩 넘긴다. 순서는 칩으로 편집한다 — 공격을 <code>1 2 1 3 4 3</code>처럼 되돌아가게 하거나 한 장을 여러 칸 머물게 해 강약을 준다. 시트에 셀이 늘지 않고 재생 목록만 길어진다.</p></div>
+  </div>
+</section>
+
+<section id="export">
+  <h2>검사를 통과해야 내보낸다</h2>
+  <p class="muted">내보내기는 셀 격자 시트 한 장과 클립 정의 파일 하나를 쓴다. 클립 정의에는 클립마다 셀 인덱스 순서, fps, 루프 여부와 몸통 열이 들어간다. 게임은 이 파일을 읽어 유닛마다 다른 클립 구성을 그대로 쓴다.</p>
+  <div class="flow">
+    <div class="node"><div class="mini-title">01 · 포장</div><h3>빈 셀 없는 격자</h3><p class="muted">행 수를 먼저 정하고 열 수를 장수에 맞춘다. 24장은 12열 2행이라 18열로 채울 때보다 메모리가 35% 적다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">02 · 검사</div><h3>여섯 가지 확인</h3><p class="muted">시트 크기, 프레임 수, 투명도 0/255, 모든 프레임의 바닥 접지, 박스 밖 잘림, 32색 이하. 하나라도 틀리면 쓰지 않는다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">03 · 기록</div><h3>쓰고 다시 읽어 비교</h3><p class="muted">저장소의 출력 폴더에 쓰고, 쓴 파일을 다시 읽어 바이트가 같은지 확인한다. 덮어쓰기는 묻는다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">04 · 선택 클립</div><h3>있는 클립만 들어간다</h3><p class="muted">명령 · 분노 공격 같은 클립은 파일을 넣은 유닛에만 생긴다. 주인공에게만 연출 클립을 더해도 다른 장수 시트는 그대로다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>게임 쪽은 한 번만 바꾼다.</b> 지금까지 게임은 유닛 등급마다 프레임 이름과 순서를 코드에 고정해 두었다. 클립 정의 파일을 읽게 바꾸면 이후에는 시트에 클립이 늘어도 코드가 바뀌지 않는다. 이 변경은 다음 작업으로 넘겼다.</div>
+</section>
+
+<section id="lessons">
+  <h2>만들면서 알게 된 것</h2>
+  <p class="muted">기능보다 판단이 어려운 지점이 몇 군데 있었다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>영상 추출 프레임은 재료부터 다르다</h3><p>256색을 거친 마젠타, 번진 외곽선, 사라진 격자. 다음 장수부터는 영상에서 무손실 PNG로 뽑고 배경색을 실측해 요청문에 적기로 했다. 툴이 흡수할 수 있지만 공급 쪽에서 고치는 게 싸다.</p></div>
+    <div class="card span-4"><h3>참조 비교가 있으면 깊게 생각할 일이 줄어든다</h3><p>색키와 축소를 Python 참조와 픽셀 단위로 맞추는 비교 스크립트를 처음부터 두었다. 92장이 전부 같다는 결과가 나오면 코드를 다시 읽을 필요가 없다. 코딩 에이전트의 추론 깊이도 기본값으로 충분했다.</p></div>
+    <div class="card span-4"><h3>자동 배치는 기준이 전부다</h3><p>다리 기준과 몸통 기준은 코드 몇 줄 차이지만 결과는 12픽셀 흔들림과 1픽셀 고정의 차이였다. 규격 문서가 "말 몸통 열"이라고 정의해 둔 것이 기준을 고르는 근거가 됐다.</p></div>
+    <div class="card span-4"><h3>한 번은 손으로 둬야 하는 장면이 있다</h3><p>쓰러짐 세 장은 가운데 정렬 자동값이 장마다 달라 연속이 끊긴다. 가로를 손으로 맞춰 두고 저장해야 한다. 자동값을 저장할지는 마지막에만 정하는 게 맞았다.</p></div>
+    <div class="card span-4"><h3>2의 거듭제곱 크기는 필요 없었다</h3><p>2688×320 같은 크기도 요즘 기기에서는 밉맵 없이 그대로 쓸 수 있다. 4096×512로 맞추면 메모리만 두 배가 된다. 임포터의 리샘플 옵션만 꺼져 있으면 된다.</p></div>
+    <div class="card span-4"><h3>버튼 이름과 라벨 폭 같은 것</h3><p>"Export 검사 · 기록"은 "내보내기 검사 · 내보내기"로, 프레임 라벨은 고정 폭으로. 같은 버튼을 수십 번 누르는 툴에서는 이런 것이 작업 속도를 결정한다.</p></div>
+  </div>
+</section>
+
+<section id="process">
+  <h2>기획 하루, 구현 하루</h2>
+  <p class="muted">기획서를 먼저 쓰고, 저장소를 읽기 전용으로 조사한 보고서로 전제를 확정한 뒤, 기능을 여덟 단계로 나눠 만들었다. 단계마다 브라우저에서 직접 확인하고 다음 단계로 넘어갔다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>진행 순서</h3>
+      <pre><code>기획서 (범위 · 화면 · 데이터 형식 · 내보내기 규격)
+        ↓
+읽기 전용 조사 (게임 코드 · 기존 스크립트 · 원본 17장 분석)
+        ↓
+뼈대 → 마젠타 제거 → 축척 · 팔레트 → 배치
+        ↓
+재생 · 순서 편집 → 내보내기 · 검사 → 조자룡 24장 실제 처리
+        ↓
+브라우저 확인 → 병합</code></pre>
+    </div>
+    <div class="card span-4"><h3>단계마다 지킨 것</h3><ul><li>Python 참조와 픽셀 비교가 통과해야 다음 단계</li><li>원본 그림은 저장소 밖, 툴 상태 파일만 커밋</li><li>저장소 폴더를 브라우저에서 직접 열고 쓴다 — 복사 · 붙여넣기 없음</li><li>새 결정은 결정 기록과 기획서에 바로 반영</li><li>검사에 걸리는 시트는 내보내지 않는다</li></ul></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>조사 보고서에서 전제가 세 번 바뀌었다.</b> 원본이 단색 마젠타가 아니라는 것, 격자가 없다는 것, 인물이 왼쪽을 본다는 것은 원본 17장을 실측한 조사에서 나왔다. 기획서는 이 셋을 반영해 구현 전에 고쳤다. 코드를 쓴 뒤에 알았다면 색키와 축소를 다시 만들어야 했을 것이다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>아트 작업의 병목이 사람 손에서 툴로 옮겨 갔다</h2>
+  <p class="muted">이제 장수 한 명의 시트는 프레임 24장을 폴더에 넣고, 툴에서 키 색 확인 · 자 두 점 · 자동 배치 · 재생 확인 · 내보내기를 거치면 끝난다. 좌표를 손으로 적는 일도, 그때마다 스크립트를 고치는 일도 없다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>남긴 것</h3>
+      <ul>
+        <li>저장소 폴더를 직접 읽고 쓰는 브라우저 툴 — 설치 없이 <code>npm run dev</code> 하나</li>
+        <li>자동 키 색 · 포켓 · 잔색 · 스필 · 지우개로 이어지는 마젠타 제거</li>
+        <li>자 도구와 면적 평균 축소, 유닛 공유 32색</li>
+        <li>몸통 기준 자동 배치, 가이드와 어니언 스킨, 되돌리기, 잘림 허용</li>
+        <li>클립 재생과 순서 편집, 빈 셀 없는 격자 포장, 여섯 가지 검사를 거친 내보내기</li>
+        <li>클립 정의 파일 — 유닛마다 다른 클립 구성을 게임이 데이터로 읽는 근거</li>
+      </ul>
+    </div>
+    <div class="card span-4"><div class="metric ok">24 / 24</div><div class="label">조자룡 기마 v2</div><p>마젠타 잔여 0, 잘림 0(허용 1장), 바닥 접지 전부, 32색. 기존 11장 시트를 대체한다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 영상에서 뽑은 프레임도 이 툴을 거치면 기존 규격의 시트가 된다. 그리고 <b>장수를 더 넣는 일에 더는 코딩 에이전트가 필요하지 않다.</b> 코딩 에이전트는 툴과 규격을 바꿀 때만 부른다.</div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>영상 프레임의 흐트러진 마젠타 배경과 번진 외곽선을 지우고, 크기를 맞추고, 박스에 배치해 시트로 내보내는 작업을 브라우저 툴로 옮겼다.</li>
+      <li>결과는 기존 Python 후처리와 픽셀 단위로 같고, 조자룡 기마 24장 · 7클립 시트를 하루 만에 뽑았다.</li>
+      <li>클립 구성은 데이터 파일로 나가므로, 주인공에게만 연출 클립을 더하거나 다른 장수를 추가할 때 코드를 바꾸지 않는다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>게임이 클립 정의를 읽게 한다</h3><span class="tag">게임</span></div><p>등급별로 코드에 고정된 프레임 순서를 클립 정의 데이터로 바꾸고, 피벗을 몸통 열로 둔다. 조자룡 24장 시트를 반입해 런 화면에서 일곱 클립이 움직이는지 본다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>장수 시트 양산</h3><span class="tag">아트</span></div><p>적 보스 장수도 같은 24장 전투 세트로 간다. 영상 추출 규칙을 정리한 뒤 안량부터 이 툴로 작업한다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>툴 2단계</h3><span class="tag">툴</span></div><p>기존 시트 가져오기, 전 유닛을 같은 지면선에 나란히 보는 갤러리, 무대 배경 위에서 미리 보기, Unity 폴더로 바로 쓰기.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">조자룡이 간다! · Public Work Log · 2026-11-03</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
