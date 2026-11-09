@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-11-09" />
+  <meta name="worklog-title" content="런 화면 배경을 6레이어 이미지로 흐르게 만들었다" />
+  <meta name="worklog-project" content="조자룡이 간다!" />
+  <meta name="worklog-tags" content="Unity, Pixel Art, Parallax, Background Layers, Data Driven, Editor Tool, Claude Code, Game Art Pipeline" />
+  <meta name="worklog-summary" content="「조자룡이 간다!」의 런 화면에 이미지 생성 도구로 받은 픽셀 아트 초원 배경 6레이어를 올렸다. 처음에는 레이어를 3장으로 합쳐 쓰려 했지만 하늘과 원경을 따로 흘려야 해서 중단하고, 배경 세트를 레이어 N장의 데이터로 바꿨다. 레이어마다 속도, 앞뒤 위치, 이음새 처리, 화면 고정, 전투 줌 반응을 값으로 정하고, 에디터에서 실행 중에 속도와 이음새를 조정해 저장하는 도구를 붙였다. 첫 배경 세트 「반하 평원」은 원본을 절반으로 줄여 2배로 표시하는 규격으로 1장 스테이지 7개에 연결했다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>런 화면 배경을 6레이어 이미지로 흐르게 만들었다 · 2026-11-09</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}th,td{border:1px solid var(--line);padding:9px 12px;text-align:left}th{background:var(--panel2);color:#dce5ee}td{background:var(--panel)}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    justify-content:center;
+    gap:16px;
+    margin-top:20px;}
+    .result-preview-grid.single .result-preview-card{
+    width:536px;
+    max-width:100%;
+    justify-self:center;}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">조자룡이 간다!</div>
+    <h1>런 화면 배경을 <br>6레이어 이미지로 흐르게 만들었다</h1>
+    <p class="lead">
+      이미지 생성 도구로 받은 픽셀 아트 초원 배경을 「조자룡이 간다!」의 런 화면에 올렸다.
+      하늘, 원경, 중경, 지면, 소품, 전경이 서로 다른 속도로 흘러야 하는데, 처음 만든 방식은 레이어를 합쳐서 쓰는 것이었다.
+      그 방식을 중단하고 <b>배경 세트를 레이어 N장의 데이터</b>로 바꿨다. 속도, 앞뒤 위치, 이음새 처리, 화면 고정은 값으로 정하고,
+      게임을 실행한 채로 값을 조정해 저장하는 에디터 도구도 붙였다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">Unity</span><span class="pill">픽셀 아트 배경</span><span class="pill">패럴랙스 레이어</span><span class="pill">데이터 기반 설정</span><span class="pill">에디터 도구</span><span class="pill">Claude Code</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#detour">첫 방식을 중단한 이유</a><a href="#data">레이어 데이터화</a><a href="#set">첫 배경 세트</a><a href="#tool">실행 중 조정 도구</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">런 화면은 조자룡이 오른쪽으로 진군하는 동안 배경이 뒤로 흘러가는 구조다. 이전까지는 배경이 가까운 곳, 중간, 먼 곳 세 장으로 정해져 있었다. 새로 받은 배경은 하늘부터 전경까지 여섯 장으로 나뉘어 있어서, 이 원본을 거의 그대로 쓰면서도 앞으로 만들 배경 세트마다 같은 방법으로 올릴 수 있어야 했다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 배경 한 장을 올리는 작업이 아니라, 새 배경이 올 때마다 데이터만 바꿔서 쓸 수 있는 구조를 만들 수 있을까? 그리고 속도나 위치는 코드를 고치지 않고 눈으로 보면서 정할 수 있을까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">배경 세트를 레이어 N장의 데이터로 바꿨고, 첫 세트 「반하 평원」을 1장의 스테이지 7개에 연결했다. 게임을 실행한 채 속도와 이음새, 지면선을 조정하고 저장하는 에디터 패널도 만들었다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 게시 전에 실제 스크린샷으로 교체: 런 화면(반하 평원), Live tuning 패널 -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">반하 평원이 적용된 런 화면</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/11/09/zilong-run-banha-plain.gif" alt="반하 평원 배경이 적용된 조자룡이 간다 런 화면" />
+      </div>
+      <div class="result-preview-tail">1080 × 2340 · 전경은 화면에 고정</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">실행 중 조정 패널</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/11/09/zilong-run-live-tuning.png" alt="레이어별 속도와 이음새, 전투 줌 반응을 조정하는 Unity 에디터 패널" />
+      </div>
+      <div class="result-preview-tail">레이어별 이음새 · 속도 · 줌 반응</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">6</div><div class="label">원본 레이어</div><p>하늘, 원경, 중경, 지면, 소품, 전경을 합치지 않고 역할별로 받았다.</p></div>
+    <div class="card span-3"><div class="metric ok">1/2 → ×2</div><div class="label">해상도 규격</div><p>원본을 절반으로 줄여 2배로 표시한다. 유닛과 같은 픽셀 격자를 쓴다.</p></div>
+    <div class="card span-3"><div class="metric ok">2 · 4 · 10 · 100</div><div class="label">속도 값(%)</div><p>하늘, 원경, 중경, 지면 순서. 멀수록 거의 멈춘 것처럼 흐른다.</p></div>
+    <div class="card span-3"><div class="metric ok">7</div><div class="label">연결한 스테이지</div><p>1장의 본편과 순찰 스테이지 7개가 같은 배경 세트를 공유한다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 새 배경은 이제 이미지 6장과 설정 값 한 벌이면 올라간다. 코드를 바꾸지 않고 속도, 이음새, 화면 위치를 에디터에서 정하고 저장할 수 있다.</div>
+</section>
+
+<section id="detour">
+  <h2>레이어를 합치는 첫 방식은 중단했다</h2>
+  <p class="muted">처음 계획은 기존 규격에 맞추기 위해 6장을 가까운 곳, 중간, 먼 곳 세 장으로 합쳐서 쓰는 것이었다. 합성 스크립트까지 만들어 반입을 시작했지만, 실제 화면에서 보니 맞지 않았다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>하늘과 원경이 한 장이 되면</h3><p>두 레이어가 같은 속도로 흘러서 원근감이 사라졌다. 하늘은 거의 멈춰 있고 원경은 아주 느리게 움직여야 깊이가 느껴진다. 원본 그대로 쓰는 것이 맞다는 결론이 나왔다.</p></div>
+    <div class="card span-6"><h3>배경마다 구성이 달라진다</h3><p>세 장 고정 구조는 이번 배경에만 맞춘 것이었다. 앞으로 레이어가 네 장인 배경도, 일곱 장인 배경도 올 수 있다. 그래서 장수를 고정하지 않는 구조로 바꾸기로 했다.</p></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>중단하고 방향을 바꿨다.</b> 합성 방식은 해당 지점까지의 기록을 남기고 멈췄다. 처음부터 규격을 정해 두고 거기에 이미지를 맞추려 하면 이미지 쪽의 장점이 사라진다. 이미지의 생김새를 먼저 보고 구조를 정했어야 했다.</div>
+</section>
+
+<section id="data">
+  <h2>배경 세트를 레이어 N장의 데이터로 바꿨다</h2>
+  <p class="muted">배경 세트마다 레이어 장수를 자유롭게 두고, 레이어마다 어떻게 움직이는지를 표의 한 줄로 정한다. 런 화면은 이 표대로 뒤쪽 레이어, 유닛, 앞쪽 레이어 순서로 그린다.</p>
+  <table>
+    <thead><tr><th>정하는 값</th><th>하는 일</th></tr></thead>
+    <tbody>
+      <tr><td>속도</td><td>진군 속도에 대한 비율. 하늘 2%, 원경 4%, 중경 10%, 지면 100%</td></tr>
+      <tr><td>앞 / 뒤</td><td>유닛 뒤에 그릴지, 앞에 그릴지(전경)</td></tr>
+      <tr><td>이음새 처리</td><td>이미지가 끝나는 곳을 거울처럼 뒤집어 잇거나(mirror), 그대로 반복(repeat)</td></tr>
+      <tr><td>화면 고정</td><td>흘리지 않고 런 영역 바닥에 붙여 둔다(전경)</td></tr>
+      <tr><td>전투 줌 반응</td><td>공격 장면에서 화면이 커질 때 이 레이어도 같이 커질지(값은 전투 개선 때 정함)</td></tr>
+      <tr><td>지면선, 위치</td><td>유닛이 서는 바닥 높이, 배경 전체를 위로 올릴 크기</td></tr>
+    </tbody>
+  </table>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>이미지는 저장소에 올리지 않는다</h3><p>원본 이미지는 폴더를 원본, 작업, 결과로 나누고 원본은 저장소에서 제외했다. 저장소에는 레이어 위치와 역할을 적은 파일과 출처 메모만 남긴다. 이미지 파일을 잘못 커밋하는 일을 규칙으로 막았다.</p></div>
+    <div class="card span-6"><h3>이름은 지형이 아니라 역할로</h3><p>레이어 파일 이름을 산, 호수 같은 지형이 아니라 하늘, 원경, 중경, 지면, 소품, 전경으로 정했다. 다음 배경에 산이 없어도 같은 이름 규칙으로 받을 수 있다. 배경 세트 이름은 「지명 + 지형」(예: 반하 평원)으로 정했다.</p></div>
+  </div>
+</section>
+
+<section id="set">
+  <h2>첫 배경 세트 「반하 평원」을 올렸다</h2>
+  <p class="muted">서장과 1장의 무대인 반하 평원이 첫 세트다. 원본 6장을 절반으로 줄여 2배로 표시하는 규격으로 정했고, 지면과 소품은 한 레이어로 묶어 같이 흘린다.</p>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>해상도는 절반으로 줄여 2배로 표시</h3><span class="tag">규격</span></div><p>원본 크기 그대로 쓰면 유닛과 픽셀 크기가 어긋났다. 절반으로 줄여 2배로 키워 표시하면 유닛과 같은 격자에 맞는다. 세트 하나의 메모리는 약 3MB다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>기기 비율에 맞춘 런 영역과 위치</h3><span class="tag">레이아웃</span></div><p>런 영역 높이를 화면 높이에서 계산하도록 하고, 아래 UI와 맞도록 배경 위치를 세트 값으로 정했다. 유닛의 발 위치는 세트의 지면선 값으로 맞춘다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>전경은 흘리지 않고 화면에 고정</h3><span class="tag">전경</span></div><p>전경을 흘리면 유닛 앞을 계속 지나가서 시선이 어지러웠다. 전경은 런 영역 바닥에 붙여 두고 가로로 가운데 정렬해, 양쪽 바위가 모두 들어오게 했다.</p></div></div>
+    <div class="step"><div class="dot">4</div><div class="card"><div class="step-head"><h3>기존 배경은 그대로 동작</h3><span class="tag">호환</span></div><p>기존 숲 배경(와우 숲)은 같은 표 구조로 옮겼고 동작이 바뀌지 않도록 검사에 넣었다.</p></div></div>
+  </div>
+</section>
+
+<section id="tool">
+  <h2>게임을 실행한 채 값을 조정하고 저장한다</h2>
+  <p class="muted">속도나 이음새는 숫자만 봐서는 감이 안 오고, 고칠 때마다 다시 실행하면 느리다. 에디터에 런 화면 하네스를 만들고, 실행 중에 값을 바꾸면 바로 화면에 반영되게 했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>실행 중 조정</h3><ul><li>배경 위치와 지면선</li><li>이음새 처리, 속도, 줌 반응을 기능별로 묶어 레이어마다 조정</li><li>배경 세트를 골라서 같은 스테이지에 적용해 보기</li><li>실행과 정지를 하네스 창에서 바로</li></ul></div>
+    <div class="card span-6"><h3>저장하면 정본이 갱신된다</h3><p>저장 버튼을 누르면 편집 중인 세트의 설정 파일에만 값이 기록되고, 변환 스크립트가 게임이 읽는 표를 다시 만든다. 다른 세트의 값은 건드리지 않는다. 실제로 조정해 저장한 값이 그대로 확정 값이 됐다.</p></div>
+  </div>
+</section>
+
+<section id="lessons">
+  <h2>작업하면서 알게 된 것</h2>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>첫 승인 계획도 화면에서 틀릴 수 있다</h3><p>계획서는 규격에 맞는 합성을 담았지만, 화면에서 보니 원근감이 사라졌다. 이미지를 눈으로 보는 단계가 계획 승인보다 먼저였어야 했다.</p></div>
+    <div class="card span-4"><h3>두 번째 실행부터 조자룡이 흰 사각형이 됐다</h3><p>실행을 껐다 켜도 이전 실행의 정적 캐시가 남는 설정에서, 이미 파괴된 스프라이트 참조를 다시 쓴 것이 원인이었다. 파괴된 칸은 다시 자르도록 고치고 검사를 추가했다.</p></div>
+    <div class="card span-4"><h3>멀리 있는 레이어일수록 정지에 가깝게</h3><p>하늘은 2%, 원경은 4%, 중경은 10%로 거의 멈춘 값이 가장 자연스러웠다. 처음 잡았던 5%, 20%, 50%보다 훨씬 느린 쪽이었다.</p></div>
+    <div class="card span-4"><h3>이음새는 거울 반복이 기본</h3><p>양 끝을 거울처럼 이으면 단차가 눈에 덜 띈다. 결과적으로는 움직이는 레이어를 반복 방식으로 정했지만, 레이어마다 바꿀 수 있어서 이미지에 맞춰 고르면 된다.</p></div>
+    <div class="card span-4"><h3>전투 줌은 연출과 함께 정해야 한다</h3><p>줌 반응 값은 전투 연출을 보면서 정해야 해서 이번에는 기능만 만들고 값은 모두 기본으로 뒀다.</p></div>
+    <div class="card span-4"><h3>이미지 파일은 규칙으로 막았다</h3><p>원본 이미지를 저장소에서 제외하는 규칙을 먼저 넣은 덕분에, 큰 이미지가 이력에 남는 일을 걱정하지 않고 반입을 반복할 수 있었다.</p></div>
+  </div>
+</section>
+
+<section id="process">
+  <h2>작은 단위로 만들고, 단위마다 검사했다</h2>
+  <p class="muted">이번 작업은 분석, 설계, 작은 구현, 빌드와 시험, 검토를 한 단위로 반복했다. 단위마다 Claude Code가 계획을 먼저 보였고, 승인한 뒤에 파일을 바꿨다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-12"><h3>단계마다 지킨 것</h3><ul><li>데이터 구조와 도구를 먼저 정하고 이미지는 그 뒤에 올렸다.</li><li>커밋마다 전체 검사와 에디터 시험을 돌렸다.</li><li>이미지 원본은 저장소에 올리지 않는다는 규칙을 반입 전에 넣었다.</li><li>기존 배경이 깨지지 않는지 데이터 단위로 확인했다.</li><li>에디터에서 실제 화면을 보고 값을 정한 뒤 그 값을 기록했다.</li><li>마무리는 깨끗한 작업 폴더에서 커밋마다 처음부터 검사해 확인한 뒤 병합했다.</li></ul></div>
+  </div>
+</section>
+
+<section id="conclusion">
+  <h2>이미지를 먼저 보고 구조를 정했다</h2>
+  <p class="muted">이번 단계에서는 배경 한 장을 올린 것이 아니라, 앞으로 올 배경을 같은 방법으로 받을 수 있는 구조를 만들었다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>이번 단계의 진행 순서</h3>
+      <pre><code>원본 6레이어 반입
+        ↓
+3장 합성 방식 시도 → 중단
+        ↓
+배경 세트를 레이어 N장의 데이터로 재설계
+        ↓
+첫 세트(반하 평원) 규격 결정과 연결
+        ↓
+에디터에서 실행 중 조정 · 저장
+        ↓
+전체 검사 후 병합</code></pre>
+      <p class="muted" style="margin-top:14px">배경은 보는 것이 곧 평가여서, 숫자로 정한 규격보다 눈으로 본 결과가 구조를 바꿨다.</p>
+    </div>
+    <div class="card span-4"><div class="metric ok">0</div><div class="label">코드 수정 없이 올리는 새 배경</div><p>이미지와 설정 값만 있으면 새 세트가 올라간다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 런 화면의 배경은 데이터로 움직이고, 속도와 이음새, 위치는 에디터에서 정할 수 있게 됐다. 다만 실제 기기(Galaxy A16)에서의 확인은 아직 하지 않았다.</div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>원본 6레이어 배경을 3장으로 합쳐 쓰려던 첫 방식은 원근감이 사라져 중단하고, 배경 세트를 레이어 N장의 데이터로 바꿨다.</li>
+      <li>레이어마다 속도, 앞뒤, 이음새, 화면 고정, 전투 줌 반응을 값으로 정하고, 에디터에서 실행 중에 조정해 저장하는 패널을 붙였다.</li>
+      <li>첫 세트 「반하 평원」을 원본 절반 크기 ×2 규격으로 1장 스테이지에 연결했고, 전투 줌 값과 실제 기기 확인은 다음 작업으로 넘겼다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>전투 연출 개선</h3><span class="tag">다음 파트</span></div><p>공격 줌 때 레이어마다 얼마나 커질지, 전경을 줌에서 뺄지, 셰이크를 레이어별로 다르게 할지, 피해 숫자와 체력 바가 전경과 겹치지 않는지를 정한다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>다음 배경 세트</h3><span class="tag">아트</span></div><p>와우 숲의 새 이미지와 계교 배경이 오면 같은 방법으로 올린다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>배경 메모리와 실제 기기 확인</h3><span class="tag">최적화</span></div><p>모든 배경 세트가 한꺼번에 메모리에 올라가는 구조를 세트 단위 로딩이나 압축으로 개선하고, Galaxy A16에서 런 화면을 확인한다.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">조자룡이 간다! · Public Work Log · 2026-11-09</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
