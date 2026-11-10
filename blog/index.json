@@ -1,6 +1,24 @@
 {
-  "generated_at": "2026-11-05T12:52:50+00:00",
+  "generated_at": "2026-11-09T12:02:20+00:00",
   "reports": [
+    {
+      "date": "2026-11-09",
+      "title": "런 화면 배경을 6레이어 이미지로 흐르게 만들었다",
+      "project": "조자룡이 간다!",
+      "tags": [
+        "Unity",
+        "Pixel Art",
+        "Parallax",
+        "Background Layers",
+        "Data Driven",
+        "Editor Tool",
+        "Claude Code",
+        "Game Art Pipeline"
+      ],
+      "summary": "「조자룡이 간다!」의 런 화면에 이미지 생성 도구로 받은 픽셀 아트 초원 배경 6레이어를 올렸다. 처음에는 레이어를 3장으로 합쳐 쓰려 했지만 하늘과 원경을 따로 흘려야 해서 중단하고, 배경 세트를 레이어 N장의 데이터로 바꿨다. 레이어마다 속도, 앞뒤 위치, 이음새 처리, 화면 고정, 전투 줌 반응을 값으로 정하고, 에디터에서 실행 중에 속도와 이음새를 조정해 저장하는 도구를 붙였다. 첫 배경 세트 「반하 평원」은 원본을 절반으로 줄여 2배로 표시하는 규격으로 1장 스테이지 7개에 연결했다.",
+      "file": "reports/2026/11/2026-11-09_zilong-run-stage-background-layers-as-data.html",
+      "visibility": "public"
+    },
     {
       "date": "2026-11-03",
       "title": "캐릭터 툴을 만들었다",
