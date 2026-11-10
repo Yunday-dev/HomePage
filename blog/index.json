@@ -1,6 +1,26 @@
 {
-  "generated_at": "2026-11-09T12:02:20+00:00",
+  "generated_at": "2026-11-10T00:20:09+00:00",
   "reports": [
+    {
+      "date": "2026-11-10",
+      "title": "전투 시각화: 글자로 흐르던 전투에 타격감 · 이동 · 카메라를 입혔다",
+      "project": "조자룡이 간다!",
+      "tags": [
+        "Unity 6.6",
+        "2D",
+        "Game Feel",
+        "Hit Stop",
+        "Knockback",
+        "Screen Shake",
+        "Following Camera",
+        "Parallax",
+        "Editor Tooling",
+        "Claude Code"
+      ],
+      "summary": "「조자룡이 간다!」의 전투는 규칙은 완성됐지만 화면에서는 기록 줄이 올라가는 것으로만 보였다. 이번 작업으로 런 화면 위에서 전투가 눈에 보이게 됐다. 적중 순간의 히트 스톱 · 반짝임 · 넉백 · 효과음 · 화면 흔들림 · 파편 · 큰 치명타 숫자 · 마지막 한 방 슬로 모션을 넣었고, 유닛이 달려가서 한 걸음 내디디며 찌르고 맞은 쪽이 실제로 밀려나는 이동 체계를 만들었으며, 두 장수의 가운데를 부드럽게 쫓는 카메라를 붙였다. 모든 세기와 거리는 데이터로 두고 에디터 패널에서 전투를 보며 바로 고칠 수 있게 했다. 전투 규칙과 서버는 바뀌지 않았다.",
+      "file": "reports/2026/11/2026-11-10_zilong-battle-visualization-hit-feel-movement-and-camera.html",
+      "visibility": "public"
+    },
     {
       "date": "2026-11-09",
       "title": "런 화면 배경을 6레이어 이미지로 흐르게 만들었다",
