@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-11-10" />
+  <meta name="worklog-title" content="전투 시각화: 글자로 흐르던 전투에 타격감 · 이동 · 카메라를 입혔다" />
+  <meta name="worklog-project" content="조자룡이 간다!" />
+  <meta name="worklog-tags" content="Unity 6.6, 2D, Game Feel, Hit Stop, Knockback, Screen Shake, Following Camera, Parallax, Editor Tooling, Claude Code" />
+  <meta name="worklog-summary" content="「조자룡이 간다!」의 전투는 규칙은 완성됐지만 화면에서는 기록 줄이 올라가는 것으로만 보였다. 이번 작업으로 런 화면 위에서 전투가 눈에 보이게 됐다. 적중 순간의 히트 스톱 · 반짝임 · 넉백 · 효과음 · 화면 흔들림 · 파편 · 큰 치명타 숫자 · 마지막 한 방 슬로 모션을 넣었고, 유닛이 달려가서 한 걸음 내디디며 찌르고 맞은 쪽이 실제로 밀려나는 이동 체계를 만들었으며, 두 장수의 가운데를 부드럽게 쫓는 카메라를 붙였다. 모든 세기와 거리는 데이터로 두고 에디터 패널에서 전투를 보며 바로 고칠 수 있게 했다. 전투 규칙과 서버는 바뀌지 않았다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>전투 시각화: 글자로 흐르던 전투에 타격감 · 이동 · 카메라를 입혔다 · 2026-11-10</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:12px;margin-top:20px}.flow .node{min-height:122px;border:1px solid var(--line);border-radius:15px;background:var(--panel);padding:18px}.arrow{color:var(--accent);font-weight:800;font-size:20px}
+    .result-preview-grid{display:grid;grid-template-columns:1fr;justify-content:center;gap:16px;margin-top:20px}
+    .result-preview-grid.single .result-preview-card{width:536px;max-width:100%;justify-self:center}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:414 / 266;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,420px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    .result-preview-media.square{aspect-ratio:1 / 1}
+    @media(max-width:850px){.result-preview-grid.pair{grid-template-columns:minmax(0,420px)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">조자룡이 간다!</div>
+    <h1>전투 시각화:<br>글자로 흐르던 전투에 타격감 · 이동 · 카메라를 입혔다</h1>
+    <p class="lead">
+      「조자룡이 간다!」의 전투 규칙은 서장부터 3장까지 완성돼 있었지만, 화면에서는 진군 기록에 글자가 한 줄씩 올라가는 것으로만 보였다.
+      이번 작업으로 조자룡이 달리던 바로 그 화면 위에서 전투가 <b>눈에 보이게</b> 됐다. 적중 순간의 연출을 넣고, 유닛이 달려가 찌르고
+      밀려나는 이동 체계를 만들고, 두 장수를 따라가는 카메라를 붙였다. 전투 규칙과 서버는 한 줄도 바뀌지 않았다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">Unity 6.6</span><span class="pill">2D 런 화면</span><span class="pill">히트 스톱 · 넉백 · 셰이크</span><span class="pill">따라가는 카메라</span><span class="pill">에디터 패널 실시간 조절</span><span class="pill">Claude Code</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#hitfeel">타격감</a><a href="#movement">이동 체계</a><a href="#camera">카메라</a><a href="#tuning">실시간 조절</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">앞선 작업에서 런 화면을 만들었다. 조자룡이 말을 타고 달리면 배경이 겹겹이 흐르고, 지점마다 적이 나타나 대화하고 싸운다. 그런데 정작 싸움은 두 유닛이 마주 선 채 숫자만 떠오르는 모습이었다. 이번 목표는 그 전투를 <b>보는 맛이 나는 장면</b>으로 바꾸는 것이었다. 단, 전투의 승패를 정하는 규칙과 서버 계산은 그대로 두고 화면 쪽만 손대기로 했다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 같은 전투 기록을 재생하면서, 때리는 순간이 묵직하게 느껴지고 두 장수가 실제로 부딪히는 것처럼 보이려면 무엇이 필요할까? 그리고 그 세기와 거리를 코드를 고치지 않고 화면을 보면서 맞출 수 있을까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">같은 전투 기록을 재생한 두 장면이다. 왼쪽은 이번 작업 전, 오른쪽은 이번 작업 후다. 규칙과 피해 숫자는 같고 보이는 것만 달라졌다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 실제 GIF 파일명에 맞게 src만 교체하면 됩니다. -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">이전 · 글자로 흐르던 전투</div>
+      <div class="result-preview-media square">
+        <img src="../../../assets/2026/10/25/zilong-vs-battle.gif" alt="이전 전투 장면: 두 유닛이 마주 선 채 진군 기록에 글자가 올라간다" />
+      </div>
+      <div class="result-preview-tail">마주 선 채 숫자만 뜬다</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">이후 · 시각화한 전투</div>
+      <div class="result-preview-media square">
+        <img src="../../../assets/2026/11/10/zilong-battle-visual.gif" alt="시각화한 전투 장면: 달려가 찌르고, 맞은 쪽이 하얗게 반짝이며 밀려나고, 카메라가 둘을 따라간다" />
+      </div>
+      <div class="result-preview-tail">달려가 찌르고, 밀려나고, 카메라가 따라간다</div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:22px">
+    <div class="card span-3"><div class="metric ok">8</div><div class="label">적중 연출</div><p>히트 스톱, 반짝임, 넉백, 효과음, 화면 흔들림, 파편, 큰 치명타 숫자, 마지막 한 방 슬로 모션.</p></div>
+    <div class="card span-3"><div class="metric ok">3</div><div class="label">유닛이 움직이는 이유</div><p>달려가기, 찌르며 한 걸음, 밀려나기. 이 셋 말고는 아무도 제자리에서 미끄러지지 않는다.</p></div>
+    <div class="card span-3"><div class="metric ok">1</div><div class="label">카메라</div><p>두 장수의 가운데를 부드럽게 쫓고, 멀어지면 줌 아웃해 둘 다 화면에 담는다.</p></div>
+    <div class="card span-3"><div class="metric ok">0</div><div class="label">바뀐 전투 규칙</div><p>피해 계산, 서버, 저장 형식은 그대로다. 모두 화면 쪽 변경이다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 모든 연출의 세기와 거리는 데이터 파일에 있고, 에디터 패널에서 전투를 재생하며 슬라이더로 바로 바꾸고 저장할 수 있다. <b>값을 고치려고 코드를 열 일은 없어졌다.</b></div>
+</section>
+
+<section id="hitfeel">
+  <h2>때리는 순간에 여덟 가지를 겹쳤다</h2>
+  <p class="muted">타격감은 한 가지 효과로 생기지 않는다. 창이 닿는 그 순간에 여러 반응이 동시에 일어나야 묵직해진다. 적중 하나를 신호로 삼고, 그 신호에서 모든 연출을 켜고 끄도록 만들었다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><div class="mini-title">시간</div><h3>히트 스톱 · 슬로 모션</h3><p>닿는 순간 유닛과 배경을 0.1초쯤 멈춘다. 이기는 전투의 마지막 한 방은 0.9초 동안 4분의 1 속도로 느리게 보여 준다. 화면 흔들림과 숫자, 카메라는 멈추지 않도록 <b>세계의 시계와 카메라의 시계를 따로</b> 두었다.</p></div>
+    <div class="card span-4"><div class="mini-title">맞은 쪽</div><h3>반짝임 · 넉백</h3><p>맞은 쪽이 한순간 하얗게 반짝이고 공격자 반대로 밀려난다. 반짝임은 그림을 바꾸지 않고 머티리얼 하나로 처리했다. 넉백은 잠깐 밀렸다 돌아오는 연출이 아니라 <b>실제 위치가 바뀌는 것</b>으로 만들었다(아래 이동 체계).</p></div>
+    <div class="card span-4"><div class="mini-title">화면</div><h3>흔들림 · 파편 · 숫자</h3><p>치명타와 분노 공격에만 화면을 짧게 흔든다. 맞은 자리에서 조각이 튀어 바닥에 떨어지고, 치명타와 분노 공격의 피해 숫자는 크고 노랗게 뜬다.</p></div>
+    <div class="card span-4"><div class="mini-title">소리</div><h3>타격음 세 가지</h3><p>일반 · 치명 · 분노 공격의 타격음을 창이 닿는 프레임에 맞춰 낸다. 매번 높낮이를 조금씩 바꿔 같은 소리가 반복되는 느낌을 줄였다. 클라이언트에 소리 처리가 처음 들어갔다.</p></div>
+    <div class="card span-8"><div class="mini-title">맞물림</div><h3>효과는 창이 닿는 프레임에 난다</h3><p>처음에는 공격 동작의 첫 프레임에서 효과가 나서, 창을 들어 올리는데 상대가 먼저 반짝이는 어색함이 있었다. 공격 클립마다 <b>닿는 프레임</b>을 데이터로 두고, 피해 숫자와 체력 바의 변화까지 모두 그 프레임에 맞췄다. 조자룡의 창은 다섯 프레임 중 네 번째에 닿는다.</p></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>체력 바와 피해 숫자가 어긋나 있었다.</b> 전투 중 카메라가 움직이면 유닛은 옮겨 가는데 그 위의 체력 바와 숫자는 처음 자리에 남았다. 바와 숫자를 매 프레임 카메라 변환으로 다시 투영해 유닛을 따라가게 하고, 크기와 흔들림은 받지 않게 했다. 연출을 넣기 전에 이것부터 고쳐야 했다.</div>
+</section>
+
+<section id="movement">
+  <h2>다가가서 친다 — 유닛이 움직이는 이유는 셋뿐</h2>
+  <p class="muted">연출을 하나씩 넣다 보니 유닛이 제자리에서 미끄러지거나, 공격 뒤에 슬그머니 원래 자리로 돌아가는 장면이 자꾸 생겼다. 땜질 대신 원칙을 세웠다. <b>유닛의 위치는 세 가지 이유로만 바뀐다.</b></p>
+  <div class="flow">
+    <div class="node"><div class="mini-title">01 · 달려가기</div><h3>run 클립</h3><p class="muted">때리기 전에 상대의 사거리까지 말 달리는 속도로 달려간다. 적중마다 다시 거리를 잰다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">02 · 찌르며 한 걸음</div><h3>attack 클립</h3><p class="muted">공격 동작 동안 같은 속도로 한 걸음 더 나간다. 창은 사거리에서 닿는다. 분노 공격은 제자리에서 친다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">03 · 밀려나기</div><h3>넉백</h3><p class="muted">맞은 쪽이 밀려나고 그 자리에 남는다. 뒤에 아군이 있으면 함께 밀려 겹치지 않는다. 빗나가도 밀리되 효과는 없다.</p></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="mini-title">04 · 그 밖에</div><h3>움직이지 않는다</h3><p class="muted">공격 뒤 돌아가지 않고, 대기 중 미끄러지지 않는다. 다음 차례가 오면 다시 1부터다.</p></div>
+  </div>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>JRPG식 복귀를 없앴다</h3><p>처음 구현은 공격하러 나갔다가 제자리로 돌아오는 방식이었다. 그러면 넉백도 잠깐의 흔들림으로만 보인다. 복귀를 모두 없애고 시작 자리는 전투 첫 배치에만 쓰기로 하자, 밀고 밀리는 흐름이 화면에 그대로 남았다.</p></div>
+    <div class="card span-6"><h3>거리는 그림에서 잰다</h3><p>유닛마다 공격이 닿는 앞끝과 몸통 반폭을 스프라이트에서 재어 데이터로 두었다. 사거리는 공격자의 앞끝과 상대의 반폭으로 계산하므로 창병과 장수, 보병이 각자 알맞은 거리에서 멈춘다.</p></div>
+    <div class="card span-12"><h3>움직이는 동안은 반드시 달리기 동작</h3><p>“스스로 움직이는 유닛은 run 클립, 대기 중에는 위치가 바뀌지 않는다”를 자동 검사로 걸어 두었다. 전투 전체를 재생하며 20 ms마다 확인하므로, 연출을 더 넣다가 미끄러짐이 되살아나면 바로 잡힌다.</p></div>
+  </div>
+</section>
+
+<section id="camera">
+  <h2>카메라는 두 장수의 가운데를 쫓는다</h2>
+  <p class="muted">넉백으로 두 장수가 벌어지면 고정 카메라에서는 한쪽이 화면 밖으로 나간다. 전투 중 카메라의 목표를 <b>공격자와 피격자의 정가운데</b>로 두고 시간 상수 0.2초로 부드럽게 따라가게 했다. 둘이 멀어지면 여백을 두고 둘 다 들어오도록 줌 아웃하고, 가까워지면 다시 1배로 돌아온다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>가로 이동은 배경 스크롤로</h3><p>카메라 뷰를 옮기면 배경 타일의 끝이 드러난다. 대신 달릴 때와 같은 방법으로 배경 레이어를 각자의 속도로 스크롤하고 유닛만 반대로 옮겨, 화면 끝이 보이지 않게 했다.</p></div>
+    <div class="card span-4"><h3>줌 아웃의 빈 곳 막기</h3><p>1배보다 작게 줌 아웃하면 배경 아래와 옆이 비어 보일 수 있다. 흐르는 레이어에 타일을 한 장 더 깔고, 줌 아웃의 기준점을 지면선이 아니라 화면 바닥으로 두어 위로 하늘만 넓어지게 했다. 세트마다 최소 줌 값을 둔다.</p></div>
+    <div class="card span-4"><h3>조우와 전투 끝</h3><p>적은 화면 밖에서 달려 들어와 조자룡 앞에 서고, 조자룡은 제자리에서 달린다. 카메라가 달리기 화면에서 전투 화면으로 넘어간 뒤 대사가 시작된다. 이긴 전투가 끝나면 결과 팝업 아래에서 카메라가 조자룡에게 부드럽게 돌아간다.</p></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>팝업이 카메라를 튀게 했다.</b> 전투 끝 카메라 귀환을 만들었는데도 결과 팝업이 뜨는 순간 화면이 조자룡으로 확 튀었다. 팝업을 띄우는 코드가 연출과 함께 카메라까지 초기화하고 있었다. 초기화를 “연출만”과 “카메라까지”로 나누고, 카메라까지 즉시 되돌리는 것은 전투 건너뛰기에서만 하도록 바꿨다. 20 ms 간격으로 카메라 위치를 찍은 로그로 튀지 않는 것을 확인했다.</div>
+</section>
+
+<section id="tuning">
+  <h2>값은 전투를 보면서 맞춘다</h2>
+  <p class="muted">히트 스톱 몇 ms, 넉백 몇 픽셀, 카메라는 얼마나 빨리 따라올지는 숫자를 보고 정할 수 없고 화면을 보고 정해야 한다. 런 화면을 에디터에서 재생하는 하네스에 <b>Fx 그룹</b>을 더해, 전투가 돌아가는 동안 모든 값을 슬라이더로 바꾸고 효과마다 켜고 끌 수 있게 했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>패널에서 바꾸고 데이터 파일로 저장</h3><ul><li>적중 연출 여덟 가지의 세기와 시간, 켜고 끄기</li><li>달려가는 속도, 사거리, 찌르며 나가는 거리</li><li>넉백 거리와 시간, 아군 사이 최소 간격</li><li>카메라 여백, 따라가는 시간, 최소 줌</li><li>공격 클립의 닿는 프레임</li><li>「저장」을 누르면 데이터 파일에 그대로 쓰인다</li></ul></div>
+    <div class="card span-6"><h3>값을 고르기 위한 장치</h3><ul><li>마지막 적중의 달린 시간, 디딘 거리, 착지 때 간격을 숫자로 보여 준다. 몸이 겹치면 경고가 붙는다.</li><li>하네스 전용 체력 배율로 조자룡과 안량이 서로 열 대 이상 주고받게 만들어, 한 전투에서 연출을 충분히 볼 수 있게 했다. 게임 데이터는 건드리지 않는다.</li><li>패널에 스크롤과 접기를 넣어 창을 키우지 않아도 모든 값에 닿는다.</li></ul></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>공격 줌은 기본값을 끔으로 두었다.</b> 조자룡이 공격할 때 카메라가 확대되는 연출은 있었지만, 따라가는 카메라와 겹치면 어지러워 기본값을 1배로 두고 패널에서 켤 수 있게만 남겼다. 배경 레이어별 줌 반응 값도 같은 이유로 아직 모두 같게 두었다.</div>
+</section>
+
+<section id="lessons">
+  <h2>만들면서 알게 된 것</h2>
+  <p class="muted">연출은 넣는 것보다 서로 맞물리게 하는 것이 어려웠다. 하네스에서 전투를 돌려 보고 고친 것들이다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>시계는 둘이어야 한다</h3><p>히트 스톱을 게임 전체 시간으로 멈추면 화면 흔들림과 카메라까지 같이 멈춰 오히려 끊긴다. 유닛과 배경이 쓰는 시계와 카메라 · 연출이 쓰는 시계를 나누자 멈춘 순간에도 화면은 살아 있었다.</p></div>
+    <div class="card span-4"><h3>예외 규칙은 금방 쌓인다</h3><p>“연속 공격은 마지막 타에만 넉백”, “공격자가 밀린 만큼 따라 들어가기” 같은 규칙을 하나씩 넣다 보니 서로 꼬였다. “적중마다 다가가서 친다”는 원칙 하나로 바꾸자 예외가 모두 필요 없어졌다.</p></div>
+    <div class="card span-4"><h3>한 걸음은 동작 전체에 걸쳐야 한다</h3><p>찌르며 나가는 한 걸음을 첫 프레임에만 넣었더니 8 fps 클립에서는 한 프레임 안에 끝나 제자리 찌르기로 보였다. 공격 동작의 첫 프레임부터 마지막 프레임까지 같은 속도로 나가게 하자 비로소 “달려와 찌른다”가 됐다.</p></div>
+    <div class="card span-4"><h3>적도 달려야 한다</h3><p>적이 다가올 때 달리기 클립 없이 서 있는 그림 그대로 미끄러지고 있었다. 영상으로 찍어 프레임을 뜯어보고서야 보였다. 움직이면 반드시 달리기 동작이 나오도록 검사로 못 박았다.</p></div>
+    <div class="card span-4"><h3>겹침은 값으로 보인다</h3><p>사거리를 줄이거나 한 걸음을 늘리면 두 몸이 겹친다. 패널에 착지 때 간격을 숫자로 띄우고 최소 간격 아래면 경고를 붙이니, 보고 판단하는 시간이 크게 줄었다.</p></div>
+    <div class="card span-4"><h3>초기화는 나눠야 한다</h3><p>“전부 되돌리기” 함수 하나가 팝업, 건너뛰기, 전투 종료에서 두루 쓰이고 있었다. 카메라처럼 부드럽게 이어져야 하는 것은 즉시 되돌리는 경로에서 빼야 했다.</p></div>
+  </div>
+</section>
+
+<section id="process">
+  <h2>분석 → 계획 → 작은 구현 → 하네스 확인을 반복했다</h2>
+  <p class="muted">연출은 눈으로 보기 전에는 맞는지 알 수 없다. 그래서 큰 덩어리를 한 번에 만들지 않고, 작은 단위로 구현한 뒤 에디터 하네스에서 전투를 재생해 보고 다음 단위를 정했다. 이번 작업은 그 반복이 여러 라운드 이어졌다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>진행 순서</h3>
+      <pre><code>현재 줌 · 셰이크 · 오버레이 경로 분석(코드 변경 없음)
+        ↓
+연출 여덟 가지와 하네스 Fx 그룹 계획 → 승인
+        ↓
+체력 바 투영 → 두 시계 → 넉백 → 반짝임 → 파편 → 효과음
+        ↓
+하네스에서 재생 → 어색한 곳을 영상 · GIF로 확인
+        ↓
+닿는 프레임 데이터화 · 조우 수정 · 공격 줌 기본 끔
+        ↓
+“다가가서 친다” 이동 체계 · 따라가는 카메라 · 배경 덮개
+        ↓
+한 걸음 규칙 · 빗나감 넉백 · 쓰러짐 페이드 · 팝업 카메라 수정
+        ↓
+문서 · 결정 기록 · 전체 검사 · PR</code></pre>
+    </div>
+    <div class="card span-4"><h3>단계마다 지킨 것</h3><ul><li>커밋마다 깨끗한 작업 사본에서 검사 스크립트와 에디터 테스트를 돌렸다.</li><li>구조를 바꾸는 단계는 코드 전에 짧은 계획과 질문을 먼저 받았다.</li><li>하네스에서 눈으로 확인한 뒤에만 다음 단계로 갔다.</li><li>패널에서 저장한 값은 값 그대로 별도 커밋으로 남겼다.</li><li>전투 규칙과 서버는 건드리지 않았다.</li></ul></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>영상이 말보다 빨랐다.</b> “쑥 밀고 들어가는 느낌”, “제자리에서 찌른다” 같은 설명은 해석이 갈렸다. 하네스 화면을 짧게 녹화해 프레임 단위로 뜯어보니 원인이 바로 드러났다. 넉백 뒤 따라 들어가는 코드, 적이 서 있는 그림으로 미끄러지는 문제가 모두 영상에서 나왔다.</div>
+</section>
+
+<section id="conclusion">
+  <h2>규칙은 그대로, 보이는 것만 바꿨다</h2>
+  <p class="muted">이번 작업에서 전투의 승패를 정하는 코드는 바뀌지 않았다. 같은 전투 기록을 재생하는 방식만 바꿔, 글자로 흐르던 싸움을 달려가 찌르고 밀려나는 장면으로 만들었다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-8">
+      <h3>이번 작업으로 전투 화면에 들어간 것</h3>
+      <ul>
+        <li><b>타격감:</b> 히트 스톱, 반짝임, 넉백, 효과음, 화면 흔들림, 파편, 큰 치명타 숫자, 마지막 한 방 슬로 모션. 모두 창이 닿는 프레임에 맞춘다.</li>
+        <li><b>이동 체계:</b> 달려가기 → 찌르며 한 걸음 → 밀려나기. 복귀는 없고, 움직일 때는 반드시 달리기 동작이다.</li>
+        <li><b>카메라:</b> 두 장수의 가운데를 부드럽게 쫓고, 벌어지면 줌 아웃. 조우와 전투 끝도 끊김 없이 이어진다.</li>
+        <li><b>조절:</b> 모든 값은 데이터이고 에디터 패널에서 전투를 보며 바꾸고 저장한다.</li>
+      </ul>
+    </div>
+    <div class="card span-4"><div class="metric ok">1 화면</div><div class="label">런과 전투</div><p>달리던 화면 위에서 그대로 싸운다. 같은 스프라이트, 같은 배경, 같은 카메라다.</p></div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 전투가 보이기 시작했다. 아직 실기기에서는 확인하지 않았고, 연출의 세기 값은 기본값 그대로다. 다음은 <b>실기기 빌드에서 느낌을 확인하고 값을 맞추는 일</b>이다.</div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>글자로만 흐르던 「조자룡이 간다!」의 전투를 런 화면 위에서 보이게 만들었다. 적중 순간의 연출 여덟 가지를 넣고, 모두 창이 닿는 프레임에 맞췄다.</li>
+      <li>유닛은 달려가기 · 찌르며 한 걸음 · 밀려나기로만 움직이고 돌아가지 않는다. 카메라는 두 장수의 가운데를 부드럽게 쫓는다.</li>
+      <li>모든 세기와 거리는 데이터로 두고 에디터 패널에서 전투를 재생하며 바꾸고 저장한다. 전투 규칙과 서버는 바뀌지 않았다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>실기기에서 느낌 확인</h3><span class="tag">APK</span></div><p>Galaxy A16 빌드에서 반짝임 셰이더, 소리, 1배 · 2배속, 카메라와 줌 아웃, 쓰러짐 페이드를 확인하고 세기 값을 맞춘다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>배치와 거리 다듬기</h3><span class="tag">전투 화면</span></div><p>전투 시작 때 두 장수의 간격을 데이터로 빼고, 넉백 거리와 찌르며 나가는 거리의 균형을 맞춘다. 뒤로 밀린 적이 앞 아군에 막혀 사거리 밖에서 치는 경우도 손본다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>배경 레이어별 줌 반응</h3><span class="tag">배경</span></div><p>따라가는 카메라가 자리 잡았으니, 줌 때 하늘 · 먼 산 · 들판이 서로 다른 비율로 반응하는 값을 패널에서 정한다.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">조자룡이 간다! · Public Work Log · 2026-11-10</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
