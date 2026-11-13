@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="worklog-date" content="2026-11-13" />
-  <meta name="worklog-title" content="조자룡이 간다! 다대일 전투와 원소군 창병 추가" />
+  <meta name="worklog-title" content="다대일 전투 구현" />
   <meta name="worklog-project" content="조자룡이 간다!" />
   <meta name="worklog-tags" content="Unity 6.6, 조자룡이 간다, 전투 연출, 다대일 전투, 스프라이트 시트, 캐릭터 툴, 에디터 하네스, Claude Code" />
   <meta name="worklog-summary" content="「조자룡이 간다!」의 전투를 한 명 대 여러 명이 뒤엉키는 전투로 구현했다. 서버는 누가 누구를 치는지만 결정하고, 화면은 그 결과를 네 가지 규칙으로 풀어낸다. 공격자는 대상까지 곧장 달려가고, 맞은 쪽은 공격자가 선 곳을 기준으로 돌아서고 밀리며, 슬롯마다 앞뒤 깊이가 다르고, 넉백 거리에는 결정적 변주가 들어간다. 여기에 자석처럼 차례로 밀리는 사슬과 제자리 공격·회피·반격 동작을 더했다. 이 전투를 실제 병사 그림으로 보기 위해 원소군 창병 스프라이트 시트 24장을 캐릭터 툴로 만들어 넣었고, 에디터 하네스에 한 행동씩 넘기는 수동 전투와 유닛 아트 반입 버튼을 추가했다." />
   <meta name="worklog-visibility" content="public" />
-  <title>조자룡이 간다! 다대일 전투와 원소군 창병 추가 · 2026-11-13</title>
+  <title>다대일 전투 구현 · 2026-11-13</title>
   <style>
     :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
     *{box-sizing:border-box}html{scroll-behavior:smooth}
@@ -51,7 +51,7 @@
   <div class="wrap">
     <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
     <div class="eyebrow">조자룡이 간다!</div>
-    <h1>다대일 전투와<br>원소군 창병 추가</h1>
+    <h1>다대일 전투</h1>
     <p class="lead">
       지난 작업에서 전투에 타격감과 이동, 따라가는 카메라를 넣었다. 이번에는 적이 둘 이상인 전투를
       한 명 대 여러 명이 <b>뒤엉키는 전투</b>로 구현했다. 서버는 누가 누구를 치는지만 정하고, 화면은 그 결과를
@@ -80,18 +80,18 @@
   <p class="muted">캐릭터 툴로 만든 원소군 창병 시트와, 그 창병 세 명을 상대하는 전투 장면이다.</p>
   <div class="result-preview-grid pair">
     <div class="result-preview-card">
-      <div class="result-preview-head">원소군 창병 스프라이트 시트</div>
-      <div class="result-preview-media portrait">
-        <img src="../../../assets/2026/11/13/zilong-spearman-chartool.png" alt="캐릭터 툴에서 원소군 창병 클립별 프레임을 정리한 화면" />
-      </div>
-      <div class="result-preview-tail">캐릭터 툴 · 대기 · 달리기 · 공격 · 피격 · 쓰러짐 · 자세 · 분노 공격</div>
-    </div>
-    <div class="result-preview-card">
       <div class="result-preview-head">3 대 1 전투</div>
       <div class="result-preview-media portrait">
         <img src="../../../assets/2026/11/13/zilong-melee-3v1.gif" alt="조자룡이 창병 세 명 사이를 파고들며 싸우는 전투 장면" />
       </div>
       <div class="result-preview-tail">에디터 하네스 · 순찰 스테이지 · 창병 3명</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">원소군 창병 스프라이트 시트</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/11/13/zilong-spearman-chartool.png" alt="캐릭터 툴에서 원소군 창병 클립별 프레임을 정리한 화면" />
+      </div>
+      <div class="result-preview-tail">캐릭터 툴 · 대기 · 달리기 · 공격 · 피격 · 쓰러짐 · 자세 · 분노 공격</div>
     </div>
   </div>
 
