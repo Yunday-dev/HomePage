@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="worklog-date" content="2026-11-18" />
+  <meta name="worklog-title" content="방패병 추가: 맨 앞에서 대신 맞고, 방패로 밀어 앞자리를 지킨다" />
+  <meta name="worklog-project" content="조자룡이 간다!" />
+  <meta name="worklog-tags" content="Unity, 조자룡이 간다, 전투 시스템, 병과, 방패병, 픽셀 아트, 스프라이트 애니메이션, 캐릭터 툴, Claude Code" />
+  <meta name="worklog-summary" content="「조자룡이 간다!」에 원소군 방패병을 추가했다. 적 부대의 맨 앞에서 공격을 대신 받아 주는 병사가 필요했기 때문이다. 방패병은 맨 앞에서 먼저 맞고, 밀려나지 않으며, 자기 편에서 가장 나중에 행동한다. 앞자리를 빼앗기면 방패로 조자룡을 밀어내 다시 맨 앞에 선다. 그림은 창병을 참조로 새로 그려 캐릭터 툴에서 배경 제거, 크기 맞춤, 위치 조정을 거쳐 게임에 넣었다." />
+  <meta name="worklog-visibility" content="public" />
+  <title>방패병 추가: 맨 앞에서 대신 맞고, 방패로 밀어 앞자리를 지킨다 · 2026-11-18</title>
+  <style>
+    :root{--bg:#0b0f14;--panel:#111821;--panel2:#151e29;--text:#e8edf2;--muted:#95a3b3;--line:#263243;--accent:#57a7ff;--accent2:#7ce3b1;--warn:#f7c66a;--danger:#ff7b89;--code:#0a0e13;--max:1180px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif;line-height:1.7}
+    .wrap{width:min(var(--max),calc(100% - 40px));margin:0 auto}
+    header{padding:76px 0 56px;border-bottom:1px solid var(--line);background:radial-gradient(circle at 82% 0%,rgba(87,167,255,.14),transparent 34%),radial-gradient(circle at 10% 20%,rgba(124,227,177,.06),transparent 28%),var(--bg)}
+    header .wrap{position:relative}.brand-home{position:absolute;top:-48px;left:0;display:inline-flex;align-items:center;gap:11px;color:var(--text);text-decoration:none;line-height:1}
+    .brand-mark{width:11px;height:11px;border-radius:50%;background:var(--accent2);box-shadow:0 0 20px rgba(124,227,177,.45)}
+    .brand-text{font-size:13px;font-weight:750;letter-spacing:.12em}.eyebrow{color:var(--accent2);font-size:13px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
+    h1{margin:10px 0 16px;font-size:clamp(36px,5.2vw,66px);line-height:1.08;letter-spacing:-.035em}.lead{max-width:940px;margin:0;color:#c4ced9;font-size:18px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}.pill{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:#cbd5df;background:rgba(17,24,33,.72);font-size:12px}
+    nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.90);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:22px;overflow:auto;padding:14px 0}
+    nav a{color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}nav a:hover{color:var(--text)}
+    main{padding:52px 0 78px}section{margin-top:58px;scroll-margin-top:72px}section:first-child{margin-top:0}h2{margin:0 0 14px;font-size:29px;letter-spacing:-.02em}h3{margin:0 0 10px;font-size:18px}p{margin:8px 0}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-6{grid-column:span 6}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+    .card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:22px}.metric{font-size:31px;font-weight:800;letter-spacing:-.03em}.metric.ok,.ok{color:var(--accent2)}.metric.warn,.warn{color:var(--warn)}.label{margin-top:4px;color:var(--muted);font-size:13px}
+    .callout{border-left:3px solid var(--accent);background:rgba(87,167,255,.075);padding:16px 18px;border-radius:0 12px 12px 0}.callout.warnbox{border-left-color:var(--warn);background:rgba(247,198,106,.07)}.callout.okbox{border-left-color:var(--accent2);background:rgba(124,227,177,.06)}
+    .timeline{display:grid;gap:14px}.step{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start}.dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--accent2);font-weight:800;font-size:13px}
+    .step-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--muted);font-size:11px;white-space:nowrap}
+    ul{padding-left:20px;margin:10px 0}li{margin:6px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;color:#d9e8f7}
+    pre{margin:14px 0 0;padding:16px 18px;overflow-x:auto;border:1px solid #202b38;border-radius:12px;background:var(--code);color:#dce5ee;font-size:13px;line-height:1.55}
+    .result-preview-grid{display:grid;grid-template-columns:1fr;justify-content:center;gap:16px;margin-top:20px}
+    .result-preview-grid.pair{grid-template-columns:repeat(2,minmax(0,300px))}
+    .result-preview-media.portrait{aspect-ratio:9 / 19.5}
+    .result-preview-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+    .result-preview-head,.result-preview-tail{padding:13px 16px;font-size:14px;font-weight:800;text-align:center;color:#dce5ee}.result-preview-head{border-bottom:1px solid var(--line)}.result-preview-tail{border-top:1px solid var(--line)}
+    .result-preview-media{width:100%;aspect-ratio:16 / 10;background:#070b10;overflow:hidden;display:flex;align-items:center;justify-content:center}.result-preview-media img{display:block;width:100%;height:100%;object-fit:contain;background:#070b10}
+    .mini-title{margin:0 0 6px;color:var(--accent2);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.summary-list{margin:0;padding-left:22px}
+    footer{border-top:1px solid var(--line);padding:28px 0 42px;color:var(--muted);font-size:13px}
+    @media(max-width:850px){.span-3,.span-4,.span-6,.span-8{grid-column:span 12}.wrap{width:min(100% - 26px,var(--max))}h1{font-size:40px}.result-preview-grid.pair{grid-template-columns:minmax(0,300px)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand-home" href="../../../" aria-label="YES IT WORKS 홈페이지로 이동"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">YES IT WORKS</span></a>
+    <div class="eyebrow">조자룡이 간다!</div>
+    <h1>방패병 추가:<br>맨 앞에서 대신 맞고, 방패로 밀어 앞자리를 지킨다</h1>
+    <p class="lead">
+      여러 적과 한꺼번에 싸우는 전투에는 <b>맨 앞에서 공격을 대신 받아 주는 병사</b>가 필요했다.
+      창병만으로는 누가 앞이고 누가 뒤인지 구분이 없어, 부대와 싸운다는 느낌이 약했다.
+      앞을 지키는 원소군 방패병의 역할을 정하고, 그림을 새로 그려 캐릭터 툴을 거쳐 게임에 넣었다.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">Unity</span><span class="pill">전투 시스템</span><span class="pill">병과</span><span class="pill">스프라이트 애니메이션</span><span class="pill">캐릭터 툴</span><span class="pill">Claude Code</span>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#goal">작업 목표</a><a href="#result">작업 결과</a><a href="#role">방패병의 역할</a><a href="#art">캐릭터 툴</a><a href="#lessons">알게 된 것</a><a href="#process">작업 방식</a><a href="#conclusion">정리 및 결론</a><a href="#next">다음 작업</a>
+</div></nav>
+
+<main class="wrap">
+<section id="goal">
+  <h2>작업 목표</h2>
+  <p class="muted">지난 작업에서 조자룡 혼자 여러 적을 상대하는 전투와 원소군 창병을 넣었다. 싸움은 그럴듯해졌지만 적 병사들이 모두 같은 역할이라 부대에 앞과 뒤가 없었다. 이번 목표는 맨 앞에 서서 공격을 받아 내고, 뒤의 병사들이 싸울 시간을 벌어 주는 병과를 만드는 것이었다.</p>
+  <div class="callout" style="margin-top:18px"><b>핵심 질문:</b> 앞에서 버텨 주는 병사 하나로, 적 부대에 앞줄과 뒷줄이라는 구조를 만들 수 있을까?</div>
+</section>
+
+<section id="result" class="result-preview">
+  <h2>작업 결과</h2>
+  <p class="muted">방패병의 행동 규칙을 전투에 넣었고, 방패병 그림을 캐릭터 툴로 정리해 게임에 반입했다.</p>
+  <div class="result-preview-grid pair">
+    <!-- 실제 이미지 파일명에 맞게 아래 src만 교체하면 됩니다. -->
+    <div class="result-preview-card">
+      <div class="result-preview-head">캐릭터 툴의 방패병</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/11/18/zilong-shieldman-chartool.png" alt="캐릭터 툴에서 방패병의 프레임을 클립별로 정리한 화면" />
+      </div>
+      <div class="result-preview-tail">배경 제거 · 크기 맞춤 · 위치 조정 · 내보내기</div>
+    </div>
+    <div class="result-preview-card">
+      <div class="result-preview-head">방패병 전투 장면</div>
+      <div class="result-preview-media portrait">
+        <img src="../../../assets/2026/11/18/zilong-shieldman-battle.gif" alt="방패병이 맨 앞에서 공격을 받아 내고 방패로 조자룡을 밀어내는 전투 장면" />
+      </div>
+      <div class="result-preview-tail">맨 앞에서 받아 내고, 방패로 밀어낸다</div>
+    </div>
+  </div>
+  <div class="callout okbox" style="margin-top:18px"><b>결과:</b> 방패병이 있는 전투에서는 조자룡의 공격을 방패병이 먼저 받는다. 앞자리를 내주더라도 다음 차례에 방패로 밀어내 <b>조자룡 · 방패병 · 나머지 적</b>의 줄로 되돌아간다.</div>
+</section>
+
+<section id="role">
+  <h2>방패병이 전투에서 하는 일</h2>
+  <p class="muted">방패병의 성격은 한 문장이다. 맨 앞에서 대신 맞는다. 앞에서 버티려면 필요한 것을 네 가지 행동으로 풀었다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><div class="mini-title">01 · 위치</div><h3>맨 앞에 선다</h3><p>방패병이 있는 전투에서는 방패병이 항상 앞자리에 선다. 조자룡은 살아 있는 적 중 가장 앞의 적을 치므로, 방패병이 가장 먼저 맞는다.</p></div>
+    <div class="card span-6"><div class="mini-title">02 · 버티기</div><h3>밀려나지 않는다</h3><p>다른 병사는 맞으면 뒤로 밀려나지만 방패병은 제자리에서 버틴다. 뒤의 병사들도 방패병 앞에서 간격을 두고 멈춘다.</p></div>
+    <div class="card span-6"><div class="mini-title">03 · 순서</div><h3>자기 편에서 가장 나중에 행동한다</h3><p>다른 병사들이 모두 공격을 마친 뒤에 움직인다. 그 턴의 싸움이 끝난 뒤 앞자리를 다시 잡는 역할이기 때문이다.</p></div>
+    <div class="card span-6"><div class="mini-title">04 · 밀기</div><h3>앞자리를 빼앗기면 방패로 밀어낸다</h3><p>싸우다 보면 조자룡이 방패병을 지나쳐 뒤의 병사들 곁에 서게 된다. 그러면 방패병이 달려 나와 방패로 조자룡을 밀어내고 다시 맨 앞에 선다. 멈추는 순간 한 번 친다. 앞자리를 지키고 있으면 여느 병사처럼 공격만 한다.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>플레이어의 답도 함께 생긴다.</b> 방패병이 기절하거나 움직이지 못하는 턴에는 밀지 못한다. 적을 묶는 기술, 방어를 무시하는 지속 피해, 뒤의 적부터 노리는 공격이 방패병에 대한 답이 된다.</div>
+</section>
+
+<section id="art">
+  <h2>그림은 캐릭터 툴을 거쳐 게임으로</h2>
+  <p class="muted">방패병은 앞서 만든 원소군 창병을 참조로 삼아 같은 화풍으로 새로 그렸다. 굵은 외곽선과 균일한 도트, 같은 군대의 붉은색을 유지하면서 머리에는 두건 대신 쇠 투구를 씌워 창병과 구분했다.</p>
+  <div class="timeline" style="margin-top:22px">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>기준 그림 한 장부터</h3><span class="tag">Image</span></div><p>대기 자세 한 장을 먼저 확정하고, 그 그림을 기준으로 달리기, 공격, 맞는 모습, 쓰러지는 모습 등의 프레임을 이어서 만들었다. 모든 프레임은 단색 배경 위에 그림자 없이 받는다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>캐릭터 툴에서 정리</h3><span class="tag">Tool</span></div><p>직접 만든 웹 도구에서 배경색을 투명하게 지우고, 프레임마다 다른 인물 크기를 맞추고, 발 위치를 한 줄로 정렬했다. 클립별로 순서를 정해 재생해 보며 어색한 프레임을 골라냈다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>내보내기와 반입</h3><span class="tag">Unity</span></div><p>툴의 내보내기 버튼이 스프라이트 시트와 클립 정보를 함께 만든다. Unity 에디터의 반입 버튼을 누르면 바로 전투 화면에서 확인할 수 있다.</p></div></div>
+  </div>
+  <div class="callout warnbox" style="margin-top:18px"><b>칼은 뺐다.</b> 처음에는 허리에 칼을 찬 모습이었는데, 칼자루가 매번 어색하게 그려졌다. 공격이 칼이 아니라 방패로 밀치는 것이라 칼이 없어도 역할이 읽힌다고 판단해 방패만 든 병사로 정했다.</div>
+</section>
+
+<section id="lessons">
+  <h2>만들면서 알게 된 것</h2>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-4"><h3>앞에 세우는 것만으로는 부족했다</h3><p>방패병을 맨 앞에 두어도 싸움이 이어지면 자리가 섞여 앞줄의 의미가 사라졌다. 방패병이 자기 차례에 직접 밀어내 앞자리를 되찾게 하자 「앞을 지키는 병사」로 읽혔다.</p></div>
+    <div class="card span-4"><h3>간격 하나로 밀기와 공격을 함께</h3><p>방패로 밀치는 병사라 미는 거리와 공격하는 거리가 같아도 자연스럽다. 값 하나로 두 동작의 간격을 정해 조절할 것을 줄였다.</p></div>
+    <div class="card span-4"><h3>거리 값은 화면에서 바로 조절</h3><p>밀리는 거리와 간격은 빌드 없이 에디터의 전투 확인 화면에서 바꿔 볼 수 있게 했다. 숫자를 고치고 같은 전투를 바로 다시 돌려 보며 정했다.</p></div>
+    <div class="card span-6"><h3>반격은 맞는 모습이 끝난 뒤에</h3><p>반격하는 병사가 뒤로 물러났다가 다시 달려오는 동작을 없앴다. 맞고 밀리는 반응이 끝난 뒤 그 자리에서 되받아치게 하니 주고받는 흐름이 또렷해졌다.</p></div>
+    <div class="card span-6"><h3>원하는 전투를 바로 찾는 목록</h3><p>방패병이 나오는 전투를 확인하려 해도 몇 번째 지점에서 나오는지 알기 어려웠다. 전투 확인 화면에 그 판의 전투 순서를 보여 주는 목록을 추가해 원하는 조합을 바로 열 수 있게 했다.</p></div>
+  </div>
+</section>
+
+<section id="process">
+  <h2>작업 방식</h2>
+  <p class="muted">규칙을 먼저 넣고, 에디터의 전투 확인 화면에서 직접 돌려 본 뒤, 눈에 걸리는 점을 한 번에 몇 가지씩 고치는 순서로 진행했다.</p>
+  <div class="grid" style="margin-top:20px">
+    <div class="card span-6"><h3>진행 순서</h3><ul><li>방패병의 행동 규칙 구현과 시뮬레이션으로 난이도 변화 확인</li><li>전투 확인 화면에서 장면별로 직접 확인</li><li>반격 동작, 밀기 뒤의 타격, 간격, 밀리는 거리 순으로 다듬기</li><li>방패병 그림 제작과 캐릭터 툴 정리, 게임 반입</li></ul></div>
+    <div class="card span-6"><h3>단계마다 지킨 것</h3><ul><li>규칙을 바꿀 때마다 기존 스테이지의 클리어율이 크게 움직이지 않는지 확인했다.</li><li>연출에만 쓰는 값은 전투 결과에 영향을 주지 않는 자리에 두었다.</li><li>단계가 끝날 때마다 보고서를 새로 남기고 다음 단계의 범위를 정했다.</li></ul></div>
+  </div>
+</section>
+
+<section id="conclusion">
+  <h2>앞에서 버티는 병사가 생기자 부대가 됐다</h2>
+  <p class="muted">방패병 하나가 들어가면서 적 부대에 앞줄과 뒷줄이 생겼다. 플레이어에게는 「저 방패병을 어떻게 넘을 것인가」라는 새 질문이 생겼다.</p>
+  <div class="callout okbox" style="margin-top:18px"><b>현재 결론:</b> 적 병과는 창병(맞으면 되받아친다)과 방패병(맨 앞에서 대신 맞는다) 두 종이 실제 그림과 함께 들어갔다. 병과마다 한 문장의 성격을 주는 방식이 전투를 복잡하게 만들지 않으면서 구분을 만들어 준다는 것을 확인했다.</div>
+  <div class="card span-12" style="margin-top:18px">
+    <h3>3줄 요약</h3>
+    <ol class="summary-list">
+      <li>맨 앞에서 공격을 대신 받아 줄 병사가 필요해 원소군 방패병을 추가했다. 먼저 맞고, 밀려나지 않으며, 자기 편에서 가장 나중에 행동한다.</li>
+      <li>앞자리를 빼앗기면 방패병이 조자룡을 방패로 밀어내 다시 맨 앞에 서고, 멈추는 순간 한 번 친다.</li>
+      <li>그림은 창병을 참조로 새로 그려 캐릭터 툴에서 배경 제거, 크기 맞춤, 위치 조정을 거쳐 게임에 넣었다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="next">
+  <h2>다음 작업</h2>
+  <div class="timeline">
+    <div class="step"><div class="dot">1</div><div class="card"><div class="step-head"><h3>궁병과 검병 그림</h3><span class="tag">Art</span></div><p>원소군의 궁병과 검병을 같은 방식으로 만들어 넣는다.</p></div></div>
+    <div class="step"><div class="dot">2</div><div class="card"><div class="step-head"><h3>병과별 성격 정리</h3><span class="tag">Design</span></div><p>궁병, 기병, 검병에도 한 문장의 성격을 정하고, 그 성격이 서로 물리도록 다듬는다.</p></div></div>
+    <div class="step"><div class="dot">3</div><div class="card"><div class="step-head"><h3>실기기 확인</h3><span class="tag">Device</span></div><p>새 병과가 들어간 빌드를 Android 기기에서 확인한다.</p></div></div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">조자룡이 간다! · Public Work Log · 2026-11-18</div></footer>
+<script>
+  // 상단 메뉴: URL 이동 없이 해당 섹션으로 바로 스크롤한다.
+  // 미리보기나 iframe 안에서는 #링크가 부모 페이지 주소로 이동해 버리므로 직접 처리한다.
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var target = document.getElementById(link.getAttribute('href').slice(1));
+      if (!target) return;
+      event.preventDefault();
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>
